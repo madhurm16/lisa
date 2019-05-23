@@ -1,3 +1,7 @@
 # Labor Share & Aging Population - Fabien Petit
 
-First paper.
+Files are organized as follows :
+
+- README.md : general informations.
+- markdown.md : Notebook.
+- markdown.Rmd : Notebook with codes.
