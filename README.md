@@ -3,5 +3,6 @@
 Files are organized as follows :
 
 - README.md : general informations.
-- markdown.md : Notebook.
-- markdown.Rmd : Notebook with codes.
+- lisa.Rproj : R Project settings.
+- main.Rmd : Notebook with codes.
+- main.md : Notebook.
