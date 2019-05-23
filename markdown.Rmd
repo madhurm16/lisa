@@ -4,9 +4,25 @@ author: "Fabien Petit"
 output: github_document
 ---
 
-```{r}
 
-# First line
+
+```{r Localisation, results = "hide"}
+
+loc_result = file.path(getwd(), "result")
+loc_function = file.path(getwd(), "function")
+loc_data = file.path(getwd(), "data")
+
+```
+
+```{r Initialization, results = "hide"}
+
+# Load packages
+packages <- c("bucky", "dplyr", "ggplot2", "ggrepel", "lmtest", "sandwich", "zoo", "RColorBrewer", "reshape2")
+lapply(packages, require, character.only = TRUE)
+rm(packages)
+
+# Load functions
+sapply(list.files(pattern = "[.]R$", path = loc_function, full.names = TRUE), source)
 
 ```
 
