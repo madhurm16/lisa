@@ -6,7 +6,7 @@ output: github_document
 
 
 
-```{r Localisation, results = "hide"}
+```{r Localisation, include = FALSE}
 
 loc_result = file.path(getwd(), "result")
 loc_function = file.path(getwd(), "function")
@@ -14,7 +14,7 @@ loc_data = file.path(getwd(), "data")
 
 ```
 
-```{r Initialization, results = "hide"}
+```{r Initialization, include = FALSE}
 
 # Load packages
 packages <- c("bucky", "dplyr", "ggplot2", "ggrepel", "lmtest", "sandwich", "zoo", "RColorBrewer", "reshape2")
@@ -25,4 +25,15 @@ rm(packages)
 sapply(list.files(pattern = "[.]R$", path = loc_function, full.names = TRUE), source)
 
 ```
+
+
+
+
+
+
+
+
+
+
+
 
