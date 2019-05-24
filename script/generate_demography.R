@@ -17,7 +17,7 @@ esaun = read.csv(file.path(loc_final, "esaun.csv"), header = TRUE)
 # Rename populstat
 names(populstat)[3] = "total"
 
-##### GENERATION #####
+##### DATA GENERATION #####
 
 # Total population
 esaun$total = esaun$child + esaun$young + esaun$old
