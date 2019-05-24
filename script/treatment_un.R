@@ -2,6 +2,7 @@
 
 # Define required packages
 require(dplyr)
+require(reshape2)
 
 # Define paths
 loc_csv_un = file.path("data", "csv", "un")
@@ -51,9 +52,6 @@ esaun = esaun[,-c(5,20,22:25)]
 # Sort columns : Country / Year / AgeGroups
 esaun = esaun[, c(1, 2, order(names(esaun)[-c(1,2)])+2)]
 
-# SAVE DATA
-write.csv(esaun, file.path(loc_csv_un, "esaun_AgeGroups.csv"), row.names = FALSE)
-
 ##### DEPENDENCY RATIO #####
 
 ## Aggregate age groups in three categories : child (<20), young (from 20 to 60) & old (60+)
@@ -62,8 +60,16 @@ child = c(3:6)
 young = c(7:14)
 old = c(15:19)
 
-# Check 01_wpp.R to resume
+# Compute population in each age groups
+esaun$child = rowSums(esaun[,child], na.rm = TRUE)
+esaun$young <- rowSums(esaun[,young], na.rm = TRUE)
+esaun$old <- rowSums(esaun[,old], na.rm = TRUE)
 
+# Compute old-age dependency ratio
+esaun$dep <- esaun$old/esaun$young
 
+# Define Country as factor
+esaun$Country <- as.factor(esaun$Country)
 
-
+# SAVE DATA
+write.csv(esaun, file.path(loc_csv_un, "esaun.csv"), row.names = FALSE)
