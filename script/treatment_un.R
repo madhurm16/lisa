@@ -61,9 +61,24 @@ young = c(7:14)
 old = c(15:19)
 
 # Compute population in each age groups
+<<<<<<< HEAD
 esaun$child = rowSums(esaun[,child], na.rm = TRUE)
 esaun$young <- rowSums(esaun[,young], na.rm = TRUE)
 esaun$old <- rowSums(esaun[,old], na.rm = TRUE)
+=======
+esaun$child = rowSums(esaun[,child],na.rm=T)
+esaun$young <- rowSums(esaun[,young],na.rm=T)
+esaun$old <- rowSums(esaun[,old],na.rm=T)
+
+# Remove AgeGroups columns
+esaun <- esaun[,-c(child,young,old)]
+esaun$dep <- esaun$old/esaun$young
+esaun_cumul = esaun
+esaun <- esaun[,-c(3,4,5)]
+names(esaun) = c('Country','Year','dep')
+esaun$Country <- as.factor(esaun$Country)
+
+>>>>>>> 8dd67e4a6e3c8d54bf78fd6dcb33ecad6c9b3945
 
 # Compute old-age dependency ratio
 esaun$dep <- esaun$old/esaun$young
