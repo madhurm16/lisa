@@ -6,6 +6,7 @@ require(reshape2)
 
 # Define paths
 loc_csv_un = file.path("data", "csv", "un")
+loc_final = file.path("data", "final")
 
 # Define OECD countries
 countryOECD_full = c("Australia", "Austria", "Belgium", "Canada", "Chile", "Czech Republic",
@@ -61,24 +62,9 @@ young = c(7:14)
 old = c(15:19)
 
 # Compute population in each age groups
-<<<<<<< HEAD
 esaun$child = rowSums(esaun[,child], na.rm = TRUE)
 esaun$young <- rowSums(esaun[,young], na.rm = TRUE)
 esaun$old <- rowSums(esaun[,old], na.rm = TRUE)
-=======
-esaun$child = rowSums(esaun[,child],na.rm=T)
-esaun$young <- rowSums(esaun[,young],na.rm=T)
-esaun$old <- rowSums(esaun[,old],na.rm=T)
-
-# Remove AgeGroups columns
-esaun <- esaun[,-c(child,young,old)]
-esaun$dep <- esaun$old/esaun$young
-esaun_cumul = esaun
-esaun <- esaun[,-c(3,4,5)]
-names(esaun) = c('Country','Year','dep')
-esaun$Country <- as.factor(esaun$Country)
-
->>>>>>> 8dd67e4a6e3c8d54bf78fd6dcb33ecad6c9b3945
 
 # Compute old-age dependency ratio
 esaun$dep <- esaun$old/esaun$young
@@ -87,4 +73,4 @@ esaun$dep <- esaun$old/esaun$young
 esaun$Country <- as.factor(esaun$Country)
 
 # SAVE DATA
-write.csv(esaun, file.path(loc_csv_un, "esaun.csv"), row.names = FALSE)
+write.csv(esaun, file.path(loc_final, "esaun.csv"), row.names = FALSE)
