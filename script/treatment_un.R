@@ -2,6 +2,7 @@
 
 # Define required packages
 require(dplyr)
+require(reshape2)
 
 # Define paths
 loc_csv_un = file.path("data", "csv", "un")
@@ -62,7 +63,18 @@ child = c(3:6)
 young = c(7:14)
 old = c(15:19)
 
-# Check 01_wpp.R to resume
+# Compute population in each age groups
+esaun$child = rowSums(esaun[,child],na.rm=T)
+esaun$young <- rowSums(esaun[,young],na.rm=T)
+esaun$old <- rowSums(esaun[,old],na.rm=T)
+
+# Remove AgeGroups columns
+esaun <- esaun[,-c(child,young,old)]
+esaun$dep <- esaun$old/esaun$young
+esaun_cumul = esaun
+esaun <- esaun[,-c(3,4,5)]
+names(esaun) = c('Country','Year','dep')
+esaun$Country <- as.factor(esaun$Country)
 
 
 
