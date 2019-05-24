@@ -27,7 +27,7 @@ esaun$Location[which(esaun$Location == "Republic of Korea")] = "South Korea"
 esaun$Location[which(esaun$Location == "Czechia")] = "Czech Republic"
 esaun$Location[which(esaun$Location == "United States of America")] = "United States"
 
-# Keep only country and useful columns
+# Keep only OECD countries and useful columns
 esaun = esaun %>% 
   subset(Location %in% countryOECD_full) %>% 
   select(c(2,5,7,12))

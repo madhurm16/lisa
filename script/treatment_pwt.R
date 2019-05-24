@@ -33,8 +33,10 @@ pwt = merge(pwt91, pwt91_labor_detail, by = c("countrycode", "year"), suffixes =
 # Remove duplicated columns
 pwt = pwt %>% select(- grep("*\\.y", names(.)))
 
-# Reorder columns
-pwt = pwt %>% select(c("country", "year", names(.)[-c("country","year")]))
+# Reorder columns and keep only OECD countries
+pwt = pwt %>% 
+  select(c("country", "year", names(.)[-c("country","year")])) %>% 
+  subset(country %in% countryOECD_full)
 
 # Rename Country and Year
 names(pwt)[c(1,2)] = c("Country", "Year")
