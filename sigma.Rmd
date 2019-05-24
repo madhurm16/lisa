@@ -1,0 +1,103 @@
+---
+title: "Capital-Labor elasticity of substitution"
+author: "Fabien Petit"
+date: "24/05/2019"
+output: github_document
+---
+
+```{r Init, include = FALSE}
+
+# Define required packages
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+
+# Define paths
+loc_final = file.path("data", "final")
+
+```
+
+## Methodology
+
+I estimate the elasticity of substitution between capital and labor using the methodology of Leon-Ledesma, McAdam & Willman (2013). Estimation are done for France and United States between 1970 and 2010.
+
+## Estimation (PWT only)
+
+```{r Load data}
+
+pwt = read.csv(file.path(loc_final, "pwt.csv"), header = TRUE) %>% 
+  subset(Country %in% c("France", "United States") & Year %in% c(1970:2010) & i_labsh2 == 1) %>% 
+  select("Country", "Year", "pop", "emp", "avh", "rnna", "labsh")
+
+head(pwt)
+
+```
+
+The variables from the **Penn World Table 9.1** are the following :
+
+* *pop* : Population (in millions.)
+* *emp* : Number of persons engaged (in millions)
+* *avh* : Average annual hours worked by persons engaged
+* *rnna* : Capital stock at constant 2011 national prices (in mil. 2011US$)
+* *labsh* : Share of labour compensation in GDP at current national prices
+
+Following the methodology of Leon-Ledesma, McAdam & Willman (2013), I estimate the following equation :
+
+$$\ln k_t = \alpha - \frac{\sigma}{1-\sigma} \ln \Theta_t + \left( a_L-a_K\right)t + \varepsilon_t$$
+
+Therefore, I need to compute the capital-to-labor ratio $k_t$ and the capital-to-labor income ratio $\Theta_t$.
+
+```{r Variable computation}
+
+# Capital in the economy (K)
+pwt$K = pwt$rnna
+# Capital in the economy (K) // Corrected for hours worked
+pwt$K.avh_correct = pwt$rnna / pwt$avh
+
+# Capital-to-labor ratio (k)
+pwt$k = pwt$K/pwt$emp
+# Capital-to-labor ratio (k) // Corrected for hours workers
+pwt$k.avh_correct = pwt$K.avh_correct/pwt$emp
+
+# Capital-to-labor income ratio (THETA)
+pwt$THETA = (1-pwt$labsh)/pwt$labsh
+
+```
+
+I normalize the capital-to-labor ratio to the initial year (i.e. 1970).
+
+```{r Normalization}
+
+pwt = pwt %>% 
+  group_by(Country) %>% 
+  mutate(k_nor = k / first(k),
+         k_nor.avh_correct = k.avh_correct / first(k.avh_correct)) %>% 
+  ungroup()
+
+```
+
+
+```{r Plot k}
+
+pwt %>% select("Country", "Year", "k_nor", "k_nor.avh_correct") %>% 
+  melt(id.vars = c("Country", "Year")) %>% 
+  ggplot(aes(x = Year, y = value, color = variable)) +
+  geom_line(size = .5) +
+  facet_wrap(Country ~ ., dir = "v") +
+  theme_classic(base_size = 14) +
+  labs(x = "Year", y = "")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

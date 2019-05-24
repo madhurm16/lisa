@@ -96,6 +96,3 @@ input_gif[input_gif %>% grep(paste(seq(1950, 2020, 5), collapse = "|"), .)] %>%
   image_join() %>% 
   image_animate(fps = 1) %>% 
   image_write(file.path(loc_result, paste0("agestruct_5y_", country, ".gif")))
-
-
-
