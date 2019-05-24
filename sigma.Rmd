@@ -1,0 +1,176 @@
+---
+title: "Capital-Labor elasticity of substitution"
+author: "Fabien Petit"
+date: "24/05/2019"
+output:
+  github_document:
+    pandoc_args: --webtex
+---
+
+```{r Init, include = FALSE}
+
+# Define required packages
+require(dplyr)
+require(reshape2)
+require(ggplot2)
+
+# Define paths
+loc_final = file.path("data", "final")
+
+```
+
+## Methodology
+
+I estimate the elasticity of substitution between capital and labor using the methodology of Leon-Ledesma, McAdam & Willman (2013). Estimation are done for France and United States between 1970 and 2010.
+
+## Estimation (PWT only)
+
+```{r Load data}
+
+pwt = read.csv(file.path(loc_final, "pwt.csv"), header = TRUE) %>% 
+  subset(Country %in% c("France", "United States") & Year %in% c(1970:2010) & i_labsh2 == 1) %>% 
+  select("Country", "Year", "pop", "emp", "avh", "rnna", "labsh")
+
+head(pwt)
+
+```
+
+The variables from the **Penn World Table 9.1** are the following :
+
+* *pop* : Population (in millions.)
+* *emp* : Number of persons engaged (in millions)
+* *avh* : Average annual hours worked by persons engaged
+* *rnna* : Capital stock at constant 2011 national prices (in mil. 2011US$)
+* *labsh* : Share of labour compensation in GDP at current national prices
+
+Following the methodology of Leon-Ledesma, McAdam & Willman (2013), I estimate the following equation :
+
+$$\ln k_t = \alpha - \frac{\sigma}{1-\sigma} \ln \Theta_t + \left( a_L-a_K\right)t + \varepsilon_t$$
+
+Therefore, I need to compute the capital-to-labor ratio $~k_t~$ and the capital-to-labor income ratio $~\Theta_t~$.
+
+```{r Variable computation}
+
+# Capital in the economy (K)
+pwt$K = pwt$rnna
+# Capital in the economy (K) // Corrected for hours worked
+pwt$K.avh_correct = pwt$rnna / pwt$avh
+
+# Capital-to-labor ratio (k)
+pwt$k = pwt$K/pwt$emp
+# Capital-to-labor ratio (k) // Corrected for hours workers
+pwt$k.avh_correct = pwt$K.avh_correct/pwt$emp
+
+# Capital-to-labor income ratio (THETA)
+pwt$THETA = (1-pwt$labsh)/pwt$labsh
+
+```
+
+I normalize the capital-to-labor ratio to the initial year (i.e. 1970).
+
+```{r Normalization}
+
+pwt = pwt %>% 
+  group_by(Country) %>% 
+  mutate(k_nor = k / first(k),
+         k_nor.avh_correct = k.avh_correct / first(k.avh_correct)) %>% 
+  ungroup()
+
+```
+
+
+```{r Plot k}
+
+pwt %>% select("Country", "Year", "k_nor", "k_nor.avh_correct") %>% 
+  melt(id.vars = c("Country", "Year")) %>% 
+  ggplot(aes(x = Year, y = value, color = variable)) +
+  geom_line(size = .5) +
+  facet_wrap(Country ~ ., dir = "h") +
+  theme_classic(base_size = 14) +
+  labs(x = "Year", y = "")
+
+```
+
+```{r Log variables}
+
+# Variable modification for estimation
+pwt = pwt %>% 
+  group_by(Country) %>% 
+  mutate(k_nor_log = log(k_nor),
+         k_nor_log.avh_correct = log(k_nor.avh_correct),
+         THETA_log_neg = -log(THETA),
+         t = Year - first(Year)) %>%
+  ungroup()
+
+```
+
+```{r Regression - No control}
+
+# Regression : no control
+ols0.no = pwt %>% 
+  lm(formula = k_nor_log ~ Country + THETA_log_neg*Country - THETA_log_neg) %>% 
+  summary()
+ols0.no
+
+# Compute the associated sigma
+pwt.no = 1/(1 + ols0.no$coefficients[c(3,4)])
+
+```
+
+
+```{r Regression - BTC control}
+
+# Regression : control only for biased technical change
+ols0.btc = pwt %>% 
+  lm(formula = k_nor_log ~ Country + THETA_log_neg*Country + Country*t - THETA_log_neg - t) %>% 
+  summary()
+
+# Compute the associated sigma
+pwt.btc = 1/(1 + ols0.btc$coefficients[c(3,4)])
+
+```
+
+```{r Regression - AVH control}
+
+# Regression : control only for hours worked
+ols0.avh = pwt %>% 
+  lm(formula = k_nor_log.avh_correct ~ Country + THETA_log_neg*Country - THETA_log_neg) %>% 
+  summary()
+ols0.avh
+
+# Compute the associated sigma
+pwt.avh = 1/(1 + ols0.avh$coefficients[c(3,4)])
+
+```
+
+```{r Regression - AVH/BTC controls}
+
+# Regression : control for both hours worked and biased technical change
+ols0.avh.btc = pwt %>% 
+  lm(formula = k_nor_log.avh_correct ~ Country + THETA_log_neg*Country + t*Country - THETA_log_neg -t) %>% 
+  summary()
+ols0.avh.btc
+
+# Compute the associated sigma
+pwt.avh.btc = 1/(1 + ols0.avh.btc$coefficients[c(3,4)])
+
+```
+
+```{r PWT - Gather sigma}
+
+pwt_est = data.frame("Country" = c("France", "United States"), pwt.no, pwt.btc, pwt.avh, pwt.avh.btc) %>% 
+  melt(id.vars = "Country") %>% 
+  mutate(btc = ifelse(grepl(pattern = "btc", variable), 1, 0),
+         avh = ifelse(grepl(pattern = "avh", variable), 1, 0),
+         data = "pwt") %>% 
+  select("Country", "data", "btc", "avh", "value")
+
+pwt_est
+
+```
+
+
+
+
+
+
