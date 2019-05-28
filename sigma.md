@@ -24,9 +24,7 @@ capital-to-labor income ratio
 ![\~\\Theta\_t\~](https://latex.codecogs.com/png.latex?~%5CTheta_t~
 "~\\Theta_t~").
 
-## Estimation
-
-### Only with Penn World Table 9.1
+## Data
 
 ``` r
 pwt = read.csv(file.path(loc_final, "pwt.csv"), header = TRUE) %>%
@@ -52,97 +50,50 @@ The variables from the **Penn World Table 9.1** are the following :
   - *rnna* : Capital stock at constant 2011 national prices (in mil.
     2011US$)
   - *lab\_sh1* : Share of labour compensation in GDP at current national
-    prices (Adjustment method 1)
+    prices (**Adjustment method 1**)
   - *lab\_sh2* : Share of labour compensation in GDP at current national
-    prices (Adjustment method 2)
-
-<!-- end list -->
-
-``` r
-pwt %>% select(Country, Year, lab_sh1, lab_sh2) %>% 
-  melt(id.vars = c("Country", "Year")) %>% 
-  ggplot(aes(x = Year, y = value, color = variable)) +
-  scale_color_discrete(name = "Adjustment Method", breaks = c("lab_sh1", "lab_sh2"),
-                       labels = c("1st", "2nd")) +
-  geom_line(size = 0.5) +
-  facet_wrap(Country ~ .) +
-  labs(x = "Year", y = "Labor share") +
-  theme_classic() +
-  theme(legend.direction = "horizontal", legend.position = "bottom")
-```
+    prices (**Adjustment method 2**)
 
 ![](sigma_files/figure-gfm/Compare%20both%20labor%20share-1.png)<!-- -->
 
-I use the first adjustment method (see Frenstra, Inklaar and Timmer 2015
-and Gollin 2002 for more details). An adjustment method is required to
-take into account self-employed income. *Adjustment 1* adds mixed income
-(MIX) to the compensation of employees (COMP). Thus,
-![(COMP+MIX)/GDP](https://latex.codecogs.com/png.latex?%28COMP%2BMIX%29%2FGDP
-"(COMP+MIX)/GDP"). *Adjustment 2* assumes the same labor share for mixed
-income as for the rest of the economy. Thus,
-![COMP/(GDP-MIX)](https://latex.codecogs.com/png.latex?COMP%2F%28GDP-MIX%29
-"COMP/(GDP-MIX)"). In the model, workers are only young individuals and
-provide only labor supply. Therefore, I assume that self-employed people
-earn an income that is characterized as a compensation. Hence, I will
-use the first adjustment method.
+I use the first adjustment method (see **Frenstra, Inklaar and Timmer
+2015** and **Gollin 2002** for more details). An adjustment method is
+required to take into account self-employed income.
 
-``` r
-# Capital in the economy (K)    
-pwt$K = pwt$rnna * 1000
-# Capital in the economy (K) // Corrected for hours worked  
-pwt$K.avh_correct = pwt$rnna * 1000 / pwt$avh
+**Adjustment 1** adds mixed income (MIX) to the compensation of
+employees (COMP). Thus,
 
-# Labor in the economy (L)
-pwt$L = pwt$emp * 1000
+<center>
 
-# Capital-to-labor ratio (k)    
-pwt$k = pwt$K / pwt$L
-# Capital-to-labor ratio (k) // Corrected for hours workers 
-pwt$k.avh_correct = pwt$K.avh_correct / pwt$L
+  
+![LS =
+\\frac{COMP+MIX}{GDP}](https://latex.codecogs.com/png.latex?LS%20%3D%20%5Cfrac%7BCOMP%2BMIX%7D%7BGDP%7D
+"LS = \\frac{COMP+MIX}{GDP}")  
 
-# Capital-to-labor income ratio (THETA)
-pwt$THETA = (1-pwt$lab_sh1)/pwt$lab_sh1
-```
+</center>
+
+**Adjustment 2** assumes the same labor share for mixed income as for
+the rest of the economy. Thus,
+
+<center>
+
+  
+![LS =
+\\frac{COMP}{GDP-MIX}](https://latex.codecogs.com/png.latex?LS%20%3D%20%5Cfrac%7BCOMP%7D%7BGDP-MIX%7D
+"LS = \\frac{COMP}{GDP-MIX}")  
+
+</center>
+
+In the model, workers are only young individuals and provide only labor
+supply. Therefore, I assume that self-employed people earn an income
+that is characterized as a compensation. Hence, I will use the first
+adjustment method.
 
 I normalize the capital-to-labor ratio to the initial year (i.e. 1970).
 
-``` r
-# Normalize to initial year
-pwt = pwt %>%
-  group_by(Country) %>%
-  mutate(K_nor = K / first(K),
-         K_nor.avh_correct = K.avh_correct / first(K.avh_correct),
-         L_nor = L / first(L),
-         k_nor = k / first(k),
-         k_nor.avh_correct = k.avh_correct / first(k.avh_correct)) %>%
-  ungroup()
-```
-
-``` r
-pwt %>% select("Country", "Year", "k_nor", "k_nor.avh_correct") %>%
-  melt(id.vars = c("Country", "Year")) %>%
-  ggplot(aes(x = Year, y = value, color = variable)) +
-  geom_line(size = .5) +
-  facet_wrap(Country ~ .) +
-  scale_color_discrete(name = "", breaks = c("k_nor", "k_nor.avh_correct"),
-                       labels = c("Standard", "AVH correction")) +
-  labs(x = "Year", y = "Normalized capital stock (1970 = 1)") +
-  theme_classic(base_size = 14) +
-  theme(legend.direction = "horizontal", legend.position = "bottom")
-```
-
 ![](sigma_files/figure-gfm/Plot%20k_nor-1.png)<!-- -->
 
-``` r
-# Variable modification for estimation  
-pwt = pwt %>%
-  group_by(Country) %>%
-  mutate(k_nor_log = log(k_nor),
-         k_nor_log.avh_correct = log(k_nor.avh_correct),
-         THETA_log_neg = -log(THETA),
-         t = Year - first(Year) +1) %>%
-  ungroup()
-```
+## Estimation
 
 I estimate four versions of the elasticity of substitution :
 
@@ -151,7 +102,7 @@ I estimate four versions of the elasticity of substitution :
   - Control for average hours worked (AVH)
   - Control for BTC and AVH
 
-<!-- end list -->
+### No controls
 
 ``` r
 # Regression : no control
@@ -186,6 +137,8 @@ ols0.no
     ## CountryUnited States:THETA_log_neg ** 
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+### BTC control
 
 ``` r
 # Regression : control only for biased technical change
@@ -225,6 +178,8 @@ ols0.btc
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
+### AVH control
+
 ``` r
 # Regression : control only for hours worked
 ols0.avh = pwt %>%
@@ -258,6 +213,8 @@ ols0.avh
     ## CountryUnited States:THETA_log_neg ** 
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+### AVH/BTC controls
 
 ``` r
 # Regression : control for both hours worked and biased technical change
@@ -297,6 +254,8 @@ ols0.avh.btc
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
+### Summary of the results
+
 I gather all estimated
 ![\\hat{\\sigma}](https://latex.codecogs.com/png.latex?%5Chat%7B%5Csigma%7D
 "\\hat{\\sigma}"). Without control for biased technical change (BTC), I
@@ -311,19 +270,6 @@ for both countries. Finally, on the last estimate, with BTC and AVH
 controls, I obtain a capital-labor elasticity of substitution of 1.356
 for France and 1.224 for United States (see table below).
 
-``` r
-# Regroup all estimated sigma
-pwt_est = data.frame("Country" = c("France", "United States"), pwt.no, pwt.btc, pwt.avh, pwt.avh.btc) %>%
-  melt(id.vars = "Country") %>%
-  mutate(btc = ifelse(grepl(pattern = "btc", variable), 1, 0),
-         avh = ifelse(grepl(pattern = "avh", variable), 1, 0),
-         data = "pwt") %>%
-  select("Country", "data", "btc", "avh", "value")
-
-# Visualization
-pwt_est
-```
-
     ##         Country data btc avh       value
     ## 1        France  pwt   0   0   -3.507639
     ## 2 United States  pwt   0   0 -126.346016
@@ -333,167 +279,3 @@ pwt_est
     ## 6 United States  pwt   0   1   -4.063427
     ## 7        France  pwt   1   1    1.355668
     ## 8 United States  pwt   1   1    1.224201
-
-<!-- ### Using United Nations demographic data -->
-
-<!-- ```{r Load demographic data} -->
-
-<!-- # Load -->
-
-<!-- df = read.csv(file.path(loc_final, "demo.csv"), header = TRUE) %>% -->
-
-<!--   select(Country, Year, young, old) %>% -->
-
-<!--   subset(Year %in% c(1970:2010) & Country %in% c("France", "United States")) %>% -->
-
-<!--   merge(pwt, ., by = c("Country", "Year"), all.x = TRUE) -->
-
-<!-- ## Other specification of labor input -->
-
-<!-- # Labor in the economy (L2) -->
-
-<!-- df$L2 = df$emp * 1000 * df$young / (df$young + df$old) -->
-
-<!-- # Capital-to-labor ratio (k) -->
-
-<!-- df$k2 = df$K / df$L2 -->
-
-<!-- # Capital-to-labor ratio (k) // Corrected for hours workers -->
-
-<!-- df$k2.avh_correct = df$K.avh_correct / df$L2 -->
-
-<!-- ## Normalization to initial year -->
-
-<!-- df = df %>% -->
-
-<!--   group_by(Country) %>% -->
-
-<!--   mutate(L2_nor = L2 / first(L2), -->
-
-<!--          k2_nor = k2 / first(k2), -->
-
-<!--          k2_nor.avh_correct = k2.avh_correct / first(k2.avh_correct)) %>% -->
-
-<!--   ungroup() -->
-
-<!-- ## Logarithm -->
-
-<!-- # Variable modification for estimation -->
-
-<!-- df = df %>% -->
-
-<!--   group_by(Country) %>% -->
-
-<!--   mutate(k2_nor_log = log(k2_nor), -->
-
-<!--          k2_nor_log.avh_correct = log(k2_nor.avh_correct)) %>% -->
-
-<!--   ungroup() -->
-
-<!-- ``` -->
-
-<!-- ```{r Regression - DEMO Normalized initial year} -->
-
-<!-- # Regression : no control -->
-
-<!-- ols1.no = df %>% -->
-
-<!--   lm(formula = k2_nor_log ~ Country + THETA_log_neg*Country - THETA_log_neg) -->
-
-<!-- # Robust standard errors -->
-
-<!-- ols1.no = robustify(ols1.no) %>% -->
-
-<!--   summary() -->
-
-<!-- # Compute the associated sigma -->
-
-<!-- df.no = 1/(1 + ols1.no$coefficients[c(3,4)]) -->
-
-<!-- # Visualize summary -->
-
-<!-- ols1.no -->
-
-<!-- # Regression : control only for biased technical change -->
-
-<!-- ols1.btc = df %>% -->
-
-<!--   lm(formula = k2_nor_log ~ Country + THETA_log_neg*Country + Country*t - THETA_log_neg - t) -->
-
-<!-- # Robust standard errors -->
-
-<!-- ols1.btc = robustify(ols1.btc) %>% -->
-
-<!--   summary() -->
-
-<!-- # Compute the associated sigma -->
-
-<!-- df.btc = 1/(1 + ols1.btc$coefficients[c(3,4)]) -->
-
-<!-- # Visualize summary -->
-
-<!-- ols1.btc -->
-
-<!-- # Regression : control only for hours worked -->
-
-<!-- ols1.avh = df %>% -->
-
-<!--   lm(formula = k2_nor_log.avh_correct ~ Country + THETA_log_neg*Country - THETA_log_neg) -->
-
-<!-- # Robust standard errors -->
-
-<!-- ols1.avh = robustify(ols1.avh) %>% -->
-
-<!--   summary() -->
-
-<!-- # Compute the associated sigma -->
-
-<!-- df.avh = 1/(1 + ols1.avh$coefficients[c(3,4)]) -->
-
-<!-- # Visualize summary -->
-
-<!-- ols1.avh -->
-
-<!-- # Regression : control for both hours worked and biased technical change -->
-
-<!-- ols1.avh.btc = df %>% -->
-
-<!--   lm(formula = k2_nor_log.avh_correct ~ Country + THETA_log_neg*Country + t*Country - THETA_log_neg - t) -->
-
-<!-- # Robust standard errors -->
-
-<!-- ols1.avh.btc = robustify(ols1.avh.btc) %>% -->
-
-<!--   summary() -->
-
-<!-- # Compute the associated sigma -->
-
-<!-- df.avh.btc = 1/(1 + ols1.avh.btc$coefficients[c(3,4)]) -->
-
-<!-- # Visualize summary -->
-
-<!-- ols1.avh.btc -->
-
-<!-- ``` -->
-
-<!-- ```{r DEMO - Gather sigma} -->
-
-<!-- # Regroup all estimated sigma -->
-
-<!-- df_est = data.frame("Country" = c("France", "United States"), df.no, df.btc, df.avh, df.avh.btc) %>% -->
-
-<!--   melt(id.vars = "Country") %>% -->
-
-<!--   mutate(btc = ifelse(grepl(pattern = "btc", variable), 1, 0), -->
-
-<!--          avh = ifelse(grepl(pattern = "avh", variable), 1, 0), -->
-
-<!--          data = "df") %>% -->
-
-<!--   select("Country", "data", "btc", "avh", "value") -->
-
-<!-- # Visualization -->
-
-<!-- df_est -->
-
-<!-- ``` -->
