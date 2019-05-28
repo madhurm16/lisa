@@ -22,12 +22,12 @@ loc_final = file.path("data", "final")
 
 ## Methodology
 
-I estimate the elasticity of substitution between capital and labor using the methodology of Leon-Ledesma, McAdam & Willman (2013). Estimation are done for France and United States between 1970 and 2010.
+I estimate the elasticity of substitution between capital and labor using the methodology of **Leon-Ledesma, McAdam & Willman (2013)**. Estimation are done for France and United States between 1970 and 2010, using Penn World Table 9.1 data.
 
 Following the methodology of Leon-Ledesma, McAdam & Willman (2013), I estimate the following equation :	
-
-$$\ln k_t = \alpha - \frac{\sigma}{1-\sigma} \ln \Theta_t + \left( a_L-a_K\right)t + \varepsilon_t$$	
-
+<center>
+$$\ln k_t = \alpha - \frac{\sigma}{1-\sigma} \ln \Theta_t + \left( a_L-a_K\right)t + \varepsilon_t$$
+</center>
 Therefore, I need to compute the capital-to-labor ratio $~k_t~$ and the capital-to-labor income ratio $~\Theta_t~$.
 
 ## Data
