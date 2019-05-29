@@ -1,52 +1,69 @@
 # Model function
-model <- function(time, A = A){
+model <- function(time){
   
-    for(t in 1:time){
+  for(seq in c(1:4)){
+    
+    # Row position in data : according to the sequence
+    position = seq(seq, 4*time, 4)
+    
+    for(t in position){
       
       # Limits
       data$k1[t] = data$K[t]/data$Ny[t]
-      data$k2[t] = data$AL[t]/data$AK[t]*((1-phi)/phi/data$eta[t])^(sigma/(sigma-1))
+      data$k2[t] = data$AL[t]/data$AK[t]*((1-data$phi[t])/data$phi[t]/data$eta[t])^(data$sigma[t]/(data$sigma[t]-1))
       
-      # Functions
+      
+      # Function
       to_solve = function(k){
-        F1 = (sigma+(1-phi)/phi*(1-gamma*(1-sigma))/gamma*(data$AK[t]/data$AL[t]*k)^((1-sigma)/sigma))^(-1) - 
-          log((data$Ny[t]/data$K[t]*k-1)/(phi/(1-phi)*(data$AK[t]/data$AL[t]*k)^((sigma-1)/sigma)*data$eta[t]-1))
+        F1 = (data$sigma[t]+(1-data$phi[t])/data$phi[t]*(1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t]*(data$AK[t]/data$AL[t]*k)^((1-data$sigma[t])/data$sigma[t]))^(-1) - 
+          log((data$Ny[t]/data$K[t]*k-1)/(data$phi[t]/(1-data$phi[t])*(data$AK[t]/data$AL[t]*k)^((data$sigma[t]-1)/data$sigma[t])*data$eta[t]-1))
       }
       
+      
       # Solver
-      if(sigma<1){
-        if(data$k1[t]<data$k2[t]){
-          data$k[t] = round(uniroot(to_solve, interval = c(ceiling_digit(data$k1[t],3),flooring_digit(data$k2[t],3)))$root,3)
-          data$X[t] = (sigma + (1-phi)/phi * (1-gamma*(1-sigma))/gamma * (data$AK[t]/data$AL[t]*data$k[t])^((1-sigma)/sigma))^(-1)
+      if(data$sigma[t] < 1){
+        if(data$k1[t] < data$k2[t]){
+          data$k[t] = round(uniroot(to_solve, interval = c(ceiling_digit(data$k1[t],3),flooring_digit(data$k2[t],3)))$root, 3)
+          data$X[t] = (data$sigma[t] + (1-data$phi[t])/data$phi[t] * (1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t] * (data$AK[t]/data$AL[t]*data$k[t])^((1-data$sigma[t])/data$sigma[t]))^(-1)
         } else {
           data$k[t] = data$k1[t]
           data$X[t] = 0
         }
       } else {
-        if(data$k1[t]<data$k2[t]){
+        if(data$k1[t] < data$k2[t]){
           data$k[t] = data$k1[t]
           data$X[t] = 0
         } else {
-          data$k[t] = round(uniroot(to_solve, interval = c(ceiling_digit(data$k1[t],3), (data$k1[t]*100)))$root,1000)
-          data$X[t] = (sigma + (1-phi)/phi * (1-gamma*(1-sigma))/gamma * (data$AK[t]/data$AL[t]*data$k[t])^((1-sigma)/sigma))^(-1)
+          data$k[t] = round(uniroot(to_solve, interval = c(ceiling_digit(data$k1[t],3), (data$k1[t]*100)))$root, 1000)
+          data$X[t] = (data$sigma[t] + (1-data$phi[t])/data$phi[t] * (1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t] * (data$AK[t]/data$AL[t]*data$k[t])^((1-data$sigma[t])/data$sigma[t]))^(-1)
         }
       }
       
-      # Other variables
-      
+      ## Other variables
+      # Labor
       data$L[t] = data$K[t]/data$k[t]
-      data$w[t] = A*(1-phi)*data$AL[t]*(phi*(data$k[t]*data$AK[t]/data$AL[t])^((sigma-1)/sigma)+1-phi)^(1/(sigma-1))
-      data$Y[t] = A*(phi*(data$AK[t]*data$K[t])^((sigma-1)/sigma)+(1-phi)*(data$AL[t]*data$L[t])^((sigma-1)/sigma))^(sigma/(sigma-1))
+      # Wage
+      data$w[t] = data$A[t]*(1-data$phi[t])*data$AL[t]*(data$phi[t]*(data$k[t]*data$AK[t]/data$AL[t])^((data$sigma[t]-1)/data$sigma[t])+1-data$phi[t])^(1/(data$sigma[t]-1))
+      # Output
+      data$Y[t] = data$A[t]*(data$phi[t]*(data$AK[t]*data$K[t])^((data$sigma[t]-1)/data$sigma[t])+(1-data$phi[t])*(data$AL[t]*data$L[t])^((data$sigma[t]-1)/data$sigma[t]))^(data$sigma[t]/(data$sigma[t]-1))
+      # Unemployment rate
       data$u[t] = 1 - data$L[t]/data$Ny[t]
-      data$theta[t] = (phi/(1-phi)*(data$AK[t]/data$AL[t]*data$k[t])^((sigma-1)/sigma)+1)^(-1)
-      data$tau[t] = 1-((1-data$theta[t])*(1+beta+data$eta[t]))^(-1)
+      # Labor share
+      data$theta[t] = (data$phi[t]/(1-data$phi[t])*(data$AK[t]/data$AL[t]*data$k[t])^((data$sigma[t]-1)/data$sigma[t])+1)^(-1)
+      # Tax rate
+      data$tau[t] = 1-((1-data$theta[t])*(1+data$beta[t]+data$eta[t]))^(-1)
+      # Unemployment benefits per capita
       data$b[t] = (1-data$tau[t])*data$w[t]*exp(-data$X[t])
+      # Health spending per capita
       data$h[t] = (data$tau[t]*data$Y[t]/data$Ny[t]-data$b[t]*data$u[t])*data$n[t]/data$p[t]
-      data$S[t] = alpha*data$p1[t]/(1+alpha*data$p1[t])*((1-data$tau[t])*data$w[t]*(1-data$u[t])+data$b[t]*data$u[t])*data$Ny[t]
-      data$K[t+1] = data$S[t]
+      # Savings
+      data$S[t] = data$alpha[t]*data$p1[t]/(1+data$alpha[t]*data$p1[t])*((1-data$tau[t])*data$w[t]*(1-data$u[t])+data$b[t]*data$u[t])*data$Ny[t]
+      # Capital accumulation
+      data$K[t+4] = data$S[t]
       
     }
-  
+    
+  }
+  # Return data
   return(data)
-  
 }
