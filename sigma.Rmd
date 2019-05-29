@@ -183,18 +183,33 @@ I estimate four versions of the elasticity of substitution :
 
 ### No controls
 
-```{r Regression - pwt.no}	
+```{r Regression - pwt.no}
+
+## THETA 1
 
 # Regression : no control
-ols0.no = pwt %>%
+ols1.no = pwt %>%
   lm(formula = k_nor_log ~ Country + THETA1_log_neg*Country - THETA1_log_neg)
 # Robust standard errors
-ols0.no = robustify(ols0.no) %>% 
+ols1.no = robustify(ols1.no) %>% 
   summary()
 # Compute the associated sigma
-pwt.no = 1/(1 + ols0.no$coefficients[c(3,4)])
+pwt1.no = 1/(1 + ols1.no$coefficients[c(3,4)])
 # Visualize summary
-ols0.no
+ols1.no
+
+## THETA 2
+
+# Regression : no control
+ols2.no = pwt %>%
+  lm(formula = k_nor_log ~ Country + THETA2_log_neg*Country - THETA2_log_neg)
+# Robust standard errors
+ols2.no = robustify(ols2.no) %>% 
+  summary()
+# Compute the associated sigma
+pwt2.no = 1/(1 + ols2.no$coefficients[c(3,4)])
+# Visualize summary
+ols2.no
 
 ```
 
@@ -202,75 +217,117 @@ ols0.no
 
 ```{r Regression - pwt.btc}
 
+## THETA 1
+
 # Regression : control only for biased technical change
-ols0.btc = pwt %>%
+ols1.btc = pwt %>%
   lm(formula = k_nor_log ~ Country + THETA1_log_neg*Country + Country*t - THETA1_log_neg - t)
 # Robust standard errors
-ols0.btc = robustify(ols0.btc) %>%
+ols1.btc = robustify(ols1.btc) %>%
   summary()
 # Compute the associated sigma
-pwt.btc = 1/(1 + ols0.btc$coefficients[c(3,4)])
+pwt1.btc = 1/(1 + ols1.btc$coefficients[c(3,4)])
 # Visualize summary
-ols0.btc
+ols1.btc
+
+## THETA 2
+
+# Regression : control only for biased technical change
+ols2.btc = pwt %>%
+  lm(formula = k_nor_log ~ Country + THETA2_log_neg*Country + Country*t - THETA2_log_neg - t)
+# Robust standard errors
+ols2.btc = robustify(ols2.btc) %>%
+  summary()
+# Compute the associated sigma
+pwt2.btc = 1/(1 + ols2.btc$coefficients[c(3,4)])
+# Visualize summary
+ols2.btc
 
 ```
 
 ### AVH control
 
-```{r Regression - pwt.avh}
+```{r Regression - pwt1.avh}
+
+## THETA 1
 
 # Regression : control only for hours worked
-ols0.avh = pwt %>%
+ols1.avh = pwt %>%
   lm(formula = k_nor_log.avh_correct ~ Country + THETA1_log_neg*Country - THETA1_log_neg)
 # Robust standard errors
-ols0.avh = robustify(ols0.avh) %>% 
+ols1.avh = robustify(ols1.avh) %>% 
   summary()
 # Compute the associated sigma
-pwt.avh = 1/(1 + ols0.avh$coefficients[c(3,4)])
+pwt1.avh = 1/(1 + ols1.avh$coefficients[c(3,4)])
 # Visualize summary
-ols0.avh
+ols1.avh
+
+## THETA 2
+
+# Regression : control only for hours worked
+ols2.avh = pwt %>%
+  lm(formula = k_nor_log.avh_correct ~ Country + THETA2_log_neg*Country - THETA2_log_neg)
+# Robust standard errors
+ols2.avh = robustify(ols2.avh) %>% 
+  summary()
+# Compute the associated sigma
+pwt2.avh = 1/(1 + ols2.avh$coefficients[c(3,4)])
+# Visualize summary
+ols2.avh
 
 ```
 
 ### AVH/BTC controls
 
-```{r Regression - pwt.avh.btc}
+```{r Regression - pwt1.avh.btc}
+
+## THETA 1
 
 # Regression : control for both hours worked and biased technical change
-ols0.avh.btc = pwt %>%
+ols1.avh.btc = pwt %>%
   lm(formula = k_nor_log.avh_correct ~ Country + THETA1_log_neg*Country + t*Country - THETA1_log_neg - t)
 # Robust standard errors
-ols0.avh.btc = robustify(ols0.avh.btc) %>% 
+ols1.avh.btc = robustify(ols1.avh.btc) %>% 
   summary()
 # Compute the associated sigma
-pwt.avh.btc = 1/(1 + ols0.avh.btc$coefficients[c(3,4)])
+pwt1.avh.btc = 1/(1 + ols1.avh.btc$coefficients[c(3,4)])
 # Visualize summary
-ols0.avh.btc
+ols1.avh.btc
+
+## THETA 2
+
+# Regression : control for both hours worked and biased technical change
+ols2.avh.btc = pwt %>%
+  lm(formula = k_nor_log.avh_correct ~ Country + THETA2_log_neg*Country + t*Country - THETA2_log_neg - t)
+# Robust standard errors
+ols2.avh.btc = robustify(ols2.avh.btc) %>% 
+  summary()
+# Compute the associated sigma
+pwt2.avh.btc = 1/(1 + ols2.avh.btc$coefficients[c(3,4)])
+# Visualize summary
+ols2.avh.btc
 
 ```	
 
 ### Summary of the results
 
 I gather all estimated $\hat{\sigma}$. Without control for biased technical change (BTC), I obtain negative $\hat{\sigma}$, which is not possible. Once I control for BTC, I obtain a positive elasticity without control on the average hours worked (AVH). United States elasticity is below one but not significantly different from 1. This case is the Cobb-Douglas specification. However, without correcting by hours worked I generate a bias toward Cobb-Douglas for both countries. Finally, on the last estimate, with BTC and AVH controls, I obtain a capital-labor elasticity of substitution of 1.356 for France and 1.224 for United States (see table below).
+With the second adjustment method, estimates are still biased toward 1 when I do not control for AVH. However, once done, the elasticity is close to 1 for France (i.e. 1.047) and larger for the US (i.e. 1.329).
 
 ```{r PWT - Gather sigma, echo = FALSE}
 
 # Regroup all estimated sigma
-pwt_est = data.frame("Country" = c("France", "United States"), pwt.no, pwt.btc, pwt.avh, pwt.avh.btc) %>%
+pwt_est = data.frame("Country" = c("France", "United States"), pwt1.no, pwt1.btc, pwt1.avh, pwt1.avh.btc,
+                     pwt2.no, pwt2.btc, pwt2.avh, pwt2.avh.btc) %>%
   melt(id.vars = "Country") %>%
   mutate(btc = ifelse(grepl(pattern = "btc", variable), 1, 0),
          avh = ifelse(grepl(pattern = "avh", variable), 1, 0),
+         adj = ifelse(grepl(pattern = "1", variable), 1, 2),
          data = "pwt") %>%
-  select("Country", "data", "btc", "avh", "value")
+  select("Country", "data", "btc", "avh", "adj", "value")
 
 # Visualization
 pwt_est
 
 ```	
-
-
-
-
-
-
 

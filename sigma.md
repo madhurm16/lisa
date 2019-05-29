@@ -112,16 +112,18 @@ I estimate four versions of the elasticity of substitution :
 ### No controls
 
 ``` r
+## THETA 1
+
 # Regression : no control
-ols0.no = pwt %>%
+ols1.no = pwt %>%
   lm(formula = k_nor_log ~ Country + THETA1_log_neg*Country - THETA1_log_neg)
 # Robust standard errors
-ols0.no = robustify(ols0.no) %>% 
+ols1.no = robustify(ols1.no) %>% 
   summary()
 # Compute the associated sigma
-pwt.no = 1/(1 + ols0.no$coefficients[c(3,4)])
+pwt1.no = 1/(1 + ols1.no$coefficients[c(3,4)])
 # Visualize summary
-ols0.no
+ols1.no
 ```
 
     ## 
@@ -145,19 +147,57 @@ ols0.no
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
+``` r
+## THETA 2
+
+# Regression : no control
+ols2.no = pwt %>%
+  lm(formula = k_nor_log ~ Country + THETA2_log_neg*Country - THETA2_log_neg)
+# Robust standard errors
+ols2.no = robustify(ols2.no) %>% 
+  summary()
+# Compute the associated sigma
+pwt2.no = 1/(1 + ols2.no$coefficients[c(3,4)])
+# Visualize summary
+ols2.no
+```
+
+    ## 
+    ## Call:  lm(formula = k_nor_log ~ Country + THETA2_log_neg * Country - 
+    ##     THETA2_log_neg, data = .)
+    ## 
+    ## Call (vcov):  vcovHC(x = ..., type = "HC0")
+    ## 
+    ## t test of coefficients with robust standard errors:
+    ## 
+    ##                                     Estimate Std. Error t value Pr(>|t|)
+    ## (Intercept)                          1.44122    0.07978  18.065  < 2e-16
+    ## CountryUnited States                -0.52995    0.19097  -2.775 0.006905
+    ## CountryFrance:THETA2_log_neg        -1.39403    0.14969  -9.313 2.67e-14
+    ## CountryUnited States:THETA2_log_neg -1.40216    0.36154  -3.878 0.000218
+    ##                                        
+    ## (Intercept)                         ***
+    ## CountryUnited States                ** 
+    ## CountryFrance:THETA2_log_neg        ***
+    ## CountryUnited States:THETA2_log_neg ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
 ### BTC control
 
 ``` r
+## THETA 1
+
 # Regression : control only for biased technical change
-ols0.btc = pwt %>%
+ols1.btc = pwt %>%
   lm(formula = k_nor_log ~ Country + THETA1_log_neg*Country + Country*t - THETA1_log_neg - t)
 # Robust standard errors
-ols0.btc = robustify(ols0.btc) %>%
+ols1.btc = robustify(ols1.btc) %>%
   summary()
 # Compute the associated sigma
-pwt.btc = 1/(1 + ols0.btc$coefficients[c(3,4)])
+pwt1.btc = 1/(1 + ols1.btc$coefficients[c(3,4)])
 # Visualize summary
-ols0.btc
+ols1.btc
 ```
 
     ## 
@@ -185,19 +225,61 @@ ols0.btc
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
+``` r
+## THETA 2
+
+# Regression : control only for biased technical change
+ols2.btc = pwt %>%
+  lm(formula = k_nor_log ~ Country + THETA2_log_neg*Country + Country*t - THETA2_log_neg - t)
+# Robust standard errors
+ols2.btc = robustify(ols2.btc) %>%
+  summary()
+# Compute the associated sigma
+pwt2.btc = 1/(1 + ols2.btc$coefficients[c(3,4)])
+# Visualize summary
+ols2.btc
+```
+
+    ## 
+    ## Call:  lm(formula = k_nor_log ~ Country + THETA2_log_neg * Country + 
+    ##     Country * t - THETA2_log_neg - t, data = .)
+    ## 
+    ## Call (vcov):  vcovHC(x = ..., type = "HC0")
+    ## 
+    ## t test of coefficients with robust standard errors:
+    ## 
+    ##                                       Estimate Std. Error t value Pr(>|t|)
+    ## (Intercept)                          0.1733702  0.1268525   1.367    0.176
+    ## CountryUnited States                -0.1947663  0.1315909  -1.480    0.143
+    ## CountryFrance:THETA2_log_neg        -0.0250573  0.1304404  -0.192    0.848
+    ## CountryUnited States:THETA2_log_neg -0.0118556  0.0694929  -0.171    0.865
+    ## CountryFrance:t                      0.0198701  0.0020821   9.543 1.22e-14
+    ## CountryUnited States:t               0.0125877  0.0002966  42.437  < 2e-16
+    ##                                        
+    ## (Intercept)                            
+    ## CountryUnited States                   
+    ## CountryFrance:THETA2_log_neg           
+    ## CountryUnited States:THETA2_log_neg    
+    ## CountryFrance:t                     ***
+    ## CountryUnited States:t              ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
 ### AVH control
 
 ``` r
+## THETA 1
+
 # Regression : control only for hours worked
-ols0.avh = pwt %>%
+ols1.avh = pwt %>%
   lm(formula = k_nor_log.avh_correct ~ Country + THETA1_log_neg*Country - THETA1_log_neg)
 # Robust standard errors
-ols0.avh = robustify(ols0.avh) %>% 
+ols1.avh = robustify(ols1.avh) %>% 
   summary()
 # Compute the associated sigma
-pwt.avh = 1/(1 + ols0.avh$coefficients[c(3,4)])
+pwt1.avh = 1/(1 + ols1.avh$coefficients[c(3,4)])
 # Visualize summary
-ols0.avh
+ols1.avh
 ```
 
     ## 
@@ -221,19 +303,57 @@ ols0.avh
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
+``` r
+## THETA 2
+
+# Regression : control only for hours worked
+ols2.avh = pwt %>%
+  lm(formula = k_nor_log.avh_correct ~ Country + THETA2_log_neg*Country - THETA2_log_neg)
+# Robust standard errors
+ols2.avh = robustify(ols2.avh) %>% 
+  summary()
+# Compute the associated sigma
+pwt2.avh = 1/(1 + ols2.avh$coefficients[c(3,4)])
+# Visualize summary
+ols2.avh
+```
+
+    ## 
+    ## Call:  lm(formula = k_nor_log.avh_correct ~ Country + THETA2_log_neg * 
+    ##     Country - THETA2_log_neg, data = .)
+    ## 
+    ## Call (vcov):  vcovHC(x = ..., type = "HC0")
+    ## 
+    ## t test of coefficients with robust standard errors:
+    ## 
+    ##                                     Estimate Std. Error t value Pr(>|t|)
+    ## (Intercept)                           1.8745     0.1034  18.124  < 2e-16
+    ## CountryUnited States                 -0.7922     0.2100  -3.772 0.000313
+    ## CountryFrance:THETA2_log_neg         -1.8303     0.1937  -9.451 1.44e-14
+    ## CountryUnited States:THETA2_log_neg  -1.6625     0.3809  -4.364 3.87e-05
+    ##                                        
+    ## (Intercept)                         ***
+    ## CountryUnited States                ***
+    ## CountryFrance:THETA2_log_neg        ***
+    ## CountryUnited States:THETA2_log_neg ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
 ### AVH/BTC controls
 
 ``` r
+## THETA 1
+
 # Regression : control for both hours worked and biased technical change
-ols0.avh.btc = pwt %>%
+ols1.avh.btc = pwt %>%
   lm(formula = k_nor_log.avh_correct ~ Country + THETA1_log_neg*Country + t*Country - THETA1_log_neg - t)
 # Robust standard errors
-ols0.avh.btc = robustify(ols0.avh.btc) %>% 
+ols1.avh.btc = robustify(ols1.avh.btc) %>% 
   summary()
 # Compute the associated sigma
-pwt.avh.btc = 1/(1 + ols0.avh.btc$coefficients[c(3,4)])
+pwt1.avh.btc = 1/(1 + ols1.avh.btc$coefficients[c(3,4)])
 # Visualize summary
-ols0.avh.btc
+ols1.avh.btc
 ```
 
     ## 
@@ -261,6 +381,46 @@ ols0.avh.btc
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
+``` r
+## THETA 2
+
+# Regression : control for both hours worked and biased technical change
+ols2.avh.btc = pwt %>%
+  lm(formula = k_nor_log.avh_correct ~ Country + THETA2_log_neg*Country + t*Country - THETA2_log_neg - t)
+# Robust standard errors
+ols2.avh.btc = robustify(ols2.avh.btc) %>% 
+  summary()
+# Compute the associated sigma
+pwt2.avh.btc = 1/(1 + ols2.avh.btc$coefficients[c(3,4)])
+# Visualize summary
+ols2.avh.btc
+```
+
+    ## 
+    ## Call:  lm(formula = k_nor_log.avh_correct ~ Country + THETA2_log_neg * 
+    ##     Country + t * Country - THETA2_log_neg - t, data = .)
+    ## 
+    ## Call (vcov):  vcovHC(x = ..., type = "HC0")
+    ## 
+    ## t test of coefficients with robust standard errors:
+    ## 
+    ##                                       Estimate Std. Error t value Pr(>|t|)
+    ## (Intercept)                          0.2213121  0.1634811   1.354   0.1798
+    ## CountryUnited States                -0.0883271  0.1695706  -0.521   0.6040
+    ## CountryFrance:THETA2_log_neg        -0.0452907  0.1692721  -0.268   0.7898
+    ## CountryUnited States:THETA2_log_neg -0.2474569  0.0857874  -2.885   0.0051
+    ## CountryFrance:t                      0.0259088  0.0027096   9.562 1.13e-14
+    ## CountryUnited States:t               0.0128118  0.0003718  34.457  < 2e-16
+    ##                                        
+    ## (Intercept)                            
+    ## CountryUnited States                   
+    ## CountryFrance:THETA2_log_neg           
+    ## CountryUnited States:THETA2_log_neg ** 
+    ## CountryFrance:t                     ***
+    ## CountryUnited States:t              ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
 ### Summary of the results
 
 I gather all estimated
@@ -275,14 +435,25 @@ different from 1. This case is the Cobb-Douglas specification. However,
 without correcting by hours worked I generate a bias toward Cobb-Douglas
 for both countries. Finally, on the last estimate, with BTC and AVH
 controls, I obtain a capital-labor elasticity of substitution of 1.356
-for France and 1.224 for United States (see table below).
+for France and 1.224 for United States (see table below). With the
+second adjustment method, estimates are still biased toward 1 when I do
+not control for AVH. However, once done, the elasticity is close to 1
+for France (i.e. 1.047) and larger for the US (i.e. 1.329).
 
-    ##         Country data btc avh       value
-    ## 1        France  pwt   0   0   -3.507639
-    ## 2 United States  pwt   0   0 -126.346016
-    ## 3        France  pwt   1   0    1.245380
-    ## 4 United States  pwt   1   0    0.975896
-    ## 5        France  pwt   0   1   -1.460724
-    ## 6 United States  pwt   0   1   -4.063427
-    ## 7        France  pwt   1   1    1.355668
-    ## 8 United States  pwt   1   1    1.224201
+    ##          Country data btc avh adj       value
+    ## 1         France  pwt   0   0   1   -3.507639
+    ## 2  United States  pwt   0   0   1 -126.346016
+    ## 3         France  pwt   1   0   1    1.245380
+    ## 4  United States  pwt   1   0   1    0.975896
+    ## 5         France  pwt   0   1   1   -1.460724
+    ## 6  United States  pwt   0   1   1   -4.063427
+    ## 7         France  pwt   1   1   1    1.355668
+    ## 8  United States  pwt   1   1   1    1.224201
+    ## 9         France  pwt   0   0   2   -2.537900
+    ## 10 United States  pwt   0   0   2   -2.486578
+    ## 11        France  pwt   1   0   2    1.025701
+    ## 12 United States  pwt   1   0   2    1.011998
+    ## 13        France  pwt   0   1   2   -1.204377
+    ## 14 United States  pwt   0   1   2   -1.509395
+    ## 15        France  pwt   1   1   2    1.047439
+    ## 16 United States  pwt   1   1   2    1.328828
