@@ -97,8 +97,11 @@ pwt$k = pwt$K / pwt$L
 # Capital-to-labor ratio (k) // Corrected for hours workers	
 pwt$k.avh_correct = pwt$K.avh_correct / pwt$L
 
-# Capital-to-labor income ratio (THETA)
-pwt$THETA = (1-pwt$lab_sh1)/pwt$lab_sh1
+# Capital-to-labor income ratio (THETA) // 1st Adjustment method
+pwt$THETA1 = (1-pwt$lab_sh1)/pwt$lab_sh1
+
+# Capital-to-labor income ratio (THETA) // 2nd Adjustment method
+pwt$THETA2 = (1-pwt$lab_sh2)/pwt$lab_sh2
 
 ```
 
@@ -141,11 +144,33 @@ pwt = pwt %>%
   group_by(Country) %>%
   mutate(k_nor_log = log(k_nor),
          k_nor_log.avh_correct = log(k_nor.avh_correct),
-         THETA_log_neg = -log(THETA),
+         THETA1_log_neg = -log(THETA1),
+         THETA2_log_neg = -log(THETA2),
          t = Year - first(Year) +1) %>%
   ungroup()
 
-```	
+# Plot logs
+
+pwt %>% select("Country", "Year", "k_nor_log", "k_nor_log.avh_correct",
+               "THETA1_log_neg", "THETA2_log_neg") %>%
+  melt(id.vars = c("Country", "Year")) %>% 
+  mutate(kap = ifelse(grepl("k", variable), "k", "theta"),
+         best = ifelse(grepl("THETA1|avh", variable), "first", "second" )) %>% 
+  ggplot(aes(x = Year, y = value, color = kap, linetype =  best)) +
+  geom_line(size = .5) +
+  facet_wrap(Country ~ .) +
+  scale_color_discrete(name = "", breaks = c("k", "theta"),
+                       labels = c("Normalized capital-labor ratio (log)",
+                                  "Labor-capital income ratio (log)")) +
+  scale_linetype_discrete(name = "", breaks = c("first", "second"),
+                          labels = c("Adjustment method 1 or AVH control",
+                                     "Adjustment method 2 or no control")) +
+  labs(x = "Year", y = "") +
+  theme_classic(base_size = 14) +
+  theme(legend.direction = "vertical", legend.position = "top")
+  
+
+```
 
 ## Estimation
 
@@ -162,7 +187,7 @@ I estimate four versions of the elasticity of substitution :
 
 # Regression : no control
 ols0.no = pwt %>%
-  lm(formula = k_nor_log ~ Country + THETA_log_neg*Country - THETA_log_neg)
+  lm(formula = k_nor_log ~ Country + THETA1_log_neg*Country - THETA1_log_neg)
 # Robust standard errors
 ols0.no = robustify(ols0.no) %>% 
   summary()
@@ -179,7 +204,7 @@ ols0.no
 
 # Regression : control only for biased technical change
 ols0.btc = pwt %>%
-  lm(formula = k_nor_log ~ Country + THETA_log_neg*Country + Country*t - THETA_log_neg - t)
+  lm(formula = k_nor_log ~ Country + THETA1_log_neg*Country + Country*t - THETA1_log_neg - t)
 # Robust standard errors
 ols0.btc = robustify(ols0.btc) %>%
   summary()
@@ -196,7 +221,7 @@ ols0.btc
 
 # Regression : control only for hours worked
 ols0.avh = pwt %>%
-  lm(formula = k_nor_log.avh_correct ~ Country + THETA_log_neg*Country - THETA_log_neg)
+  lm(formula = k_nor_log.avh_correct ~ Country + THETA1_log_neg*Country - THETA1_log_neg)
 # Robust standard errors
 ols0.avh = robustify(ols0.avh) %>% 
   summary()
@@ -213,7 +238,7 @@ ols0.avh
 
 # Regression : control for both hours worked and biased technical change
 ols0.avh.btc = pwt %>%
-  lm(formula = k_nor_log.avh_correct ~ Country + THETA_log_neg*Country + t*Country - THETA_log_neg - t)
+  lm(formula = k_nor_log.avh_correct ~ Country + THETA1_log_neg*Country + t*Country - THETA1_log_neg - t)
 # Robust standard errors
 ols0.avh.btc = robustify(ols0.avh.btc) %>% 
   summary()
