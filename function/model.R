@@ -1,5 +1,5 @@
 # Model function
-model <- function(time){
+model <- function(data, time){
   
   for(seq in c(1:4)){
     
@@ -59,7 +59,9 @@ model <- function(time){
       # Savings
       data$S[t] = data$alpha[t]*data$p1[t]/(1+data$alpha[t]*data$p1[t])*((1-data$tau[t])*data$w[t]*(1-data$u[t])+data$b[t]*data$u[t])*data$Ny[t]
       # Capital accumulation
-      data$K[t+4] = data$S[t]
+      if(t != last(position)){
+        data$K[t+4] = data$S[t]
+      }
       
     }
     
