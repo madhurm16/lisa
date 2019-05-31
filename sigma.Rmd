@@ -18,6 +18,9 @@ require(bucky) # Robust standard errors
 # Define paths
 loc_final = file.path("data", "final")
 
+# Define country set
+country_set = c("Australia", "Canada", "France", "Italy", "Japan", "United States")
+
 ```	
 
 ## Methodology
@@ -35,7 +38,8 @@ Therefore, I need to compute the capital-to-labor ratio $~k_t~$ and the capital-
 ```{r Load PWT data}	
 
 pwt = read.csv(file.path(loc_final, "pwt.csv"), header = TRUE) %>%
-  subset(Country %in% c("France", "United States") & Year %in% c(1970:2010) & i_labsh2 == 1) %>%
+  subset(Country %in% country_set &
+           Year %in% c(1970:2010) & i_labsh2 == 1) %>%
   select("Country", "Year", "pop", "emp", "avh", "rnna", "lab_sh1", "lab_sh2")
 
 head(pwt)
@@ -194,7 +198,7 @@ ols1.no = pwt %>%
 ols1.no = robustify(ols1.no) %>% 
   summary()
 # Compute the associated sigma
-pwt1.no = 1/(1 + ols1.no$coefficients[c(3,4)])
+pwt1.no = 1/(1 + ols1.no$coefficients[c((length(country_set)+1):(2*length(country_set)))])
 # Visualize summary
 ols1.no
 
@@ -207,7 +211,7 @@ ols2.no = pwt %>%
 ols2.no = robustify(ols2.no) %>% 
   summary()
 # Compute the associated sigma
-pwt2.no = 1/(1 + ols2.no$coefficients[c(3,4)])
+pwt2.no = 1/(1 + ols2.no$coefficients[c((length(country_set)+1):(2*length(country_set)))])
 # Visualize summary
 ols2.no
 
@@ -226,7 +230,7 @@ ols1.btc = pwt %>%
 ols1.btc = robustify(ols1.btc) %>%
   summary()
 # Compute the associated sigma
-pwt1.btc = 1/(1 + ols1.btc$coefficients[c(3,4)])
+pwt1.btc = 1/(1 + ols1.btc$coefficients[c((length(country_set)+1):(2*length(country_set)))])
 # Visualize summary
 ols1.btc
 
@@ -239,7 +243,7 @@ ols2.btc = pwt %>%
 ols2.btc = robustify(ols2.btc) %>%
   summary()
 # Compute the associated sigma
-pwt2.btc = 1/(1 + ols2.btc$coefficients[c(3,4)])
+pwt2.btc = 1/(1 + ols2.btc$coefficients[c((length(country_set)+1):(2*length(country_set)))])
 # Visualize summary
 ols2.btc
 
@@ -258,7 +262,7 @@ ols1.avh = pwt %>%
 ols1.avh = robustify(ols1.avh) %>% 
   summary()
 # Compute the associated sigma
-pwt1.avh = 1/(1 + ols1.avh$coefficients[c(3,4)])
+pwt1.avh = 1/(1 + ols1.avh$coefficients[c((length(country_set)+1):(2*length(country_set)))])
 # Visualize summary
 ols1.avh
 
@@ -271,7 +275,7 @@ ols2.avh = pwt %>%
 ols2.avh = robustify(ols2.avh) %>% 
   summary()
 # Compute the associated sigma
-pwt2.avh = 1/(1 + ols2.avh$coefficients[c(3,4)])
+pwt2.avh = 1/(1 + ols2.avh$coefficients[c((length(country_set)+1):(2*length(country_set)))])
 # Visualize summary
 ols2.avh
 
@@ -290,7 +294,7 @@ ols1.avh.btc = pwt %>%
 ols1.avh.btc = robustify(ols1.avh.btc) %>% 
   summary()
 # Compute the associated sigma
-pwt1.avh.btc = 1/(1 + ols1.avh.btc$coefficients[c(3,4)])
+pwt1.avh.btc = 1/(1 + ols1.avh.btc$coefficients[c((length(country_set)+1):(2*length(country_set)))])
 # Visualize summary
 ols1.avh.btc
 
@@ -303,7 +307,7 @@ ols2.avh.btc = pwt %>%
 ols2.avh.btc = robustify(ols2.avh.btc) %>% 
   summary()
 # Compute the associated sigma
-pwt2.avh.btc = 1/(1 + ols2.avh.btc$coefficients[c(3,4)])
+pwt2.avh.btc = 1/(1 + ols2.avh.btc$coefficients[c((length(country_set)+1):(2*length(country_set)))])
 # Visualize summary
 ols2.avh.btc
 
@@ -317,7 +321,7 @@ With the second adjustment method, estimates are still biased toward 1 when I do
 ```{r PWT - Gather sigma, echo = FALSE}
 
 # Regroup all estimated sigma
-pwt_est = data.frame("Country" = c("France", "United States"), pwt1.no, pwt1.btc, pwt1.avh, pwt1.avh.btc,
+pwt_est = data.frame("Country" = country_set, pwt1.no, pwt1.btc, pwt1.avh, pwt1.avh.btc,
                      pwt2.no, pwt2.btc, pwt2.avh, pwt2.avh.btc) %>%
   melt(id.vars = "Country") %>%
   mutate(btc = ifelse(grepl(pattern = "btc", variable), 1, 0),
