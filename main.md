@@ -121,69 +121,18 @@ All parameters are constant over
 
 ### Baseline model
 
-![](main_files/figure-gfm/Graph%20-%20BModel%20performance-1.png)<!-- -->
+![](main_files/figure-gfm/Graph%20-%20BModel%20Labor%20Share%20-%20Plot-1.png)<!-- -->
+
+![](main_files/figure-gfm/Graph%20-%20BModel%20Performance%20-%20Plot-1.png)<!-- -->
+
+![](main_files/figure-gfm/Graph%20-%20BModel%20Variables-1.png)<!-- -->![](main_files/figure-gfm/Graph%20-%20BModel%20Variables-2.png)<!-- -->![](main_files/figure-gfm/Graph%20-%20BModel%20Variables-3.png)<!-- -->
 
 ### Counterfactual simulation
 
-``` r
-decomp %>% 
-  subset(DE %in% c("TDE", NA) & IE %in% c("TIE", NA)) %>% 
+![](main_files/figure-gfm/Graph%20CModel%20-%20PGSR%20Counterfactual-1.png)<!-- -->
 
-  ggplot(aes(x = Year, y = theta, color = interaction(PG, SR), linetype = from)) +
-  geom_line(size = 0.5) +
-  facet_wrap(Country ~ ., scales = "free") +
-  geom_label_repel(aes(label = round(theta, 3)),
-                   data = subset(decomp, Year == 2080 & DE == "TDE" & IE == "TIE"), 
-                   nudge_x = 5, na.rm = TRUE,
-                   segment.color = "transparent") +
-  scale_linetype_manual(name = "From",
-                        breaks = c("data", "sim"),
-                        labels = c("Data", "Model"),
-                        values = c("solid", "dashed")) +
-  scale_color_manual(name = "Specification",
-                     breaks = c("TPG.TSR", "TPG.FSR",
-                                "FPG.TSR", "FPG.FSR"),
-                     labels = c("TPG & TSR", "FPG & TSR",
-                                "TPG & FSR", "FPG & FSR"),
-                     values = brewer.pal(8, "Set1")[c(4,3,2,1)],
-                     na.value = "black") +
-  theme_classic(base_size = 14) +
-  guides(color = guide_legend(order = 0), linetype = guide_legend(order = 1)) +
-  theme(legend.position = "right", legend.direction = "vertical") +
-  labs(x = "Year", y = "Labor income share") +
-  ggsave(file.path(loc_result, "counter_facet_PGSR.png"), width = 1920/1080*5, height = 5)
-```
+![](main_files/figure-gfm/Graph%20CModel%20-%20DEIE%20Counterfactual-1.png)<!-- -->
 
 ![](main_files/figure-gfm/Graph%20CModel%20-%20PGSR%20Decomposition-1.png)<!-- -->
-
-``` r
-decomp %>% 
-  subset(PG %in% c("TPG", NA) & SR %in% c("TSR", NA)) %>% 
-
-  ggplot(aes(x = Year, y = theta, color = interaction(DE, IE), linetype = from)) +
-  geom_line(size = 0.5) +
-  facet_wrap(Country ~ ., scales = "free") +
-  geom_label_repel(aes(label = round(theta, 3)),
-                   data = subset(decomp, Year == 2080 & PG == "TPG" & SR == "TSR"), 
-                   nudge_x = 5, na.rm = TRUE,
-                   segment.color = "transparent") +
-  scale_linetype_manual(name = "From",
-                        breaks = c("data", "sim"),
-                        labels = c("Data", "Model"),
-                        values = c("solid", "dashed")) +
-  scale_color_manual(name = "Specification",
-                     breaks = c("TDE.TIE", "TDE.FIE",
-                                "FDE.TIE", "FDE.FIE"),
-                     labels = c("TDE & TIE", "TDE & FIE",
-                                "FDE & TIE", "FDE & FIE"),
-                     values = brewer.pal(8, "Set1")[c(4,5,8,1)],
-                     na.value = "black") +
-  # scale_x_continuous(limits = c(NA, 2090)) +
-  theme_classic(base_size = 14) +
-  guides(color = guide_legend(order = 0), linetype = guide_legend(order = 1)) +
-  theme(legend.position = "right", legend.direction = "vertical") +
-  labs(x = "Year", y = "Labor income share") +
-  ggsave(file.path(loc_result, "counter_facet_DEIE.png"), width = 1920/1080*5, height = 5)
-```
 
 ![](main_files/figure-gfm/Graph%20CModel%20-%20DEIE%20Decomposition-1.png)<!-- -->
