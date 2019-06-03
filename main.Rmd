@@ -135,31 +135,18 @@ head(data_base)
 
 ```{r Initial Specification, include = FALSE}
 
-data = data_base
-
-## No biased technical change
-data$AK = 1
-data$AL = 1
-
-## Population dynamics
-for(seq in 1:4){
-  for(t in 2:3){
-    # Young population dynamics
-    data$Ny[data$Period == t & data$Sequence == seq] = data$Ny[data$Period == t-1 & data$Sequence == seq] *
-      data$n[data$Period == t & data$Sequence == seq]
-    # Old population dynamics
-    data$No[data$Period == t & data$Sequence == seq] = data$Ny[data$Period == t-1 & data$Sequence == seq] *
-      data$p[data$Period == t & data$Sequence == seq]
-  }
-}
-rm(seq, t)
+data = data_base %>% 
+  # No biased technical change
+  mutate(AK = 1, AL = 1) %>% 
+  # Population dynamics
+  demo_changer(init_spe = TRUE)
 
 ```
 
 
 ## Parameter calibration
 
-The discount factor $\alpha$ is set to `r 0.99^40`. The relative bargaining power of the union $\gamma$ is set to `r 0.5`. *For more details, please consult "gamma.md" file.*
+The discount factor $\alpha$ is set to `r round(0.99^40,3)`. The relative bargaining power of the union $\gamma$ is set to `r 0.5`. *For more details, please consult "gamma.md" file.*
 
 ```{r Parameter - Dataframe, include = FALSE}
 
@@ -227,12 +214,17 @@ param_base %>% subset(Year == 1970) %>% select(Country, omega, beta)
 
 ### Scale parameter
 
+The scale parameter $A$ is decuded using grid search to match the average labor share between 2008 and 2012.
+
 ```{r Parameter - Scale parameter, echo = FALSE}
 
-# Compute eta
-data = data %>% 
+data = data_base %>% 
+  # No biased technical change
+  mutate(AK = 1, AL = 1) %>% 
+  # Add parameters
   merge(param_base) %>% 
-  mutate(eta = n / p * (1 + alpha*p1) / omega)
+  # Demography
+  demo_changer(AFinder = TRUE)
 
 # A Finder script
 source("./script/sim_AFinder.R")
@@ -240,8 +232,6 @@ source("./script/sim_AFinder.R")
 # Assign A scale parameter to param_base
 param_base$A = data$A
 
-# Remove parameters from data
-data = data %>% select(names(data_base))
 ```
 
 ### Summary
@@ -271,9 +261,13 @@ final = data.frame(matrix(ncol = ncol(data)+ ncol(param) -2 + 1, nrow = 0)) %>%
   setNames(c("Specification", names(data), names(param)[-c(1,2)]))
 
 # Prepare data for simulation
-data = data %>% 
+data = data_base %>% 
   # Merge with parameters
   merge(param) %>% 
+  # No BTC
+  mutate(AK = 1, AL = 1) %>% 
+  # Demography
+  demo_changer() %>% 
   # Define specification model
   mutate(Specification = spe) %>%
   # Reorder variables
@@ -326,6 +320,187 @@ final %>%
   ggsave(file.path(loc_result, "baseline_facet.png"), width = 1920/1080*5, height = 5)
 
 ```
+
+### Counterfactual simulation
+
+```{r Aging effect decomposition, include = FALSE}
+
+# Re initialize result data frame
+result = result[0,]
+
+## Aging effect decomposition : Survival rate versus Population growth
+for(sr in c("TSR", "FSR")){
+  for(pg in c("TPG", "FPG")){
+    
+    break_year = 1970
+    spe = paste0("counter_", break_year, "_", pg, ".", sr, ".", "TDE", ".", "TIE")
+    
+    # Prepare data
+    data = data_base %>% 
+    # No biased technical change
+    mutate(AK = 1, AL = 1) %>% 
+    # Add parameters
+    merge(param) %>% 
+    # Demography
+    demo_changer(PG = pg, SR = sr) %>% 
+    # Define specification model
+    mutate(Specification = spe) %>%
+    # Reorder variables
+    select(Specification, everything())
+    
+    
+    # Simulate the model for each country
+    for(country in country_set){
+        
+        result = data %>%
+          subset(Country == country) %>% 
+          model(time = 3) %>% 
+          rbind(result, .)
+        
+    }
+  }
+}
+
+## Aging effect decomposition : Direct effect versus Indirect effect
+for(de in c("TDE", "FDE")){
+  for(ie in c("TIE", "FIE")){
+    
+    break_year = 1970
+    spe = paste0("counter_", break_year, "_", "TPG", ".", "TSR", ".", de, ".", ie)
+    
+    # Prepare data
+    data = data_base %>% 
+    # No biased technical change
+    mutate(AK = 1, AL = 1) %>% 
+    # Add parameters
+    merge(param) %>% 
+    # Demography
+    demo_changer(DE = de, IE = ie) %>% 
+    # Define specification model
+    mutate(Specification = spe) %>%
+    # Reorder variables
+    select(Specification, everything())
+    
+    
+    # Simulate the model for each country
+    for(country in country_set){
+        
+        result = data %>%
+          subset(Country == country) %>% 
+          model(time = 3) %>% 
+          rbind(result, .)
+        
+    }
+  }
+}
+
+# Remove duplicates
+final = distinct(result)
+
+# Model specification details
+final = final %>% mutate(PG = ifelse(grepl("TPG", Specification), "TPG", "FPG"),
+                 SR = ifelse(grepl("TSR", Specification), "TSR", "FSR"),
+                 DE = ifelse(grepl("TDE", Specification), "TDE", "FDE"),
+                 IE = ifelse(grepl("TIE", Specification), "TIE", "FIE"),
+                 break_year = as.numeric(gsub("[^0-9]", "\\1", Specification))) %>% 
+  select(Specification, break_year, PG, SR, DE, IE, everything())
+
+# Write final_counter
+write.csv(final, file.path(loc_sim, paste0("final_", "counter", ".csv")), row.names = FALSE)
+
+```
+
+```{r Graph CModel - Prepare Data, include = FALSE}
+
+# Reshape dataframe
+decomp = final %>% 
+  select(Country, Specification, Year, theta) %>% 
+  rbind(., 
+        df %>% 
+          mutate(Specification = "data") %>%
+          select(Specification, Country, Year, theta)) %>% 
+  mutate(from = ifelse(Specification == "data", "data", "sim")) %>% 
+  filter(complete.cases(.)) %>% 
+  mutate(PG = ifelse(Specification == "data", NA, ifelse(grepl("TPG", Specification), "TPG", "FPG")),
+         SR = ifelse(Specification == "data", NA, ifelse(grepl("TSR", Specification), "TSR", "FSR")),
+         DE = ifelse(Specification == "data", NA, ifelse(grepl("TDE", Specification), "TDE", "FDE")),
+         IE = ifelse(Specification == "data", NA, ifelse(grepl("TIE", Specification), "TIE", "FIE")),
+         break_year = as.numeric(gsub("[^0-9]", "\\1", Specification))) %>% 
+  select(Specification, break_year, PG, SR, DE, IE, everything())
+
+```
+
+```{r Graph CModel - PGSR Decomposition, echo = FALSE}
+
+decomp %>% 
+  subset(DE %in% c("TDE", NA) & IE %in% c("TIE", NA)) %>% 
+
+  ggplot(aes(x = Year, y = theta, color = interaction(PG, SR), linetype = from)) +
+  geom_line(size = 0.5) +
+  facet_wrap(Country ~ ., scales = "free") +
+  geom_label_repel(aes(label = round(theta, 3)),
+                   data = subset(decomp, Year == 2080 & DE == "TDE" & IE == "TIE"), 
+                   nudge_x = 5, na.rm = TRUE,
+                   segment.color = "transparent") +
+  scale_linetype_manual(name = "From",
+                        breaks = c("data", "sim"),
+                        labels = c("Data", "Model"),
+                        values = c("solid", "dashed")) +
+  scale_color_manual(name = "Specification",
+                     breaks = c("TPG.TSR", "TPG.FSR",
+                                "FPG.TSR", "FPG.FSR"),
+                     labels = c("TPG & TSR", "FPG & TSR",
+                                "TPG & FSR", "FPG & FSR"),
+                     values = brewer.pal(8, "Set1")[c(4,3,2,1)],
+                     na.value = "black") +
+  theme_classic(base_size = 14) +
+  guides(color = guide_legend(order = 0), linetype = guide_legend(order = 1)) +
+  theme(legend.position = "right", legend.direction = "vertical") +
+  labs(x = "Year", y = "Labor income share") +
+  ggsave(file.path(loc_result, "counter_facet_PGSR.png"), width = 1920/1080*5, height = 5)
+
+```
+
+```{r Graph CModel - DEIE Decomposition, echo = FALSE}
+
+decomp %>% 
+  subset(PG %in% c("TPG", NA) & SR %in% c("TSR", NA)) %>% 
+
+  ggplot(aes(x = Year, y = theta, color = interaction(DE, IE), linetype = from)) +
+  geom_line(size = 0.5) +
+  facet_wrap(Country ~ ., scales = "free") +
+  geom_label_repel(aes(label = round(theta, 3)),
+                   data = subset(decomp, Year == 2080 & PG == "TPG" & SR == "TSR"), 
+                   nudge_x = 5, na.rm = TRUE,
+                   segment.color = "transparent") +
+  scale_linetype_manual(name = "From",
+                        breaks = c("data", "sim"),
+                        labels = c("Data", "Model"),
+                        values = c("solid", "dashed")) +
+  scale_color_manual(name = "Specification",
+                     breaks = c("TDE.TIE", "TDE.FIE",
+                                "FDE.TIE", "FDE.FIE"),
+                     labels = c("TDE & TIE", "TDE & FIE",
+                                "FDE & TIE", "FDE & FIE"),
+                     values = brewer.pal(8, "Set1")[c(4,5,8,1)],
+                     na.value = "black") +
+  # scale_x_continuous(limits = c(NA, 2090)) +
+  theme_classic(base_size = 14) +
+  guides(color = guide_legend(order = 0), linetype = guide_legend(order = 1)) +
+  theme(legend.position = "right", legend.direction = "vertical") +
+  labs(x = "Year", y = "Labor income share") +
+  ggsave(file.path(loc_result, "counter_facet_DEIE.png"), width = 1920/1080*5, height = 5)
+
+```
+
+
+
+
+
+
+
+
+
 
 
 
