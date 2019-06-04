@@ -121,12 +121,12 @@ data_base = df %>%
          p1 = ifelse(Year >= 2070, p1[Year == 2060] + 
                        (Year - 2060)/10 * mean(p1/lag(p1)-1, na.rm = T), p1), 
          ## Create empty variables
-         eta = NA, AK = NA, AL = NA, k1 = NA, k2 = NA, k = NA, X = NA, L = NA, w = NA, Y = NA, u = NA,
-         theta = NA, tau = NA, b = NA, h = NA, S = NA) 
+         eta = NA, AK = NA, AL = NA, k1 = NA, k2 = NA, k = NA, X = NA, L = NA, w = NA,
+         r = NA, Y = NA, u = NA, theta = NA, tau = NA, b = NA, h = NA, S = NA) 
 
 # Re-order variables
 data_base = data_base %>% select(Country, Year, Sequence, Period, Ny, No, n, p, p1, eta, AK, AL,
-                                 k1, k2, k, X, L, w, Y, u, theta, tau, b, h, S, K)
+                                 k1, k2, k, X, L, w, r, Y, u, theta, tau, b, h, S, K)
   
 # Visualization
 head(data_base)
@@ -576,7 +576,6 @@ decomp = final %>%
   mutate(PG = ifelse(Specification == "data", NA, ifelse(grepl("TPG", Specification), "TPG", "FPG")),
          SR = ifelse(Specification == "data", NA, ifelse(grepl("TSR", Specification), "TSR", "FSR")),
          DE = ifelse(Specification == "data", NA, ifelse(grepl("TDE", Specification), "TDE", "FDE")),
-         IE = ifelse(Specification == "data", NA, ifelse(grepl("TIE", Specification), "TIE", "FIE")),
          break_year = as.numeric(gsub("[^0-9]", "\\1", Specification))) %>% 
   select(Specification, break_year, PG, SR, DE, IE, everything())
 
