@@ -10,7 +10,7 @@ loc_result = file.path("result")
   loc_sim = file.path(loc_result, "sim")
 
 # Define countries to plot
-country = c("France", "United States")
+country_set = c("France", "United States")
 
 # Load data
 final = read.csv(file.path(loc_sim, "final_counter.csv"), header = TRUE)

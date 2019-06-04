@@ -38,6 +38,9 @@ demo_changer = function(data = data, break_year = 1970,
   ## Constant survival rate
   if(SR == "FSR"){
     data = data %>% mutate(p = ifelse(Year >= break_year, p_fix, p),
+                           # p1 only has > instead of >= to attribute the difference with counterfactual 
+                           # to 2010 instead of 1970
+                           # Same initial labor income share required : same fixed point
                            p1 = ifelse(Year > break_year, p_fix, p1))
   }
   
@@ -60,7 +63,10 @@ demo_changer = function(data = data, break_year = 1970,
   if(DE == "FDE"){
     data = data %>% mutate(n = ifelse(Year >= break_year, 1, n),
                            p = ifelse(Year >= break_year, p_fix, p),
-                           p1 = ifelse(Year >= break_year, p_fix, p1),
+                           # p1 only has > instead of >= to attribute the difference with counterfactual 
+                           # to 2010 instead of 1970
+                           # Same initial labor income share required : same fixed point
+                           p1 = ifelse(Year > break_year, p_fix, p1),
                            Ny = ifelse(Year >= break_year, Ny_fix, Ny),
                            No = ifelse(Year >= break_year, No_fix, No))
   }

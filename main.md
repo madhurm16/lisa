@@ -27,7 +27,7 @@ Data are from :
 
 ### Data for simulation
 
-    ## # A tibble: 6 x 26
+    ## # A tibble: 6 x 27
     ## # Groups:   Country [1]
     ##   Country  Year Sequence Period    Ny     No     n     p    p1 eta   AK   
     ##   <fct>   <int>    <dbl>  <dbl> <dbl>  <dbl> <dbl> <dbl> <dbl> <lgl> <lgl>
@@ -37,17 +37,15 @@ Data are from :
     ## 4 France   2000        4      1  2.08  0.794  1.38 0.525 0.683 NA    NA   
     ## 5 France   2010        1      2 NA    NA      1.33 0.583 0.685 NA    NA   
     ## 6 France   2020        2      2 NA    NA      1.13 0.613 0.707 NA    NA   
-    ## # ... with 15 more variables: AL <lgl>, k1 <lgl>, k2 <lgl>, k <lgl>,
-    ## #   X <lgl>, L <lgl>, w <lgl>, Y <lgl>, u <lgl>, theta <lgl>, tau <lgl>,
-    ## #   b <lgl>, h <lgl>, S <lgl>, K <dbl>
+    ## # ... with 16 more variables: AL <lgl>, k1 <lgl>, k2 <lgl>, k <lgl>,
+    ## #   X <lgl>, L <lgl>, w <lgl>, r <lgl>, Y <lgl>, u <lgl>, theta <lgl>,
+    ## #   tau <lgl>, b <lgl>, h <lgl>, S <lgl>, K <dbl>
 
 ## Parameter calibration
 
-The discount factor
-![\\alpha](https://latex.codecogs.com/png.latex?%5Calpha "\\alpha") is
-set to 0.669. The relative bargaining power of the union
-![\\gamma](https://latex.codecogs.com/png.latex?%5Cgamma "\\gamma") is
-set to 0.5. *For more details, please consult “gamma.md” file.*
+The discount factor *alpha* is set to 0.669. The relative bargaining
+power of the union *gamma* is set to 0.5. *For more details, please
+consult “gamma.md” file.*
 
 ### Production function
 
@@ -88,12 +86,10 @@ using Penn World Table 9.1 data. *For more details, please consult
 
 ### Preferences
 
-The relative per-capita influence of old households
-![\\omega](https://latex.codecogs.com/png.latex?%5Comega "\\omega") is
-deduced such that the capital-to-labor ratio is matched in 1970. The
-preference for government health expenditure
-![\\beta](https://latex.codecogs.com/png.latex?%5Cbeta "\\beta") is
-deduced such that the tax rate in 1970 is matched.
+The relative per-capita influence of old households *omega* is deduced
+such that the capital-to-labor ratio is matched in 1970. The preference
+for government health expenditure *beta* is deduced such that the tax
+rate in 1970 is matched.
 
     ##          Country     omega      beta
     ## 1         France 0.9180683 0.4687702
@@ -101,9 +97,8 @@ deduced such that the tax rate in 1970 is matched.
 
 ### Scale parameter
 
-The scale parameter ![A](https://latex.codecogs.com/png.latex?A "A") is
-decuded using grid search to match the average labor share between 2008
-and 2012.
+The scale parameter *A* is decuded using grid search to match the
+average labor share between 2008 and 2012.
 
 ### Summary
 
@@ -136,3 +131,20 @@ All parameters are constant over
 ![](main_files/figure-gfm/Graph%20CModel%20-%20PGSR%20Decomposition-1.png)<!-- -->
 
 ![](main_files/figure-gfm/Graph%20CModel%20-%20DEIE%20Decomposition-1.png)<!-- -->
+
+    ## # A tibble: 4 x 6
+    ## # Groups:   Country [2]
+    ##   Country    Period FPG.TSR.share TPG.FSR.share FDE.TIE.share TDE.FIE.share
+    ##   <fct>      <chr>          <dbl>         <dbl>         <dbl>         <dbl>
+    ## 1 France     P2050          0.745         0.255         0.330        0.670 
+    ## 2 France     P8010          0.609         0.391         0.683        0.317 
+    ## 3 United St~ P2050          0.666         0.334         0.131        0.869 
+    ## 4 United St~ P8010          0.379         0.621         0.916        0.0842
+
+<!-- In France, between 1980 and 2010, population growth variations account, on average, for 60.8928374 % of the labor share variations with respect to the counterfactual. Thus, the survival rate variations account for 39.1071626 %. -->
+
+<!-- The main propagation channel over this period is the direct one (68.3472407 %) compared to the indirect one (31.6527593 %). -->
+
+<!-- Between 2020 and 2050, the impact of population growth variations on the labor share with respect to the counterfactual should decrease a bit (74.474473 %). Therefore, Survival rate variations should have a larger impact (25.525527 %) due to the fact that population growth should remain relatively constant at the end of the century. -->
+
+<!-- However, the indirect effect should become the main channel (32.9939434 %) compared to the direct one (67.0060566 %). -->
