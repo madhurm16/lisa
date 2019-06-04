@@ -44,6 +44,8 @@ model <- function(data, time){
       data$L[t] = data$K[t]/data$k[t]
       # Wage
       data$w[t] = data$A[t]*(1-data$phi[t])*data$AL[t]*(data$phi[t]*(data$k[t]*data$AK[t]/data$AL[t])^((data$sigma[t]-1)/data$sigma[t])+1-data$phi[t])^(1/(data$sigma[t]-1))
+      # Rental rate
+      data$r[t] = data$A[t]*data$phi[t]*data$AK[t]*(data$phi[t]+(1-data$phi[t])*(data$k[t]*data$AK[t]/data$AL[t])^((1-data$sigma[t])/data$sigma[t]))^(1/(data$sigma[t]-1))
       # Output
       data$Y[t] = data$A[t]*(data$phi[t]*(data$AK[t]*data$K[t])^((data$sigma[t]-1)/data$sigma[t])+(1-data$phi[t])*(data$AL[t]*data$L[t])^((data$sigma[t]-1)/data$sigma[t]))^(data$sigma[t]/(data$sigma[t]-1))
       # Unemployment rate

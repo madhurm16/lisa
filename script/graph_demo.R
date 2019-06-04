@@ -1,7 +1,5 @@
 # Define required packages
-require(dplyr)
-require(reshape2)
-require(ggplot2)
+lapply(c("dplyr", "ggplot2", "ggrepel", "RColorBrewer", "reshape2"), require, character.only = TRUE)
 
 # Define paths
 loc_final = file.path("data", "final")
