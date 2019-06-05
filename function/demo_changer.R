@@ -22,6 +22,19 @@ demo_changer = function(data = data, break_year = 1970,
     
   } else {
   
+   ## Computation
+   # Compute population
+   for(seq in 1:4){
+     for(t in 2:3){
+       # Young population dynamics
+       data$Ny[data$Period == t & data$Sequence == seq] = 
+         data$Ny[data$Period == t-1 & data$Sequence == seq] * data$n[data$Period == t & data$Sequence == seq]
+       # Old population dynamics
+       data$No[data$Period == t & data$Sequence == seq] = 
+         data$Ny[data$Period == t-1 & data$Sequence == seq] * data$p[data$Period == t & data$Sequence == seq]
+     }
+   }
+    
   # Compute eta
   data = data %>% mutate(eta = n / p * (1 + alpha*p1) / omega)
   
@@ -75,6 +88,7 @@ demo_changer = function(data = data, break_year = 1970,
   if(IE == "FIE"){
     data = data %>% mutate(eta = ifelse(Year >= break_year, eta_fix, eta))
   }
+  
   }
   
   data = data %>% select(-contains("fix"))

@@ -60,11 +60,13 @@ esaun = esaun[, c(1, 2, order(names(esaun)[-c(1,2)])+2)]
 child = c(3:6)
 young = c(7:14)
 old = c(15:19)
+young_1564 = c(6:15)
 
 # Compute population in each age groups
-esaun$child = rowSums(esaun[,child], na.rm = TRUE)
+esaun$child <- rowSums(esaun[,child], na.rm = TRUE)
 esaun$young <- rowSums(esaun[,young], na.rm = TRUE)
 esaun$old <- rowSums(esaun[,old], na.rm = TRUE)
+esaun$young_1564 <- rowSums(esaun[,young_1564], na.rm = TRUE)
 
 # Compute old-age dependency ratio
 esaun$dep <- esaun$old/esaun$young
