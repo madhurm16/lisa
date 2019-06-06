@@ -14,12 +14,14 @@ require(dplyr) # The FAMOUS one
 require(reshape2) # Reshape data frame
 require(ggplot2) # Plot
 require(bucky) # Robust standard errors
+require(sandwich)
 
 # Define paths
 loc_final = file.path("data", "final")
 
 # Define country set
-country_set = c("Australia", "Canada", "France", "Italy", "Japan", "United States")
+# country_set = c("Australia", "Canada", "France", "Italy", "Japan", "United States")
+country_set = c("France", "United States")
 
 ```	
 

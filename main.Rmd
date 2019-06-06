@@ -253,6 +253,7 @@ param = param_base
 
 breaks_10_years = seq(1970, 2080, 10)
 labs_20_years = as.vector(rbind(seq(1970, 2080, 20), rep("", length(breaks_10_years)/2)))
+scale_graph = 1920/1080
 
 ```
 
@@ -316,7 +317,7 @@ final %>%
   
   ggplot(aes(x = Year, y = value, linetype = variable)) +
   geom_line(size = 0.5) +
-  facet_wrap(Country ~ ., scales = "free") +
+  facet_wrap(Country ~ ., scales = "fixed") +
   scale_linetype_manual(name = "From",
                         breaks = c("labsh", "theta"),
                         labels = c("Data", "Model"),
@@ -324,7 +325,7 @@ final %>%
   theme_classic(base_size = 14) +
   theme(legend.position = "none") +
   labs(x = "Year", y = "Labor income share") +
-  ggsave(file.path(loc_result, "baseline7020_facet.png"), width = 1920/1080*5, height = 5)
+  ggsave(file.path(loc_result, "baseline7020_facet.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
@@ -343,7 +344,8 @@ final %>%
   
   ggplot(aes(x = Year, y = value, linetype = variable)) +
   geom_line(size = 0.5) +
-  facet_wrap(Country ~ ., scales = "free") +
+  facet_wrap(Country ~ ., scales = "fixed") +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   scale_linetype_manual(name = "From",
                         breaks = c("labsh", "theta"),
                         labels = c("Data", "Model"),
@@ -351,7 +353,7 @@ final %>%
   theme_classic(base_size = 14) +
   theme(legend.position = "none") +
   labs(x = "Year", y = "Labor income share") +
-  ggsave(file.path(loc_result, "baseline7080_facet.png"), width = 1920/1080*5, height = 5)
+  ggsave(file.path(loc_result, "baseline7080_facet.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
@@ -406,6 +408,21 @@ perf %>%
 
 
 ```
+
+```{r Regression - BModel Performance}
+
+perf %>% 
+  subset(Country == "France") %>% 
+  lm(labsh.fitted ~ theta, data = .) %>% 
+  summary()
+
+perf %>% 
+  subset(Country == "United States") %>% 
+  lm(labsh.fitted ~ theta, data = .) %>% 
+  summary()
+
+```
+
 
 ```{r Graph - BModel Variables, echo = FALSE}
 
@@ -637,10 +654,10 @@ decomp %>%
                         labels = c("Data", "Model"),
                         values = c("solid", "dashed")) +
   scale_color_manual(name = "Specification",
-                     breaks = c("TPG.TSR", "FPG.TSR",
-                                "TPG.FSR", "FPG.FSR"),
-                     labels = c("TPG & TSR", "FPG & TSR",
-                                "TPG & FSR", "FPG & FSR"),
+                     breaks = c("TPG.TSR", "TPG.FSR",
+                                "FPG.TSR", "FPG.FSR"),
+                     labels = c("Benchmark", "Constant Survival Rate",
+                                "Constant Pop. Growth", "Constant Dep. Ratio"),
                      values = brewer.pal(8, "Set1")[c(1:4)] %>% 
                        setNames(c("TPG.TSR", "TPG.FSR", "FPG.TSR", "FPG.FSR")),
                      na.value = "black") +
@@ -651,6 +668,46 @@ decomp %>%
   ggsave(file.path(loc_result, "counter_facet_PGSR.png"), width = 1920/1080*5, height = 5)
 
 ```
+
+```{r Graph CModel - SR counterfactual, echo = FALSE}
+
+
+decomp %>% 
+  subset(break_year == 2010 & PG %in% c("TPG", NA) & DE %in% c("TDE", NA) & IE %in% c("TIE", NA)) %>% 
+
+  ggplot(aes(x = Year, y = theta, color = interaction(PG, SR), linetype = from)) +
+  geom_line(size = 0.5) +
+  facet_wrap(Country ~ ., scales = "fixed") +
+  # geom_label_repel(aes(label = round(theta, 3)),
+  #                  data = subset(decomp, break_year == 2010 & PG == "TPG" &
+  #                                  Year == 2080 & DE == "TDE" & IE == "TIE"),
+  #                  segment.size = 0,
+  #                  xlim = c(2080, NA),
+  #                  # direction = "y",
+  #                  hjust = 0,
+  #                  na.rm = TRUE,
+  #                  segment.color = "transparent") +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years, lim = c(NA, 2080)) +
+  scale_linetype_manual(name = "From",
+                        breaks = c("data", "sim"),
+                        labels = c("Data", "Model"),
+                        values = c("solid", "dashed")) +
+  scale_color_manual(name = "Specification",
+                     breaks = c("TPG.TSR", "TPG.FSR",
+                                "FPG.TSR", "FPG.FSR"),
+                     labels = c("Benchmark", "Constant Survival Rate",
+                                "Constant Pop. Growth", "Constant Dep. Ratio"),
+                     values = brewer.pal(8, "Set1")[c(1:4)] %>% 
+                       setNames(c("TPG.TSR", "TPG.FSR", "FPG.TSR", "FPG.FSR")),
+                     na.value = "black") +
+  theme_classic(base_size = 14) +
+  guides(color = guide_legend(order = 0), linetype = guide_legend(order = 1)) +
+  theme(legend.position = "none", legend.direction = "vertical") +
+  labs(x = "Year", y = "Labor income share") +
+  ggsave(file.path(loc_result, "counter_facet_SR.png"), width = 1920/1080*5, height = 5)
+
+```
+
 
 ```{r Graph CModel - DEIE Counterfactual, echo = FALSE}
 
@@ -685,6 +742,7 @@ decomp %>%
   ggsave(file.path(loc_result, "counter_facet_DEIE.png"), width = 1920/1080*5, height = 5)
 
 ```
+
 ```{r Computation CModel - Decomposition, echo = FALSE}
 
 decomp2 = final %>% 

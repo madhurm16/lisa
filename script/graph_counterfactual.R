@@ -29,7 +29,8 @@ PGSR_graph = function(data_decomp){
   # Graph
   ggplot(data = data_decomp, aes(x = Year, y = theta, color = Spe_PGSR, linetype = from)) +
     geom_line(size = 0.5) +
-    geom_label_repel(data = data_decomp %>% subset(Year == 2080) , aes(label = round(theta, 3)),
+    geom_label_repel(data = data_decomp %>% subset(Year == 2080 & break_year == b_year),
+                     aes(label = round(theta, 3)),
                      nudge_x = 5, na.rm = TRUE, segment.color = "transparent") +
     scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years, lim = c(NA, 2090)) +
     scale_y_continuous(lim = c(ymin, ymax)) +
@@ -50,7 +51,7 @@ PGSR_graph = function(data_decomp){
     theme(legend.direction = "vertical", legend.box = "horizontal", 
           legend.position = c(0.5,1), legend.justification = c(0, 1)) +
     labs(x = "Year", y = "Labor income share") +
-    ggsave(file.path(loc_counter, paste0("PGSR_", country,"_", i, ".png")),
+    ggsave(file.path(loc_counter, paste0("PGSR_", country, b_year,"_", i, ".png")),
            width = scale_graph*5, height = 5)
   
 }
@@ -61,7 +62,8 @@ DEIE_graph = function(data_decomp){
   # Graph
   ggplot(data = data_decomp, aes(x = Year, y = theta, color = Spe_DEIE, linetype = from)) +
     geom_line(size = 0.5) +
-    geom_label_repel(data = data_decomp %>% subset(Year == 2080) , aes(label = round(theta, 3)),
+    geom_label_repel(data = data_decomp %>% subset(Year == 2080 & break_year == b_year),
+                     aes(label = round(theta, 3)),
                      nudge_x = 5, na.rm = TRUE, segment.color = "transparent") +
     scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years, lim = c(NA, 2090)) +
     scale_y_continuous(lim = c(ymin, ymax)) +
@@ -82,7 +84,7 @@ DEIE_graph = function(data_decomp){
     theme(legend.direction = "vertical", legend.box = "horizontal", 
           legend.position = c(0.5,1), legend.justification = c(0, 1)) +
     labs(x = "Year", y = "Labor income share") +
-    ggsave(file.path(loc_counter, paste0("DEIE_", country,"_", i, ".png")),
+    ggsave(file.path(loc_counter, paste0("DEIE_", country, b_year, "_", i, ".png")),
            width = scale_graph*5, height = 5)
   
 }
@@ -94,18 +96,22 @@ decomp = final %>%
   select(Country, Specification, Year, theta) %>% 
   rbind(., 
         data %>% 
-          mutate(Specification = "data") %>%
+          mutate(Specification = "data_1970") %>%
           select(Specification, Country, Year, theta)) %>% 
-  mutate(from = ifelse(Specification == "data", "data", "sim")) %>% 
+  rbind(.,
+        data %>% 
+          mutate(Specification = "data_2010") %>%
+          select(Specification, Country, Year, theta)) %>% 
+  mutate(from = ifelse(grepl("data", Specification), "data", "sim")) %>%
   filter(complete.cases(.)) %>% 
-  mutate(PG = ifelse(Specification == "data", NA, ifelse(grepl("TPG", Specification), "TPG", "FPG")),
-         SR = ifelse(Specification == "data", NA, ifelse(grepl("TSR", Specification), "TSR", "FSR")),
-         DE = ifelse(Specification == "data", NA, ifelse(grepl("TDE", Specification), "TDE", "FDE")),
-         IE = ifelse(Specification == "data", NA, ifelse(grepl("TIE", Specification), "TIE", "FIE")),
+  mutate(PG = ifelse(from == "data", NA, ifelse(grepl("TPG", Specification), "TPG", "FPG")),
+         SR = ifelse(from == "data", NA, ifelse(grepl("TSR", Specification), "TSR", "FSR")),
+         DE = ifelse(from == "data", NA, ifelse(grepl("TDE", Specification), "TDE", "FDE")),
+         IE = ifelse(from == "data", NA, ifelse(grepl("TIE", Specification), "TIE", "FIE")),
          break_year = as.numeric(gsub("[^0-9]", "\\1", Specification)),
          Spe_PGSR = interaction(PG, SR),
          Spe_DEIE = interaction(DE, IE)) %>% 
-  select(Specification, break_year, Spe_PGSR, Spe_DEIE, PG, SR, DE, IE, everything())
+  select(Specification, break_year, from, Spe_PGSR, Spe_DEIE, PG, SR, DE, IE, everything())
 
 ##### PGSR GRAPHS #####
 
@@ -116,21 +122,24 @@ PGSR_list = list(NA, "TPG.TSR",
                  c("TPG.TSR", "FPG.TSR", "TPG.FSR"), 
                  c("TPG.TSR", "FPG.TSR", "TPG.FSR", "FPG.FSR"))
 
-# Country loop
-for(country in country_set){
-  
-  decomp_temp = decomp %>% 
-    subset(DE %in% c("TDE", NA) & IE %in% c("TIE", NA) & Country == country)
-  
-  # Limits on graph
-  ymin = decomp_temp %>% pull("theta") %>% min()
-  ymax = decomp_temp %>% pull("theta") %>% max()
-  
-  # Loop for graphs
-  for(i in c(1:length(PGSR_list))){
-    decomp_temp %>% 
-      subset(Specification == "data" | Spe_PGSR %in% PGSR_list[[i]]) %>% 
-      PGSR_graph()
+# Break_year loop
+for(b_year in c(1970, 2010)){
+  # Country loop
+  for(country in country_set){
+    
+    decomp_temp = decomp %>% 
+      subset(DE %in% c("TDE", NA) & IE %in% c("TIE", NA) & Country == country & break_year == b_year)
+    
+    # Limits on graph
+    ymin = decomp_temp %>% pull("theta") %>% min()
+    ymax = decomp_temp %>% pull("theta") %>% max()
+    
+    # Loop for graphs
+    for(i in c(1:length(PGSR_list))){
+      decomp_temp %>% 
+        subset(from == "data" | Spe_PGSR %in% PGSR_list[[i]]) %>% 
+        PGSR_graph()
+    }
   }
 }
 
@@ -143,21 +152,24 @@ DEIE_list = list(NA, "TDE.TIE",
                  c("TDE.TIE", "FDE.TIE", "TDE.FIE"), 
                  c("TDE.TIE", "FDE.TIE", "TDE.FIE", "FDE.FIE"))
 
-# Country loop
-for(country in country_set){
-  
-  decomp_temp = decomp %>% 
-    subset(PG %in% c("TPG", NA) & SR %in% c("TSR", NA) & Country == country)
-  
-  # Limits on graph
-  ymin = decomp_temp %>% pull("theta") %>% min()
-  ymax = decomp_temp %>% pull("theta") %>% max()
-  
-  # Loop for graphs
-  for(i in c(1:length(DEIE_list))){
-    decomp_temp %>% 
-      subset(Specification == "data" | Spe_DEIE %in% DEIE_list[[i]]) %>% 
-      DEIE_graph()
+# Break_year loop
+for(b_year in c(1970, 2010)){
+  # Country loop
+  for(country in country_set){
+    
+    decomp_temp = decomp %>% 
+      subset(PG %in% c("TPG", NA) & SR %in% c("TSR", NA) & Country == country & break_year == b_year)
+    
+    # Limits on graph
+    ymin = decomp_temp %>% pull("theta") %>% min()
+    ymax = decomp_temp %>% pull("theta") %>% max()
+    
+    # Loop for graphs
+    for(i in c(1:length(DEIE_list))){
+      decomp_temp %>% 
+        subset(from == "data" | Spe_DEIE %in% DEIE_list[[i]]) %>% 
+        DEIE_graph()
+    }
   }
 }
 
