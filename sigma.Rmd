@@ -195,7 +195,7 @@ I estimate four versions of the elasticity of substitution :
 
 # Regression : no control
 ols1.no = pwt %>%
-  lm(formula = k_nor_log ~ Country + THETA1_log_neg*Country - THETA1_log_neg)
+  lm(formula = k_nor_log ~ Country + THETA1_log_neg*Country - THETA1_log_neg -1)
 # Robust standard errors
 ols1.no = robustify(ols1.no) %>% 
   summary()
@@ -208,7 +208,7 @@ ols1.no
 
 # Regression : no control
 ols2.no = pwt %>%
-  lm(formula = k_nor_log ~ Country + THETA2_log_neg*Country - THETA2_log_neg)
+  lm(formula = k_nor_log ~ Country + THETA2_log_neg*Country - THETA2_log_neg -1)
 # Robust standard errors
 ols2.no = robustify(ols2.no) %>% 
   summary()
@@ -227,7 +227,7 @@ ols2.no
 
 # Regression : control only for biased technical change
 ols1.btc = pwt %>%
-  lm(formula = k_nor_log ~ Country + THETA1_log_neg*Country + Country*t - THETA1_log_neg - t)
+  lm(formula = k_nor_log ~ Country + THETA1_log_neg*Country + Country*t - THETA1_log_neg -1 - t)
 # Robust standard errors
 ols1.btc = robustify(ols1.btc) %>%
   summary()
@@ -240,7 +240,7 @@ ols1.btc
 
 # Regression : control only for biased technical change
 ols2.btc = pwt %>%
-  lm(formula = k_nor_log ~ Country + THETA2_log_neg*Country + Country*t - THETA2_log_neg - t)
+  lm(formula = k_nor_log ~ Country + THETA2_log_neg*Country + Country*t - THETA2_log_neg -1 - t)
 # Robust standard errors
 ols2.btc = robustify(ols2.btc) %>%
   summary()
@@ -259,7 +259,7 @@ ols2.btc
 
 # Regression : control only for hours worked
 ols1.avh = pwt %>%
-  lm(formula = k_nor_log.avh_correct ~ Country + THETA1_log_neg*Country - THETA1_log_neg)
+  lm(formula = k_nor_log.avh_correct ~ Country + THETA1_log_neg*Country - THETA1_log_neg -1)
 # Robust standard errors
 ols1.avh = robustify(ols1.avh) %>% 
   summary()
@@ -272,7 +272,7 @@ ols1.avh
 
 # Regression : control only for hours worked
 ols2.avh = pwt %>%
-  lm(formula = k_nor_log.avh_correct ~ Country + THETA2_log_neg*Country - THETA2_log_neg)
+  lm(formula = k_nor_log.avh_correct ~ Country + THETA2_log_neg*Country - THETA2_log_neg -1)
 # Robust standard errors
 ols2.avh = robustify(ols2.avh) %>% 
   summary()
@@ -291,7 +291,7 @@ ols2.avh
 
 # Regression : control for both hours worked and biased technical change
 ols1.avh.btc = pwt %>%
-  lm(formula = k_nor_log.avh_correct ~ Country + THETA1_log_neg*Country + t*Country - THETA1_log_neg - t)
+  lm(formula = k_nor_log.avh_correct ~ Country + THETA1_log_neg*Country + t*Country - THETA1_log_neg -1 - t)
 # Robust standard errors
 ols1.avh.btc = robustify(ols1.avh.btc) %>% 
   summary()
@@ -304,7 +304,7 @@ ols1.avh.btc
 
 # Regression : control for both hours worked and biased technical change
 ols2.avh.btc = pwt %>%
-  lm(formula = k_nor_log.avh_correct ~ Country + THETA2_log_neg*Country + t*Country - THETA2_log_neg - t)
+  lm(formula = k_nor_log.avh_correct ~ Country + THETA2_log_neg*Country + t*Country - THETA2_log_neg -1 - t)
 # Robust standard errors
 ols2.avh.btc = robustify(ols2.avh.btc) %>% 
   summary()
