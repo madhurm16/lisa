@@ -74,3 +74,13 @@ loc_csv_un = file.path(loc_data, "csv", "un")
 
 # Do
 csv_to_csv(loc_raw_un, loc_csv_un)
+
+##### CWED #####
+
+# Raw data location
+loc_raw_cwed = file.path(loc_data, "raw", "cwed")
+# Csv data location
+loc_csv_cwed = file.path(loc_data, "csv", "cwed")
+
+# Do
+csv_to_csv(loc_raw_cwed, loc_csv_cwed)
