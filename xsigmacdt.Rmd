@@ -13,6 +13,10 @@ output:
 require(dplyr) # The FAMOUS one
 require(reshape2) # Reshape data frame
 require(ggplot2) # Plot
+require(ggrepel) # Annotation on graph
+require(RColorBrewer) # Color palette
+library(extrafont) # Other font policy
+library(latex2exp) # LaTeX
 
 # Define paths
 loc_final = file.path("data", "final")
@@ -20,6 +24,9 @@ loc_final = file.path("data", "final")
 # Define country set
 # country_set = c("Australia", "Canada", "France", "Italy", "Japan", "United States")
 country_set = c("France", "United States")
+
+# Graphic parameter
+scale_graph = 1920/1080
 
 ```	
 
@@ -44,7 +51,7 @@ sigma = function(urep){
 }
 
 # Interval between 0 and 3 for feasible values of urep
-interval = seq(0.01, 0.8, by = 0.001)
+interval = seq(0.001, 0.8, by = 0.001)
 
 # Compute sigma values
 xsigma = data.frame("Function", interval, sigma(interval)) %>% 
@@ -79,8 +86,7 @@ cwed
 ```
 
 
-```{r f Plot and Country, echo = FALSE}
-
+```{r x_min, echo = FALSE}
 # Country set
 country_set = c("France", "United States")
 
@@ -88,31 +94,39 @@ country_set = c("France", "United States")
 min_x = cwed %>% 
   subset(Country %in% country_set) %>% 
   select(Country, US100_min) %>% 
-  setNames(c("Country", "interval")) %>% 
-  mutate(sigma_values = -log(interval)^(-1))
+  setNames(c("Country", "interval")) %>%
+mutate(sigma_values = -log(interval)^(-1))
+
+min_x
+```
+
+
+```{r f Plot and Country, echo = FALSE}
 
 ### Plot
 
 ## Add latex
 xsigma %>% 
   ggplot(aes(x = interval, y = sigma_values)) +
-  geom_line(size = 1) +
-  geom_segment(aes(x = 0,
-                   xend = min_x %>% 
-                     subset(Country == "France") %>% pull("interval"),
+  geom_line() +
+  # geom_label_repel(data = min_x,
+  #                  aes(label = round(sigma_values,3), color = Country),
+  #                  segment.color = "transparent") +
+  # Horizontal line
+  geom_segment(aes(x = 0, xend = 0.8,
                    y = min_x %>% 
                      subset(Country == "France") %>% pull("sigma_values"),
                    yend = min_x %>% 
                      subset(Country == "France") %>% pull("sigma_values")),
-               col = "red", linetype = "dashed") +
-  geom_segment(aes(x = 0,
-                   xend = min_x %>% 
-                     subset(Country == "United States") %>% pull("interval"),
+               col = brewer.pal(8, "Set1")[1], linetype = "solid") +
+  # Horizontal line
+  geom_segment(aes(x = 0, xend = 0.8,
                    y = min_x %>% 
                      subset(Country == "United States") %>% pull("sigma_values"),
                    yend = min_x %>% 
                      subset(Country == "United States") %>% pull("sigma_values")),
-               col = "blue", linetype = "dashed") +
+               col = brewer.pal(8, "Set1")[2], linetype = "solid") +
+  # Vertical line
   geom_segment(aes(x = min_x %>% 
                      subset(Country == "France") %>% pull("interval"),
                    xend = min_x %>% 
@@ -120,7 +134,8 @@ xsigma %>%
                    y = 0,
                    yend = min_x %>% 
                      subset(Country == "France") %>% pull("sigma_values")),
-               col = "red", linetype = "dashed") +
+               col = brewer.pal(8, "Set1")[1], linetype = "longdash") +
+  # Vertical line
   geom_segment(aes(x = min_x %>% 
                      subset(Country == "United States") %>% pull("interval"),
                    xend = min_x %>% 
@@ -128,9 +143,22 @@ xsigma %>%
                    y = 0,
                    yend = min_x %>% 
                      subset(Country == "United States") %>% pull("sigma_values")),
-               col = "blue", linetype = "dashed") +
+               col = brewer.pal(8, "Set1")[2], linetype = "longdash") + 
+  annotate("text", x = 0.2, y = 0.3 + min_x %>% subset(Country == "France") %>% pull("sigma_values"),
+           label = TeX(paste0('$\\bar{\\sigma}_{FR} = ',
+           min_x %>% subset(Country == "France") %>% pull("sigma_values") %>% round(3), '$')),
+           size = 5, col = brewer.pal(8, "Set1")[1]) +
+  annotate("text", x = 0.2, y = -0.3 + min_x %>% subset(Country == "United States") %>% pull("sigma_values"),
+           label = TeX(paste0('$\\bar{\\sigma}_{US} = ',
+           min_x %>% subset(Country == "United States") %>% pull("sigma_values") %>% round(3), '$')),
+           size = 5, col = brewer.pal(8, "Set1")[2]) +
+  scale_color_manual(values = brewer.pal(8, "Set1")[c(1,2)]) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) +
   theme_classic(base_size = 14) +
-  labs(x = "Unemployment Replacement Rate", y = "Max Capital-labor elasticity of substitution")
+  theme(legend.position = "none") +
+  labs(x = "Unemployment Replacement Rate", y = "Capital-Labor Elasticity of Substitution") +
+  ggsave(file.path(loc_result, "xsigma.png"), width = scale_graph*5, height = 5)
 
 ```
 
