@@ -26,7 +26,11 @@ The g function has four different shapes according to the value of $\sigma$ and 
 
 ```{r g function - Define, include = FALSE}
 
-g = function(k, sigma, k1, k2){
+g = function(k, sigma, ks){
+  
+  k1 = ks[1]
+  k2 = ks[2]
+  
   G = log((k/k1-1)/((k/k2)^((sigma-1)/sigma)-1))
   return(G)
 }
@@ -34,14 +38,106 @@ g = function(k, sigma, k1, k2){
 ```
 
 ```{r g function - Generate, include = FALSE, warning = FALSE}
+# Interval vector
+inter = seq(0, 10, length.out = 10000)
 
-# Interval dataframe
+# 4 cases
+sigmas = c(0.8, 1.2)
+ks = list(c(1, 2), c(2,1))
+
+# Empty data frame
+df = data.frame(matrix(ncol = 5, nrow = 0)) %>% 
+  setNames(c("inter", "sigma", "k1", "k2", "value"))
+
+# Loop
+for(i in c(1,2)){
+  for(j in c(1,2)){
+    
+    df = cbind(inter, "sigma" = sigmas[i], "k1" = ks[[j]][1], "k2" = ks[[j]][2],
+               "value" = g(inter, sigmas[i], ks[[j]])) %>% 
+      as.data.frame() %>% 
+      rbind(df)
+    
+  }
+}
+```
+
+```{r}
+
+df %>%
+  mutate(k1 = factor(k1, labels = c(bquote(k[1] > k[2]), bquote(k[1] < k[2])))) %>% 
+  
+  ggplot(aes(x = inter, y = value)) +
+  geom_line(size = 1, color = red) +
+  geom_vline(xintercept = 1, linetype = "longdash", color = red, alpha = 0.5) +
+  geom_vline(xintercept = 2, linetype = "longdash", color = red, alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = "solid", color = "black") +
+  facet_grid(sigma ~ k1 + k2, scales = "fixed",
+             labeller = label_bquote(cols = paste(k[1] == .(k1), ", ", k[2] == .(k2)), 
+                                     rows = sigma == .(sigma))
+             ) +
+  theme_classic(base_size = 14) +
+  scale_x_continuous(name = bquote(k[t]), breaks = NULL, limits = c(0,5),
+                     expand = c(0.001, 0)) +
+  scale_y_continuous(name = bquote(g(k[t])), breaks = 0, limits = c(-1.5, 4.5)) +
+  ggsave("gfunction_graph.png", width = 7, height = 7)
+
+
+```
+
+
+```{r}
+
+# Second tentative with grid.arrange
+
+
+df %>% subset(sigma == 0.8) %>% 
+  ggplot(aes(x = inter, y = value)) +
+  geom_line(color = red) +
+  facet_wrap(. ~ k1, ncol = 1) +
+  geom_vline(xintercept = 1, linetype = "longdash", color = red, alpha = 0.5) +
+  geom_vline(xintercept = 2, linetype = "longdash", color = red, alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = "solid", color = "black") +
+  theme_classic(base_size = 14) +
+  scale_x_continuous(name = bquote(k[t]), breaks = NULL, limits = c(0,3),
+                     expand = c(0, 0)) +
+  scale_y_continuous(name = bquote(g(k[t])), breaks = 0)
+
+  
+  
+  
+  
+  
+  
+avg1 = ggplot(df[df$variable=="avg1",], aes(x=day, y=value)) +
+  geom_bar(stat="identity") +
+  facet_wrap(~variable) +
+  coord_cartesian(ylim=c(300,500))
+
+avg2 = ggplot(df[df$variable=="avg2",], aes(x=day, y=value)) +
+  geom_bar(stat="identity") +
+  facet_wrap(~variable) +
+  coord_cartesian(ylim=c(3.5,8))
+
+gridExtra::grid.arrange(avg1, avg2, ncol=2)
+
+```
+
+
+
+```{r g function - Generate, include = FALSE, warning = FALSE}
+# Old version
+df = cbind(inter, "sigma" = sigmas[1], "k[1]" = ks[[1]][1], "k[2]" = ks[[1]][2],
+           "value" = g(inter, sigmas[1], ks[[1]])) %>% 
+  as.data.frame() %>% 
+  rbind(df)
+
+
 df = data.frame("inter" = seq(0, 10, length.out = 10000))
 
 # 4 cases
-param = list(sigma = c(0.8, 0.8, 1.2, 1.2),
-             k1 = c(1, 2, 1, 2),
-             k2 = c(2, 1, 2, 1))
+sigmas = c(0.8, 1.2)
+ks = list(c(1, 2), c(2,1))
 
 df = df %>% 
   mutate(g1 = g(inter, param$sigma[1], param$k1[1], param$k2[1]),
@@ -132,6 +228,8 @@ df %>%
 
 ```
 
+### Case c)
+
 ```{r g Function - Graph c, echo = FALSE, warning = FALSE}
 
 df %>%
@@ -168,6 +266,7 @@ df %>%
 
 ```
 
+### Case d)
 
 ```{r g Function - Graph d, echo = FALSE, warning = FALSE}
 
@@ -205,4 +304,91 @@ df %>%
 
 ```
 
+```{r Facet wrap}
+
+
+```
+
+
+## h function
+
+### Case 1)
+
+### Case 2)
+
+### Case 3)
+
+## Uniqueness in case c)
+
+```{r Uniqueness in case c, echo = FALSE, warning = FALSE}
+# Ranges
+sigma_range = c(1.1, 1.2, 1.3, 1.5, 1.7)
+k1 = 1
+k2_range = c(1.01, 1.5, 2)
+
+# Interval
+inter = seq(0.001, 30, 0.001)
+
+# Empty data frame
+result = data.frame(matrix(ncol = 4, nrow = 0)) %>% 
+  setNames(c("inter", "sigma", "k2", "value"))
+
+# Loop to compute g function
+for(k2 in k2_range){
+  for(sigma in sigma_range){
+   
+   g = function(k, sigma, k1, k2){
+      G = log((k/k1-1)/((k/k2)^((sigma-1)/sigma)-1))
+      return(G)
+   }
+   
+   result = cbind(inter, sigma, k2, "value" = g(inter, sigma, k1, k2)) %>% 
+     rbind(result)
+   
+  }
+}
+
+result = as.data.frame(result)
+
+# Compute bound and violation logic
+result = result %>% 
+  subset(inter > k2) %>% 
+   mutate(bound = 1/as.numeric(as.character(sigma)),
+          violation = ifelse(bound > value, TRUE, FALSE),
+          sigma = as.factor(sigma),
+          k2 = as.factor(k2))
+
+# Check if g and h intersect
+sum(result$violation, na.rm = TRUE) # If =  0, then do not intersect after k2
+```
+
+
+```{r Uniqueness in case c - Min values, echo = FALSE, warning = FALSE}
+# Show minimum k on (k2, +infinity)
+min_val = result %>%  
+  group_by(sigma, k2) %>% 
+  summarise(min(value), min(bound)) %>% 
+  setNames(c("sigma", "k2", "min_k", "min_x"))
+min_val
+```
+
+
+```{r Uniqueness in case c - Graph, echo = FALSE, warning = FALSE}
+x_bound = min_val %>% pull("min_x")
+
+result %>%  
+  
+  ggplot(aes(x = inter, y = value)) +
+  geom_line(aes(color = sigma)) +
+  geom_hline(data = min_val, aes(yintercept = x_bound, color = sigma), linetype = "dashed") +
+  facet_wrap(k2 ~ ., labeller = label_bquote(alpha == .(as.numeric(as.character(k2))))) +
+  scale_x_continuous(breaks = 0, limits = c(0, 10), expand = c(0,0)) +
+  scale_y_continuous(breaks = c(0,1), limits = c(0, 5), expand = c(0,0)) +
+  scale_color_manual(name = bquote(sigma), values = brewer.pal(8, "Set1")) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "right") +
+  labs(x = bquote(tilde(k)[t]), y = "") +
+  ggsave("sigma_k2.png", width = scale_graph*5, height = scale_graph*5/3)
+
+```
 
