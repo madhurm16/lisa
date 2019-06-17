@@ -9,14 +9,10 @@ output:
 
 ```{r Init, include = FALSE}	
 
-# Define required packages
-require(dplyr) # The FAMOUS one
-require(reshape2) # Reshape data frame
-require(ggplot2) # Plot
-require(ggrepel) # Annotation on graph
-require(RColorBrewer) # Color palette
-library(extrafont) # Other font policy
-library(latex2exp) # LaTeX
+# Load packages
+packages <- c("dplyr", "ggplot2", "ggrepel", "RColorBrewer", "reshape2", "extrafont", "latex2exp")
+lapply(packages, require, character.only = TRUE)
+rm(packages)
 
 # Define paths
 loc_final = file.path("data", "final")
