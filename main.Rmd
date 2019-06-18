@@ -438,22 +438,34 @@ final %>%
          outside_dev = outside/outside[Year == 1970] -1,
          w_dev = w/w[Year == 1970] -1,
          L_dev = L/L[Year == 1970] -1,
-         YL_dev = YL/YL[Year == 1970] -1) %>% 
+         YL_dev = YL/YL[Year == 1970] -1,
+         K_dev = K/K[Year == 1970] -1,
+         k_dev = k/k[Year == 1970] -1,
+         theta_dev = theta/theta[Year == 1970] -1,
+         u_dev = u/u[Year == 1970] -1,
+         Y_dev = Y/Y[Year == 1970] -1) %>% 
   select(Country, Year, contains("_dev")) %>% 
   subset(Year %in% c(1970:2080)) %>% 
   melt(id.vars = c("Country", "Year")) %>% 
   
-  ggplot(aes(x = Year, y = value, color = variable)) +
+  ggplot(aes(x = Year, y = value, color = Country)) +
   geom_line() +
-  facet_wrap(Country ~ ., scales = "free") +
-  scale_color_manual(name = "Variables",
-                     breaks = c("dep_dev", "eta_dev", "outside_dev", "w_dev", "L_dev", "YL_dev"),
-                     labels = c("Dependency ratio", "Young political power", "Outside option", "Wage",
-                                "Labor", "Production per worker"),
-                     values = brewer.pal(8, "Set1")) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(variable ~ ., scales = "free") +
+  scale_color_manual(values = brewer.pal(8, "Set1")) +
+  # scale_color_manual(name = "Variables",
+  #                    breaks = c("dep_dev", "eta_dev", "outside_dev", "w_dev", "L_dev", "YL_dev"),
+  #                    labels = c("Dependency ratio", "Young political power", "Outside option", "Wage",
+  #                               "Labor", "Production per worker"),
+  #                    values = brewer.pal(8, "Set1")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "right", legend.direction = "vertical") +
   labs(x = "Year", y = "Deviation from the initial steady state (1970)")
+
+```
+
+
+```{r Graph - BModel Variables, echo = FALSE}
 
 ## Variable deviation 1970 to 2010
 final %>% 
@@ -467,25 +479,35 @@ final %>%
          outside_dev = outside/outside[Year == 1970] -1,
          w_dev = w/w[Year == 1970] -1,
          L_dev = L/L[Year == 1970] -1,
-         YL_dev = YL/YL[Year == 1970] -1) %>% 
+         YL_dev = YL/YL[Year == 1970] -1,
+         K_dev = K/K[Year == 1970] -1,
+         k_dev = k/k[Year == 1970] -1,
+         theta_dev = theta/theta[Year == 1970] -1,
+         u_dev = u/u[Year == 1970] -1,
+         Y_dev = Y/Y[Year == 1970] -1) %>% 
   select(Country, Year, contains("_dev")) %>% 
   subset(Year %in% c(1970:2010)) %>% 
   melt(id.vars = c("Country", "Year")) %>% 
   
-  ggplot(aes(x = Year, y = value, color = variable)) +
+  ggplot(aes(x = Year, y = value, color = Country)) +
   geom_line() +
-  facet_wrap(Country ~ ., scales = "free") +
-  scale_color_manual(name = "Variables",
-                     breaks = c("dep_dev", "eta_dev", "outside_dev", "w_dev", "L_dev", "YL_dev"),
-                     labels = c("Dependency ratio", "Young political power", "Outside option", "Wage",
-                                "Labor", "Production per worker"),
-                     values = brewer.pal(8, "Set1")) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(variable ~ ., scales = "free") +
+  scale_color_manual(values = brewer.pal(8, "Set1")) +
+  # scale_color_manual(name = "Variables",
+  #                    breaks = c("dep_dev", "eta_dev", "outside_dev", "w_dev", "L_dev", "YL_dev"),
+  #                    labels = c("Dependency ratio", "Young political power", "Outside option", "Wage",
+  #                               "Labor", "Production per worker"),
+  #                    values = brewer.pal(8, "Set1")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "right", legend.direction = "vertical") +
   labs(x = "Year", y = "Deviation from the initial steady state (1970)")
 
+```
 
-## Variable deviation 2010 to 2050
+```{r}
+
+## Variable deviation 1970 to 2080
 final %>% 
   group_by(Country) %>% 
   mutate(dep = p / n,
@@ -497,25 +519,31 @@ final %>%
          outside_dev = outside/outside[Year == 2010] -1,
          w_dev = w/w[Year == 2010] -1,
          L_dev = L/L[Year == 2010] -1,
-         YL_dev = YL/YL[Year == 2010] -1) %>% 
+         YL_dev = YL/YL[Year == 2010] -1,
+         K_dev = K/K[Year == 2010] -1,
+         k_dev = k/k[Year == 2010] -1,
+         theta_dev = theta/theta[Year == 2010] -1,
+         u_dev = u/u[Year == 2010] -1,
+         Y_dev = Y/Y[Year == 2010] -1) %>% 
   select(Country, Year, contains("_dev")) %>% 
   subset(Year %in% c(2010:2050)) %>% 
   melt(id.vars = c("Country", "Year")) %>% 
   
-  ggplot(aes(x = Year, y = value, color = variable)) +
+  ggplot(aes(x = Year, y = value, color = Country)) +
   geom_line() +
-  facet_wrap(Country ~ ., scales = "free") +
-  scale_color_manual(name = "Variables",
-                     breaks = c("dep_dev", "eta_dev", "outside_dev", "w_dev", "L_dev", "YL_dev"),
-                     labels = c("Dependency ratio", "Young political power", "Outside option", "Wage",
-                                "Labor", "Production per worker"),
-                     values = brewer.pal(8, "Set1")) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(variable ~ ., scales = "free") +
+  scale_color_manual(values = brewer.pal(8, "Set1")) +
+  # scale_color_manual(name = "Variables",
+  #                    breaks = c("dep_dev", "eta_dev", "outside_dev", "w_dev", "L_dev", "YL_dev"),
+  #                    labels = c("Dependency ratio", "Young political power", "Outside option", "Wage",
+  #                               "Labor", "Production per worker"),
+  #                    values = brewer.pal(8, "Set1")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "right", legend.direction = "vertical") +
   labs(x = "Year", y = "Deviation from the initial steady state (2010)")
-
-
 ```
+
 
 
 ### Counterfactual simulation
