@@ -431,7 +431,7 @@ result = as.data.frame(result)
 
 # Compute bound and violation logic
 result = result %>% 
-  subset(inter > k2) %>% 
+  #subset(inter > k2) %>% 
    mutate(bound = 1/as.numeric(as.character(sigma)),
           violation = ifelse(bound > value, TRUE, FALSE),
           sigma = as.factor(sigma),
@@ -460,14 +460,14 @@ result %>%
   ggplot(aes(x = inter, y = value)) +
   geom_line(aes(color = sigma)) +
   geom_hline(data = min_val, aes(yintercept = x_bound, color = sigma), linetype = "dashed") +
-  facet_wrap(k2 ~ ., labeller = label_bquote(alpha == .(as.numeric(as.character(k2))))) +
+  facet_wrap(k2 ~ ., labeller = label_bquote(nu == .(as.numeric(as.character(k2))))) +
   scale_x_continuous(breaks = 0, limits = c(0, 10), expand = c(0,0)) +
   scale_y_continuous(breaks = c(0,1), limits = c(0, 5), expand = c(0,0)) +
   scale_color_manual(name = bquote(sigma), values = brewer.pal(8, "Set1")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "right") +
-  labs(x = bquote(tilde(k)[t]), y = "") +
-  ggsave("sigma_k2.png", width = scale_graph*5, height = scale_graph*5/3)
+  labs(x = "", y = "") +
+  ggsave("g_tilde.png", width = scale_graph*5, height = scale_graph*5/3)
 
 ```
 
