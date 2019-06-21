@@ -455,13 +455,53 @@ final %>%
   scale_color_manual(values = brewer.pal(8, "Set1")) +
   # scale_color_manual(name = "Variables",
   #                    breaks = c("dep_dev", "eta_dev", "outside_dev", "w_dev", "L_dev", "YL_dev"),
-  #                    labels = c("Dependency ratio", "Young political power", "Outside option", "Wage",
+  #                    labels = c("Dependency ratio", "Young political- power", "Outside option", "Wage",
   #                               "Labor", "Production per worker"),
   #                    values = brewer.pal(8, "Set1")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "right", legend.direction = "vertical") +
   labs(x = "Year", y = "Deviation from the initial steady state (1970)")
 
+```
+```{r Graph - BModel Var 70-10 - Public, echo = FALSE}
+final_dev_pub = final %>% 
+  group_by(Country) %>%
+  mutate(# taxrev = tau*Y
+         # unempsp = b*Ny*u/tau/Y,
+         # healthsp = h*No/tau/Y,
+    outside = b/(1-tau),
+         eta_dev = eta/eta[Year == 1970] -1,
+         # taxrev_dev = taxrev/taxrev[Year == 1970] -1,
+         # unempsp_dev = unempsp/unempsp[Year == 1970] -1,
+         # healthsp_dev = healthsp/healthsp[Year == 1970] -1
+         outside_dev = outside/outside[Year == 1970] -1,
+         w_dev = w/w[Year == 1970] -1,
+         # h_dev = h/h[Year == 1970] -1,
+         ) %>% 
+  select(Country, Year, contains("_dev")) %>% 
+  subset(Year %in% c(1970:2010)) %>% 
+  melt(id.vars = c("Country", "Year"))
+
+# levels(final_dev_pub$variable) = c(expression("eta[t]"), expression("tau[t]"), expression("b[t]"), expression("h[t]"))
+  
+final_dev_pub %>% 
+
+  ggplot(aes(x = Year, y = value, color = Country)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
+  scale_color_manual(values = brewer.pal(8, "Set1")) +
+  # scale_color_manual(name = "Variables",
+  #                    breaks = c("dep_dev", "eta_dev", "outside_dev", "w_dev", "L_dev", "YL_dev"),
+  #                    labels = c("Dependency ratio", "Young political power", "Outside option", "Wage",
+  #                               "Labor", "Production per worker"),
+  #                    values = brewer.pal(8, "Set1")) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical") +
+  labs(x = "Year", y = "") +
+  ggsave(file.path(loc_result, "dev_pub.png"), width = scale_graph*5, height = scale_graph*5/3)
+  
+  
 ```
 
 
