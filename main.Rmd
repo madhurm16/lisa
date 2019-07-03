@@ -160,7 +160,6 @@ param_base = data.frame("Country" = rep(c("France", "United States"), each = len
 I estimate the elasticity of substitution between capital and labor using the methodology of **Leon-Ledesma, McAdam & Willman (2013)**. Estimation are done for France and United States between 1970 and 2010, using Penn World Table 9.1 data. *For more details, please consult "sigma.md" file.*
 
 ```{r Parameter - Production function, echo = FALSE}
-
 # Estimation
 ols_sigma = df %>% 
   group_by(Country) %>% 
@@ -175,6 +174,10 @@ ols_sigma = df %>%
 # Result visualization
 robust.summary(ols_sigma)
 
+```
+
+
+```{r Parameter - Production function - Display, echo = FALSE}
 # Add production function parameters
 param_base = param_base %>%
   mutate("phi" = rep(1 - df$theta[df$Year == 1970], each = length(sim)), 
@@ -192,7 +195,7 @@ param_base %>% subset(Year == 1970) %>% select(Country, phi, sigma, a)
 
 The relative per-capita influence of old households *omega* is deduced such that the capital-to-labor ratio is matched in 1970. The preference for government health expenditure *beta* is deduced such that the tax rate in 1970 is matched.
 
-```{r Parameter - Preferences, echo = FALSE}
+```{r Parameter - Preferences - Initial year, echo = FALSE}
 
 # Compute omega and beta
 param_base = df %>%
@@ -211,6 +214,63 @@ param_base = df %>%
 param_base %>% subset(Year == 1970) %>% select(Country, omega, beta)
 
 ```
+
+```{r Parameter - Preferences, echo = FALSE}
+# Compute omega and beta
+omega_beta = df %>%
+  merge(param_base %>%
+          select(-Year) %>%
+          unique()
+        ) %>%
+  mutate(X = (sigma + (1-phi)/phi*(1-gamma*(1-sigma))/gamma*k^((1-sigma)/sigma))^(-1),
+         eta = (1-phi)/phi*k^((1-sigma)/sigma) * ((Ny/K*k-1)*exp(-X) + 1),
+         omega.raw = n/p*(1+alpha*p1)/eta,
+         beta.raw = 1/(1 - tau)/(1-theta) - 1 - eta)
+
+```
+
+```{r Parameter - Omega/Beta analysis, echo = FALSE}
+
+omega_beta %>% 
+  select(Country, Year, omega.raw, beta.raw) %>% 
+  subset(Year <= 2010) %>%
+  melt(id.vars = c("Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, color = Country)) +
+  geom_line() +
+  facet_wrap(variable ~ ., scale = "free")
+
+```
+
+
+```{r Parameter - Preferences, echo = FALSE}
+
+param_base = omega_beta %>% 
+  group_by(Country) %>% 
+  mutate(omega.avg = mean(omega.raw, na.rm = TRUE),
+         beta.avg = mean(beta.raw, na.rm = TRUE),
+         omega.init = first(omega.raw),
+         beta.init = first(beta.raw)) %>% 
+  select(Country, Year, starts_with("omega"), starts_with("beta")) %>% 
+  merge(param_base, .)
+
+# Visualization
+param_base %>% subset(Year == 1970) %>% select(Country, starts_with("omega"), starts_with("beta"))
+
+```
+
+```{r Parameter - Preferences - Select omega/beta, echo = FALSE}
+
+param_base = param_base %>% 
+  group_by(Country) %>% 
+  mutate(omega = ifelse(Year == 1970 & Country == "France", omega.init, omega.raw %>%
+                          subset(Year > 1970) %>% 
+                          mean(na.rm = TRUE)),
+         beta = beta.init) %>% 
+  select(Country, Year, alpha, gamma, phi, sigma, a, omega, beta)
+
+```
+
 
 ### Scale parameter
 
