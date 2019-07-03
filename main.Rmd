@@ -167,9 +167,9 @@ ols_sigma = df %>%
          THETA_log_neg = - log((1-theta)/theta),
          t_diff = Year - first(Year) + 1) %>% 
   select(Country, Year, k_log, THETA_log_neg, t_diff) %>% 
-  subset(Year %in% c(1970:2010)) %>% 
+  subset(Year %in% c(1988:2010)) %>% 
   ungroup() %>% 
-  lm(k_log ~ Country + THETA_log_neg*Country + t_diff*Country - THETA_log_neg - t_diff, data = .)
+  lm(k_log ~ Country + THETA_log_neg*Country + Year*Country - THETA_log_neg - Year, data = .)
 
 # Result visualization
 robust.summary(ols_sigma)
