@@ -337,3 +337,115 @@ pwt_est
 
 ```	
 
+## Break Year
+
+The purpose of this section is to investigate whether there is a break in the estimated elasticity of substitution. In particular for France. Indeed, there capital-per-worker $k$ grows at a relatively constant rate while the labor share $\\theta$ faces a huge decrease during the 80's.
+
+I consider only France with adjustment method 1 and capital with average hours worked correction. Estimation is done with biased technical change.
+
+```{r BY - , echo = FALSE}
+
+# Define data frame
+pwt_break = pwt %>% 
+  subset(Year %in% c(1970:2010) & Country == "France") %>% 
+  select(Country, Year, k_nor_log.avh_correct, THETA1_log_neg, t) %>% 
+  setNames(c("Country", "Year", "k_nor_log", "THETA_log_neg", "t"))
+
+```
+
+This is the baseline regression, where I estimate the capital-labor elasticity of substitution for the whole sample. 
+
+```{r}
+
+ols_base = pwt_break %>% 
+  lm(k_nor_log ~ THETA_log_neg + t, data = .)
+robust.summary(ols_base)
+
+```
+
+There is a biased technical change, which is constant and significant. I have to keep the same rate of technical change. Because if I split the sample, I would obtain two different BTC growth rates. Thus, a way is to detrend the capital-per-worker.
+
+
+```{r Detrend, echo = FALSE}
+
+pwt_break$k_nor_log_detrend = pwt_break %>% 
+  lm(k_nor_log ~ t, data = .) %>%
+  residuals()
+
+pwt_break$THETA_log_neg_detrend = pwt_break %>% 
+  lm(THETA_log_neg ~ t, data = .) %>%
+  residuals()
+
+```
+
+```{r}
+
+ols_base_detrend = pwt_break %>% 
+  lm(k_nor_log_detrend ~ THETA_log_neg_detrend -1, data = .)
+
+robust.summary(ols_base_detrend)  
+
+```
+
+
+
+
+```{r}
+
+spliter = 1983
+
+# Before spliter
+ols_before = pwt_break %>% 
+  subset(Year <= spliter) %>% 
+  lm(k_nor_log_detrend ~ THETA_log_neg_detrend, data = .)
+robust.summary(ols_before)
+
+# After spliter
+ols_after = pwt_break %>% 
+  subset(Year > spliter) %>% 
+  mutate(t_diff = Year - spliter) %>% 
+  lm(k_nor_log_detrend ~ THETA_log_neg_detrend, data = .)
+robust.summary(ols_after)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
