@@ -458,3 +458,125 @@ for France (i.e. 1.047) and larger for the US (i.e. 1.329).
     ## 14 United States  pwt   0   1   2   -1.509395
     ## 15        France  pwt   1   1   2    1.047439
     ## 16 United States  pwt   1   1   2    1.328828
+
+## Break Year
+
+The purpose of this section is to investigate whether there is a break
+in the estimated elasticity of substitution. In particular for France.
+Indeed, there capital-per-worker
+![k\_t](https://latex.codecogs.com/png.latex?k_t "k_t") grows at a
+relatively constant rate while the labor share
+![\\Theta\_t](https://latex.codecogs.com/png.latex?%5CTheta_t
+"\\Theta_t") faces a huge decrease during the 80’s.
+
+I consider only France with adjustment method 1 and capital with average
+hours worked correction. Estimation is done with biased technical
+change.
+
+This is the baseline regression, where I estimate the capital-labor
+elasticity of substitution for the whole sample.
+
+    ## 
+    ## Call:  lm(formula = k_nor_log ~ THETA_log_neg + t, data = .)
+    ## 
+    ## Call (vcov):  vcovHC(x = ..., type = "HC0")
+    ## 
+    ## t test of coefficients with robust standard errors:
+    ## 
+    ##                Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)    0.458257   0.168481   2.720  0.00979 ** 
+    ## THETA_log_neg -0.262356   0.147503  -1.779  0.08330 .  
+    ## t              0.022985   0.002692   8.538 2.28e-10 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+There is a biased technical change, which is constant and significant. I
+have to keep the same rate of technical change. Because if I split the
+sample, I would obtain two different BTC growth rates. Thus, a way is to
+detrend the capital-per-worker and the capital-to-labor income ratio.
+Such a methodology comes from the **Frisch–Waugh–Lovell theorem**.
+
+![](sigma_files/figure-gfm/Break%20Year%20-%20Detrend-1.png)<!-- -->
+
+This is an example of the regressions when I break the sample in
+1985.
+
+![](sigma_files/figure-gfm/Break%20Year%20-%20Plot%20regimes-1.png)<!-- -->
+
+It seems that there are two regimes. There are three main potential
+breaks around the years 1983, 1985 and 1989.
+
+    ## # A tibble: 3 x 7
+    ##   Country  Year k_nor_log THETA_log_neg     t k_nor_log_detre~
+    ##   <fct>   <int>     <dbl>         <dbl> <dbl>            <dbl>
+    ## 1 France   1982     0.614         1.01     13           0.0873
+    ## 2 France   1985     0.725         0.864    16           0.120 
+    ## 3 France   1989     0.789         0.648    20           0.0782
+    ## # ... with 1 more variable: THETA_log_neg_detrend <dbl>
+
+However, the break may have occur during the 80’s. I have to determine
+which year optimize the split. To do so, I use a grid-search approach
+between 1980 and 1990. Below is the baseline regression leading to an
+elasticity of 1.356.
+
+    ## 
+    ## Call:  lm(formula = k_nor_log_detrend ~ THETA_log_neg_detrend - 1, data = .)
+    ## 
+    ## Call (vcov):  vcovHC(x = ..., type = "HC0")
+    ## 
+    ## t test of coefficients with robust standard errors:
+    ## 
+    ##                       Estimate Std. Error t value Pr(>|t|)  
+    ## THETA_log_neg_detrend  -0.2624     0.1475  -1.779   0.0829 .
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+I run a regression for each subsample, the subsample are separated with
+a break year between 1980 and 1990. Then, I repeat this for each break
+year on this interval. I report on the graph below the p-values of both
+regressions according to the break year considered. I only show those
+where both p-values do not exceed the one of the baseline
+regression.
+
+![](sigma_files/figure-gfm/Break%20Year%20-%20Split%20loop-1.png)<!-- -->
+
+Therefore, all the break years above are candidate. However, there is
+another condition within the model that ensure a positive wage and
+capital-to-labor ratio at the equilibrium. This condition is that ![−
+\\log^{-1}(x\_t) \>
+\\sigma](https://latex.codecogs.com/png.latex?%E2%88%92%20%5Clog%5E%7B-1%7D%28x_t%29%20%3E%20%5Csigma
+"− \\log^{-1}(x_t) \> \\sigma") where
+![x\_t](https://latex.codecogs.com/png.latex?x_t "x_t") is the
+unemployment replacement rate at time
+![t](https://latex.codecogs.com/png.latex?t "t") from data. As long as
+![\\sigma](https://latex.codecogs.com/png.latex?%5Csigma "\\sigma") is
+lower than 1, this condition is satisfied. However, the issue raises
+when ![\\sigma](https://latex.codecogs.com/png.latex?%5Csigma "\\sigma")
+is greater than one and thus after the break year. So I also have to
+filter the ![\\sigma](https://latex.codecogs.com/png.latex?%5Csigma
+"\\sigma") candidates with this condition. For more details about this
+condition, see the file
+    *xsigmacdt.md*.
+
+    ##   splitter sigma_before    p_before sigma_after      p_after x_min
+    ## 1     1982    0.6848343 0.057640639    2.283375 2.258880e-03 0.660
+    ## 2     1983    0.6657488 0.018686477    3.247766 1.136058e-05 0.660
+    ## 3     1984    0.6452102 0.008146204    5.026342 4.570342e-10 0.688
+    ## 4     1985    0.6316941 0.005723918    6.237710 5.744035e-11 0.688
+    ## 5     1986    0.6219518 0.004476779    7.248446 4.350550e-11 0.688
+    ## 6     1987    0.6506501 0.010529795    6.145562 3.110334e-11 0.688
+    ## 7     1988    0.6920947 0.034369421    5.556700 6.319983e-11 0.688
+    ##   sigma_bar xcdt_ok
+    ## 1  2.406649    TRUE
+    ## 2  2.406649   FALSE
+    ## 3  2.674037   FALSE
+    ## 4  2.674037   FALSE
+    ## 5  2.674037   FALSE
+    ## 6  2.674037   FALSE
+    ## 7  2.674037   FALSE
+
+Hence, only the break in 1982 complies with the condition to ensure an
+equilibrium with positive wage and capital-to-labor ratio. Thus, instead
+of using a unique capital-labor elasticity of substitution of 1.356, I
+can consider that its value is **0.685** for 1970 and 1980, then
+**2.283**.

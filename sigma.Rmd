@@ -14,7 +14,7 @@ require(dplyr) # The FAMOUS one
 require(reshape2) # Reshape data frame
 require(ggplot2) # Plot
 require(bucky) # Robust standard errors
-require(sandwich)
+require(sandwich) # If you are hungry
 
 # Define paths
 loc_final = file.path("data", "final")
@@ -339,23 +339,24 @@ pwt_est
 
 ## Break Year
 
-The purpose of this section is to investigate whether there is a break in the estimated elasticity of substitution. In particular for France. Indeed, there capital-per-worker $k$ grows at a relatively constant rate while the labor share $\\theta$ faces a huge decrease during the 80's.
+The purpose of this section is to investigate whether there is a break in the estimated elasticity of substitution. In particular for France. Indeed, there capital-per-worker $k_t$ grows at a relatively constant rate while the labor share $\Theta_t$ faces a huge decrease during the 80's.
 
 I consider only France with adjustment method 1 and capital with average hours worked correction. Estimation is done with biased technical change.
 
-```{r BY - , echo = FALSE}
+```{r Break Year - Dataset, echo = FALSE}
 
 # Define data frame
 pwt_break = pwt %>% 
   subset(Year %in% c(1970:2010) & Country == "France") %>% 
   select(Country, Year, k_nor_log.avh_correct, THETA1_log_neg, t) %>% 
-  setNames(c("Country", "Year", "k_nor_log", "THETA_log_neg", "t"))
+  setNames(c("Country", "Year", "k_nor_log", "THETA_log_neg", "t")) %>% 
+  mutate(t2 = t^2)
 
 ```
 
 This is the baseline regression, where I estimate the capital-labor elasticity of substitution for the whole sample. 
 
-```{r}
+```{r Break Year - Baseline estimation, echo = FALSE}
 
 ols_base = pwt_break %>% 
   lm(k_nor_log ~ THETA_log_neg + t, data = .)
@@ -363,89 +364,165 @@ robust.summary(ols_base)
 
 ```
 
-There is a biased technical change, which is constant and significant. I have to keep the same rate of technical change. Because if I split the sample, I would obtain two different BTC growth rates. Thus, a way is to detrend the capital-per-worker.
+There is a biased technical change, which is constant and significant. I have to keep the same rate of technical change. Because if I split the sample, I would obtain two different BTC growth rates. Thus, a way is to detrend the capital-per-worker and the capital-to-labor income ratio. Such a methodology comes from the **Frisch–Waugh–Lovell theorem**.
 
 
-```{r Detrend, echo = FALSE}
+```{r Break Year - Detrend, echo = FALSE}
 
+# Detrend k
 pwt_break$k_nor_log_detrend = pwt_break %>% 
   lm(k_nor_log ~ t, data = .) %>%
   residuals()
 
+# Detrend THETA
 pwt_break$THETA_log_neg_detrend = pwt_break %>% 
   lm(THETA_log_neg ~ t, data = .) %>%
   residuals()
 
+# Plot detrended variables
+pwt_break %>% 
+  select(Year, k_nor_log_detrend, THETA_log_neg_detrend) %>% 
+  melt(id.vars = "Year") %>% 
+  
+  ggplot(aes(x = Year, y = value, color = variable)) +
+  geom_line() +
+  geom_vline(xintercept = 1982, linetype = "dashed") +
+  geom_vline(xintercept = 1985, linetype = "dashed") +
+  geom_vline(xintercept = 1989, linetype = "dashed") +
+  scale_x_continuous(breaks = c(1970, 1983, 1985, 1989, 2000, 2010)) +
+  theme_classic()
+  
 ```
 
-```{r}
+This is an example of the regressions when I break the sample in 1985.
 
+```{r Break Year - Plot regimes, echo = FALSE}
+
+pwt_break %>% 
+  select(Year, k_nor_log_detrend, THETA_log_neg_detrend) %>% 
+  mutate(before_break = as.factor(ifelse(Year < 1985, "1970-1985", "1986-2010"))) %>% 
+  
+  ggplot(aes(x = k_nor_log_detrend, y = THETA_log_neg_detrend, color = before_break)) +
+  geom_point() +
+  stat_smooth(method = "lm") +
+  scale_color_discrete(name = "Period") +
+  theme_classic()
+
+```
+
+It seems that there are two regimes. There are three main potential breaks around the years 1983, 1985 and 1989. 
+
+```{r Break Year - Max k , echo = FALSE}
+
+# Find the max of the red curve
+pwt_break %>% 
+  subset(k_nor_log_detrend == max(k_nor_log_detrend) | 
+           THETA_log_neg_detrend == max(THETA_log_neg_detrend) |
+           THETA_log_neg_detrend == min(THETA_log_neg_detrend))
+
+```
+
+However, the break may have occur during the 80's. I have to determine which year optimize the split. To do so, I use a grid-search approach between 1980 and 1990. Below is the baseline regression leading to an elasticity of 1.356.
+
+
+```{r Break Year - Baseline Regression, echo = FALSE}
+# Baseline estimate
 ols_base_detrend = pwt_break %>% 
   lm(k_nor_log_detrend ~ THETA_log_neg_detrend -1, data = .)
+ols_base_detrend = robust.summary(ols_base_detrend)
 
-robust.summary(ols_base_detrend)  
+# Visualization
+ols_base_detrend
 
+# p value of the baseline estimation
+p_baseline = ols_base_detrend$coefficients[4]
 ```
 
+I run a regression for each subsample, the subsample are separated with a break year between 1980 and 1990. Then, I repeat this for each break year on this interval. I report on the graph below the p-values of both regressions according to the break year considered. I only show those where both p-values do not exceed the one of the baseline regression.
 
+```{r Break Year - Split loop, echo = FALSE}
 
+df_break = data.frame(matrix(nrow = 0, ncol = 5)) %>% 
+  setNames(c("splitter", "sigma_before", "p_before", "sigma_after", "p_after"))
 
-```{r}
-
-spliter = 1983
-
-# Before spliter
-ols_before = pwt_break %>% 
-  subset(Year <= spliter) %>% 
-  lm(k_nor_log_detrend ~ THETA_log_neg_detrend, data = .)
-robust.summary(ols_before)
+for(splitter in c(1979:1990)){
+  
+  # Before spliter
+  ols_before = pwt_break %>% 
+    subset(Year < splitter) %>% 
+    lm(k_nor_log_detrend ~ THETA_log_neg_detrend -1, data = .)
+  ols_before = robust.summary(ols_before)
 
 # After spliter
-ols_after = pwt_break %>% 
-  subset(Year > spliter) %>% 
-  mutate(t_diff = Year - spliter) %>% 
-  lm(k_nor_log_detrend ~ THETA_log_neg_detrend, data = .)
-robust.summary(ols_after)
+  ols_after = pwt_break %>% 
+    subset(Year >= splitter) %>% 
+    lm(k_nor_log_detrend ~ THETA_log_neg_detrend -1, data = .)
+  ols_after = robust.summary(ols_after)
+  
+  # Gather results
+  result_break = t(c(splitter,
+                   1/(1+ols_before$coefficients[1]),
+                   ols_before$coefficients[4],
+                   1/(1+ols_after$coefficients[1]),
+                   ols_after$coefficients[4]))
+  
+  # Add to final dataframe
+  df_break = df_break %>% rbind(result_break)
+  
+}
+
+df_break = df_break %>% 
+  setNames(c("splitter", "sigma_before", "p_before", "sigma_after", "p_after")) %>% 
+  subset(p_before <= p_baseline & p_after <= p_baseline)
+
+df_break %>% 
+  select(splitter, p_before, p_after) %>%
+  melt(id.vars = "splitter") %>% 
+  
+  ggplot(aes(x = splitter, y = value, color = variable)) +
+  geom_line() +
+  geom_hline(yintercept = p_baseline, linetype = "dashed") +
+  scale_y_continuous(name = "p-value", limits = c(NA, p_baseline)) +
+  scale_x_continuous(name = "Break year", breaks = c(1979:1990)) +
+  scale_color_discrete(name = "Regression", breaks = c("p_before", "p_after"),
+                       labels = c("Before", "After")) +
+  theme_classic()
+
 
 ```
 
+Therefore, all the break years above are candidate. However, there is another condition within the model that ensure a positive wage and capital-to-labor ratio at the equilibrium. This condition is that $− \log^{-1}(x_t) > \sigma$ where $x_t$ is the unemployment replacement rate at time $t$ from data. As long as $\sigma$ is lower than 1, this condition is satisfied. However, the issue raises when $\sigma$ is greater than one and thus after the break year. So I also have to filter the $\sigma$ candidates with this condition. For more details about this condition, see the file *xsigmacdt.md*.
 
+```{r Break Year - Condition on sigma, echo = FALSE}
 
+# Import data from CWED
+cwed = read.csv(file.path(loc_final, "cwed.csv"), header = TRUE)
 
+# Keep only France and US100.lin_inter and merge with df_break
+cwed = cwed %>% 
+  subset(Country == "France" & Year %in% c(1970:2010)) %>% 
+  select(Year, US100.lin_inter)
 
+# Find the min of the unemployment replacement rate for the subsample after the break year
+for(i in c(1:41)){
+cwed$x_min[i] = cwed %>% subset(Year >= 1969+i) %>% pull("US100.lin_inter") %>% min(na.rm = TRUE)
+}
 
+# Compute the larger sigma allowed for each sub sample
+cwed = cwed %>% 
+  select(Year, x_min) %>% 
+  mutate(sigma_bar = -log(x_min)^(-1))
 
+# Merge with df_break
+df_break = df_break %>% merge(cwed, by.x = "splitter", by.y = "Year") %>% 
+  mutate(xcdt_ok = ifelse(sigma_after < sigma_bar, TRUE, FALSE))
 
+# Visualization
+df_break
 
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Hence, only the break in 1982 complies with the condition to ensure an equilibrium with positive wage and capital-to-labor ratio. Thus, instead of using a unique capital-labor elasticity of substitution of 1.356, I can consider that its value is **0.685** for 1970 and 1980, then **2.283**.
 
 
 

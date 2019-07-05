@@ -167,7 +167,7 @@ ols_sigma = df %>%
          THETA_log_neg = - log((1-theta)/theta),
          t_diff = Year - first(Year) + 1) %>% 
   select(Country, Year, k_log, THETA_log_neg, t_diff) %>% 
-  subset(Year %in% c(1988:2010)) %>% 
+  subset(Year %in% c(1970:2010)) %>% 
   ungroup() %>% 
   lm(k_log ~ Country + THETA_log_neg*Country + Year*Country - THETA_log_neg - Year, data = .)
 
@@ -195,33 +195,11 @@ param_base %>% subset(Year == 1970) %>% select(Country, phi, sigma, a)
 
 The relative per-capita influence of old households *omega* is deduced such that the capital-to-labor ratio is matched in 1970. The preference for government health expenditure *beta* is deduced such that the tax rate in 1970 is matched.
 
-```{r Parameter - Preferences - Initial year, echo = FALSE}
-
-# Compute omega and beta
-param_base = df %>%
-  subset(Year == 1970) %>% 
-  merge(param_base) %>%
-  mutate(X = (sigma + (1-phi)/phi*(1-gamma*(1-sigma))/gamma)^(-1),
-         omega = phi/(1-phi)*n/p*(1+alpha*p1)/(1 + exp(-X)*(Ny - 1)),
-         eta = n/p*(1+alpha*p1)/omega,
-         beta = 1/(1 - tau)/phi - 1 - eta) %>% 
-  select(Country, omega, beta) %>% 
-  merge(param_base) %>% 
-  # Reorder parameters in dataframe
-  select(Country, Year, names(param_base), everything())
-
-# Visualization
-param_base %>% subset(Year == 1970) %>% select(Country, omega, beta)
-
-```
 
 ```{r Parameter - Preferences, echo = FALSE}
 # Compute omega and beta
 omega_beta = df %>%
-  merge(param_base %>%
-          select(-Year) %>%
-          unique()
-        ) %>%
+  merge(param_base) %>%
   mutate(X = (sigma + (1-phi)/phi*(1-gamma*(1-sigma))/gamma*k^((1-sigma)/sigma))^(-1),
          eta = (1-phi)/phi*k^((1-sigma)/sigma) * ((Ny/K*k-1)*exp(-X) + 1),
          omega.raw = n/p*(1+alpha*p1)/eta,
@@ -232,13 +210,15 @@ omega_beta = df %>%
 ```{r Parameter - Omega/Beta analysis, echo = FALSE}
 
 omega_beta %>% 
-  select(Country, Year, omega.raw, beta.raw) %>% 
+  select(Country, Year, omega.raw, beta.raw) %>%
+  setNames(c("Country", "Year", "omega", "beta")) %>% 
   subset(Year <= 2010) %>%
   melt(id.vars = c("Country", "Year")) %>% 
   
   ggplot(aes(x = Year, y = value, color = Country)) +
   geom_line() +
-  facet_wrap(variable ~ ., scale = "free")
+  facet_wrap(variable ~ ., scale = "free", labeller = label_parsed) +
+  theme_classic()
 
 ```
 
@@ -261,13 +241,12 @@ param_base %>% subset(Year == 1970) %>% select(Country, starts_with("omega"), st
 
 ```{r Parameter - Preferences - Select omega/beta, echo = FALSE}
 
-param_base = param_base %>% 
-  group_by(Country) %>% 
-  mutate(omega = ifelse(Year == 1970 & Country == "France", omega.init, omega.raw %>%
-                          subset(Year > 1970) %>% 
-                          mean(na.rm = TRUE)),
-         beta = beta.init) %>% 
+param_base = param_base %>%
+  group_by(Country) %>%
+  mutate(omega = omega.init,
+         beta = beta.init) %>%
   select(Country, Year, alpha, gamma, phi, sigma, a, omega, beta)
+
 
 ```
 
@@ -301,9 +280,14 @@ All parameters are constant over time.
 ```{r Parameter -  Summary, echo = FALSE}
 
 # Visualization
-param_base %>% subset(Year == 1970) %>% select(-Year, -a)
+param_base %>% subset(Year == 1970) %>% select(-Year, -a) 
 
-param = param_base
+# Assign values
+param = param_base 
+
+# Break year in sigma for France
+# param = param %>% 
+#    mutate(sigma = ifelse(Country == "France", ifelse(Year > 1980, sigma, 1.01), sigma))
 
 ```
 
@@ -355,16 +339,18 @@ for(country in country_set){
 }
 
 # Regroup result
-final = result
+baseline = result
 
 # Write final_baseline
-write.csv(final, file.path(loc_sim, paste0("final_", spe, ".csv")), row.names = FALSE)
+write.csv(baseline, file.path(loc_sim, paste0("final_", spe, ".csv")), row.names = FALSE)
 
 ```
 
+#### Labor share
+
 ```{r Graph - BModel Labor Share - Plot 1970-2020, echo = FALSE}
 
-final %>% 
+baseline %>% 
   subset(Specification == "baseline") %>% 
   select(Country, Year, theta) %>% 
   merge(., 
@@ -391,7 +377,7 @@ final %>%
 
 ```{r Graph - BModel Labor Share - Plot 1970-2080, echo = FALSE}
 
-final %>% 
+baseline %>% 
   subset(Specification == "baseline") %>% 
   select(Country, Year, theta) %>% 
   merge(., 
@@ -417,9 +403,10 @@ final %>%
 
 ```
 
+#### Performance
 
 ```{r Graph - BModel Performance - Preparation, include = FALSE}
-perf = final %>% 
+perf = baseline %>% 
   subset(Specification == "baseline") %>% 
   select(Country, Year, theta) %>% 
   merge(., 
@@ -483,11 +470,12 @@ perf %>%
 
 ```
 
+#### Variables
 
 ```{r Graph - BModel Variables, echo = FALSE}
 
 ## Variable deviation 1970 to 2080
-final %>% 
+baseline %>% 
   group_by(Country) %>% 
   mutate(dep = p / n,
          YL = Y / L,
@@ -523,128 +511,348 @@ final %>%
   labs(x = "Year", y = "Deviation from the initial steady state (1970)")
 
 ```
-```{r Graph - BModel Var 70-10 - Public, echo = FALSE}
-final_dev_pub = final %>% 
-  group_by(Country) %>%
-  mutate(# taxrev = tau*Y
-         # unempsp = b*Ny*u/tau/Y,
-         # healthsp = h*No/tau/Y,
-    outside = b/(1-tau),
-         eta_dev = eta/eta[Year == 1970] -1,
-         # taxrev_dev = taxrev/taxrev[Year == 1970] -1,
-         # unempsp_dev = unempsp/unempsp[Year == 1970] -1,
-         # healthsp_dev = healthsp/healthsp[Year == 1970] -1
-         outside_dev = outside/outside[Year == 1970] -1,
-         w_dev = w/w[Year == 1970] -1,
-         # h_dev = h/h[Year == 1970] -1,
-         ) %>% 
-  select(Country, Year, contains("_dev")) %>% 
-  subset(Year %in% c(1970:2010)) %>% 
-  melt(id.vars = c("Country", "Year"))
 
-# levels(final_dev_pub$variable) = c(expression("eta[t]"), expression("tau[t]"), expression("b[t]"), expression("h[t]"))
-  
-final_dev_pub %>% 
+##### 1970 to 2010
 
-  ggplot(aes(x = Year, y = value, color = Country)) +
-  geom_line() +
-  geom_hline(yintercept = 0, linetype = "dashed") +
-  facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
-  scale_color_manual(values = brewer.pal(8, "Set1")) +
-  # scale_color_manual(name = "Variables",
-  #                    breaks = c("dep_dev", "eta_dev", "outside_dev", "w_dev", "L_dev", "YL_dev"),
-  #                    labels = c("Dependency ratio", "Young political power", "Outside option", "Wage",
-  #                               "Labor", "Production per worker"),
-  #                    values = brewer.pal(8, "Set1")) +
-  theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical") +
-  labs(x = "Year", y = "") +
-  ggsave(file.path(loc_result, "dev_pub.png"), width = scale_graph*5, height = scale_graph*5/3)
-  
-  
-```
+```{r Graph - BModel - Public 70-10, echo = FALSE}
 
-
-```{r Graph - BModel Variables, echo = FALSE}
-
-## Variable deviation 1970 to 2010
-final %>% 
+baseline %>%
   group_by(Country) %>% 
-  mutate(dep = p / n,
-         YL = Y / L,
-         outside = b / (1-tau),
-         # Deviations from initial SS
-         dep_dev = dep/dep[Year == 1970] -1,
-         eta_dev = eta/eta[Year == 1970] -1,
-         outside_dev = outside/outside[Year == 1970] -1,
-         w_dev = w/w[Year == 1970] -1,
-         L_dev = L/L[Year == 1970] -1,
-         YL_dev = YL/YL[Year == 1970] -1,
-         K_dev = K/K[Year == 1970] -1,
-         k_dev = k/k[Year == 1970] -1,
-         theta_dev = theta/theta[Year == 1970] -1,
-         u_dev = u/u[Year == 1970] -1,
-         Y_dev = Y/Y[Year == 1970] -1) %>% 
-  select(Country, Year, contains("_dev")) %>% 
+  mutate(
+    # Deviation from the 1970 steady state
+         "eta" = eta/eta[Year == 1970] -1,
+         "b" = b/b[Year == 1970] -1,
+         "h" = h/h[Year == 1970] -1,
+         "tau" = tau/tau[Year == 1970] -1) %>% 
+  select(Country, Year, c("eta", "b", "h", "tau")) %>% 
   subset(Year %in% c(1970:2010)) %>% 
   melt(id.vars = c("Country", "Year")) %>% 
   
   ggplot(aes(x = Year, y = value, color = Country)) +
   geom_line() +
   geom_hline(yintercept = 0, linetype = "dashed") +
-  facet_wrap(variable ~ ., scales = "free") +
+  facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_color_manual(values = brewer.pal(8, "Set1")) +
-  # scale_color_manual(name = "Variables",
-  #                    breaks = c("dep_dev", "eta_dev", "outside_dev", "w_dev", "L_dev", "YL_dev"),
-  #                    labels = c("Dependency ratio", "Young political power", "Outside option", "Wage",
-  #                               "Labor", "Production per worker"),
-  #                    values = brewer.pal(8, "Set1")) +
+  scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "right", legend.direction = "vertical") +
-  labs(x = "Year", y = "Deviation from the initial steady state (1970)")
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines")) +
+  labs(x = "", y = "") +
+  ggsave(file.path(loc_result, "dev_public_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+  
+```
+
+```{r Graph - BModel - Bargaining 70-10, echo = FALSE}
+
+baseline %>%
+  group_by(Country) %>% 
+  mutate(outside = b/(1-tau),
+         # Deviation from the 1970 steady state
+         "eta" = eta/eta[Year == 1970] -1,
+         "b/(1-tau)" = outside/outside[Year == 1970] -1,
+         "w" = w/w[Year == 1970] -1) %>% 
+  select(Country, Year, c("eta", "b/(1-tau)", "w")) %>% 
+  subset(Year %in% c(1970:2010)) %>% 
+  melt(id.vars = c("Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, color = Country)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
+  scale_color_manual(values = brewer.pal(8, "Set1")) +
+  scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines")) +
+  labs(x = "", y = "") +
+  ggsave(file.path(loc_result, "dev_bargain_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+  
+```
+
+```{r Graph - BModel - Labor Share 70-10, echo = FALSE}
+
+baseline %>%
+  group_by(Country) %>% 
+  mutate("YL" = Y/L,
+         # Deviation from the 1970 steady state
+         "w" = w/w[Year == 1970] -1,
+         "u" = u/u[Year == 1970] -1,
+         "Y/L" = YL/YL[Year == 1970] -1,
+         "theta" = theta/theta[Year == 1970] -1) %>% 
+  select(Country, Year, c("w", "u", "Y/L", "theta")) %>% 
+  subset(Year %in% c(1970:2010)) %>% 
+  melt(id.vars = c("Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, color = Country)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
+  scale_color_manual(values = brewer.pal(8, "Set1")) +
+  scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines")) +
+  labs(x = "", y = "") +
+  ggsave(file.path(loc_result, "dev_laborshare_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
 
 ```
 
-```{r}
 
-## Variable deviation 1970 to 2080
-final %>% 
+##### 2010 to 2050
+
+```{r Graph - BModel - Public 10-50, echo = FALSE}
+
+baseline %>%
   group_by(Country) %>% 
-  mutate(dep = p / n,
-         YL = Y / L,
-         outside = b / (1-tau),
-         # Deviations from initial SS
-         dep_dev = dep/dep[Year == 2010] -1,
-         eta_dev = eta/eta[Year == 2010] -1,
-         outside_dev = outside/outside[Year == 2010] -1,
-         w_dev = w/w[Year == 2010] -1,
-         L_dev = L/L[Year == 2010] -1,
-         YL_dev = YL/YL[Year == 2010] -1,
-         K_dev = K/K[Year == 2010] -1,
-         k_dev = k/k[Year == 2010] -1,
-         theta_dev = theta/theta[Year == 2010] -1,
-         u_dev = u/u[Year == 2010] -1,
-         Y_dev = Y/Y[Year == 2010] -1) %>% 
-  select(Country, Year, contains("_dev")) %>% 
+  mutate(
+    # Deviation from the 2010 steady state
+         "eta" = eta/eta[Year == 2010] -1,
+         "b" = b/b[Year == 2010] -1,
+         "h" = h/h[Year == 2010] -1,
+         "tau" = tau/tau[Year == 2010] -1) %>% 
+  select(Country, Year, c("eta", "b", "h", "tau")) %>% 
   subset(Year %in% c(2010:2050)) %>% 
   melt(id.vars = c("Country", "Year")) %>% 
   
   ggplot(aes(x = Year, y = value, color = Country)) +
   geom_line() +
   geom_hline(yintercept = 0, linetype = "dashed") +
-  facet_wrap(variable ~ ., scales = "free") +
+  facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_color_manual(values = brewer.pal(8, "Set1")) +
-  # scale_color_manual(name = "Variables",
-  #                    breaks = c("dep_dev", "eta_dev", "outside_dev", "w_dev", "L_dev", "YL_dev"),
-  #                    labels = c("Dependency ratio", "Young political power", "Outside option", "Wage",
-  #                               "Labor", "Production per worker"),
-  #                    values = brewer.pal(8, "Set1")) +
+  scale_x_continuous(labels = c("2010", "", "2030", "", "2050")) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "right", legend.direction = "vertical") +
-  labs(x = "Year", y = "Deviation from the initial steady state (2010)")
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines")) +
+  labs(x = "", y = "") +
+  ggsave(file.path(loc_result, "dev_public_1050.png"), width = scale_graph*5, height = scale_graph*5/3)
+  
 ```
 
 
+```{r Graph - BModel - Bargaining 10-50, echo = FALSE}
+
+baseline %>%
+  group_by(Country) %>% 
+  mutate(outside = b/(1-tau),
+         # Deviation from the 1970 steady state
+         "eta" = eta/eta[Year == 2010] -1,
+         "b/(1-tau)" = outside/outside[Year == 2010] -1,
+         "w" = w/w[Year == 2010] -1) %>% 
+  select(Country, Year, c("eta", "b/(1-tau)", "w")) %>% 
+  subset(Year %in% c(2010:2050)) %>% 
+  melt(id.vars = c("Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, color = Country)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
+  scale_color_manual(values = brewer.pal(8, "Set1")) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines")) +
+  labs(x = "", y = "") +
+  ggsave(file.path(loc_result, "dev_bargain_1050.png"), width = scale_graph*5, height = scale_graph*5/3)
+  
+```
+
+```{r Graph - BModel - Labor Share 10-50, echo = FALSE}
+
+baseline %>%
+  group_by(Country) %>% 
+  mutate("YL" = Y/L,
+         # Deviation from the 1970 steady state
+         "w" = w/w[Year == 2010] -1,
+         "u" = u/u[Year == 2010] -1,
+         "Y/L" = YL/YL[Year == 2010] -1,
+         "theta" = theta/theta[Year == 2010] -1) %>% 
+  select(Country, Year, c("w", "u", "Y/L", "theta")) %>% 
+  subset(Year %in% c(2010:2050)) %>% 
+  melt(id.vars = c("Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, color = Country)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
+  scale_color_manual(values = brewer.pal(8, "Set1")) +
+  scale_x_continuous(labels = c("2010", "", "2030", "", "2050")) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines")) +
+  labs(x = "", y = "") +
+  ggsave(file.path(loc_result, "dev_laborshare_1050.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+```
+
+### Fill the gap : France 1980
+
+```{r Fill the gap France 1980 - Parameter, echo = FALSE}
+# Change param for France
+param = param %>% 
+  subset(Country == "France") %>% 
+  mutate(sigma = ifelse(Year <= 1980, 0.98, sigma))
+```
+
+
+```{r Fill the gap France 1980 - Simulation, echo = FALSE}
+
+# Specification
+spe = "fillgap"
+
+# Initialize result dataset
+fillgap = data.frame(matrix(ncol = ncol(data)+ ncol(param) -2 + 1, nrow = 0)) %>%
+  setNames(c("Specification", names(data), names(param)[-c(1,2)]))
+
+# Prepare data for simulation
+data = data_base %>% 
+  # Merge with parameters
+  merge(param) %>% 
+  # No BTC
+  mutate(AK = 1, AL = 1) %>% 
+  # Demography
+  demo_changer() %>% 
+  # Define specification model
+  mutate(Specification = spe) %>%
+  # Reorder variables
+  select(Specification, everything())
+
+# Simulate the fillthegap model for France
+fillgap = data %>%
+  subset(Country == "France") %>% 
+  model(time = 3)
+
+# Write fillgap
+write.csv(fillgap, file.path(loc_sim, paste0("final_", spe, ".csv")), row.names = FALSE)
+
+```
+
+
+#### Labor share
+
+```{r Graph - FGapModel Labor Share - Plot 1970-2020, echo = FALSE}
+
+fillgap %>% 
+  rbind(baseline, .) %>% 
+  select(Specification, Country, Year, theta) %>% 
+  merge(., 
+        df %>% select(Country, Year, theta) %>% setNames(c("Country", "Year", "labsh")),
+        all = TRUE
+        ) %>% 
+  subset(Country == "France") %>% 
+  melt(id.vars = c("Country", "Year", "Specification")) %>% 
+  subset(is.na(value) == FALSE) %>% 
+  mutate(Specification = ifelse(variable == "labsh", NA, Specification)) %>%
+  subset(Year %in% c(1970:2010)) %>% 
+  # mutate(value = ifelse(is.na(Specification) == FALSE, round(value, 2), value)) %>% 
+  unique() %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = variable, color = Specification)) +
+  geom_line(size = 0.5) +
+  scale_linetype_manual(name = "From",
+                        breaks = c("labsh", "theta"),
+                        labels = c("Data", "Model"),
+                        values = c("dashed", "solid")) +
+  scale_color_manual(name = "Specification",
+                       breaks = c("baseline", "fillgap"),
+                       labels = c("Baseline", "Fill Gap"),
+                       values = c("black", brewer.pal(8, "Set1")[1]),
+                       na.value = "black") +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none") +
+  labs(x = "Year", y = "Labor income share") +
+  ggsave(file.path(loc_result, "fillgap.png"), width = scale_graph*5, height = scale_graph*5/2)
+
+```
+
+#### Variables
+
+```{r Graph - FillGap vs Baseline - Public 70-10, echo = FALSE}
+
+baseline %>%
+  subset(Country == "France") %>% 
+  rbind(fillgap) %>% 
+  group_by(Specification) %>% 
+  mutate(
+    # Deviation from the 1970 steady state
+         "eta" = eta/eta[Year == 1970] -1,
+         "b" = b/b[Year == 1970] -1,
+         "h" = h/h[Year == 1970] -1,
+         "tau" = tau/tau[Year == 1970] -1) %>% 
+  select(Specification, Year, c("eta", "b", "h", "tau")) %>% 
+  subset(Year %in% c(1970:2010)) %>% 
+  melt(id.vars = c("Specification", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = Specification)) +
+  geom_line(color = brewer.pal(8, "Set1")[1]) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
+  scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
+  scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines")) +
+  labs(x = "", y = "") +
+  ggsave(file.path(loc_result, "fillvsbase_dev_public_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+  
+```
+
+```{r Graph - BModel - Bargaining 70-10, echo = FALSE}
+
+baseline %>%
+  subset(Country == "France") %>% 
+  rbind(fillgap) %>% 
+  group_by(Specification) %>% 
+  mutate(outside = b/(1-tau),
+         # Deviation from the 1970 steady state
+         "eta" = eta/eta[Year == 1970] -1,
+         "b/(1-tau)" = outside/outside[Year == 1970] -1,
+         "w" = w/w[Year == 1970] -1) %>% 
+  select(Specification, Year, c("eta", "b/(1-tau)", "w")) %>% 
+  subset(Year %in% c(1970:2010)) %>% 
+  melt(id.vars = c("Specification", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = Specification)) +
+  geom_line(color = brewer.pal(8, "Set1")[1]) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
+  scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
+  scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines")) +
+  labs(x = "", y = "") +
+  ggsave(file.path(loc_result, "fillvsbase_dev_bargain_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+  
+```
+
+```{r Graph - BModel - Labor Share 70-10, echo = FALSE}
+
+baseline %>%
+  subset(Country == "France") %>% 
+  rbind(fillgap) %>% 
+  group_by(Specification) %>%  
+  mutate("YL" = Y/L,
+         # Deviation from the 1970 steady state
+         "w" = w/w[Year == 1970] -1,
+         "u" = u/u[Year == 1970] -1,
+         "Y/L" = YL/YL[Year == 1970] -1,
+         "theta" = theta/theta[Year == 1970] -1) %>% 
+  select(Specification, Year, c("w", "u", "Y/L", "theta")) %>% 
+  subset(Year %in% c(1970:2010)) %>% 
+  melt(id.vars = c("Specification", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = Specification)) +
+  geom_line(color = brewer.pal(8, "Set1")[1]) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
+  scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
+  scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines")) +
+  labs(x = "", y = "") +
+  ggsave(file.path(loc_result, "fillvsbase_dev_laborshare_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+```
 
 ### Counterfactual simulation
 
