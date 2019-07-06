@@ -246,6 +246,8 @@ split.coef = split.coef %>%
 split.coef[3:6] = split.coef[3:6] %>% apply(., 2, function(x){round(x, digits = 3)})
 split.coef
 
+split.R2$R2 = split.R2$R2 %>% round(digits = 3)
+
 
 ```
  The Year 1986 is the best to split the sample
