@@ -1,53 +1,77 @@
 # Model function
-model <- function(data, time){
+model <- function(data, time, AFinder = FALSE){
   
-  for(seq in c(1:4)){
+  all_seq = unique(data$Sequence)
+  if(AFinder == TRUE){all_seq = 1}
+  
+  for(seq in all_seq){
     
     # Row position in data : according to the sequence
     position = seq(seq, 4*time, 4)
     
     for(t in position){
       
-      # Limits
-      data$k1[t] = data$K[t]/data$Ny[t]
-      data$k2[t] = data$AL[t]/data$AK[t]*((1-data$phi[t])/data$phi[t]/data$eta[t])^(data$sigma[t]/(data$sigma[t]-1))
-      
-      
-      # Function
-      to_solve = function(k){
-        F1 = (data$sigma[t]+(1-data$phi[t])/data$phi[t]*(1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t]*(data$AK[t]/data$AL[t]*k)^((1-data$sigma[t])/data$sigma[t]))^(-1) - 
-          log((data$Ny[t]/data$K[t]*k-1)/(data$phi[t]/(1-data$phi[t])*(data$AK[t]/data$AL[t]*k)^((data$sigma[t]-1)/data$sigma[t])*data$eta[t]-1))
-      }
-      
-      
-      # Solver
-      if(data$sigma[t] < 1){
-        if(data$k1[t] < data$k2[t]){
-          data$k[t] = round(uniroot(to_solve, interval = c(ceiling_digit(data$k1[t],3),flooring_digit(data$k2[t],3)))$root, 3)
-          data$X[t] = (data$sigma[t] + (1-data$phi[t])/data$phi[t] * (1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t] * (data$AK[t]/data$AL[t]*data$k[t])^((1-data$sigma[t])/data$sigma[t]))^(-1)
-        } else {
-          data$k[t] = data$k1[t]
-          data$X[t] = 0
-        }
+      ## Solver
+      # Sigma = 1
+      if(data$sigma[t] == 1){
+        # Value-added to get a job in utility terms
+        data$X[t] = (1+(1-data$phi[t])/data$phi[t]/data$gamma[t])^(-1)
+        # Capital-per-worker
+        data$k[t] = data$K[t]/data$Ny[t]*(1+exp(data$X[t])*(data$phi[t]/(1-data$phi[t])*data$eta[t] - 1))
+        # Labor
+        data$L[t] = data$K[t]/data$k[t]
+        # Wage under Cobb Douglas
+        data$w[t] = data$A[t]*(1-data$phi[t])*data$AL[t]*(data$k[t]*data$AK[t]/data$AL[t])^(data$phi[t])
+        # Rental rate under Cobb Douglas
+        data$r[t] = data$A[t]*data$phi[t]*data$AK[t]*(data$k[t]*data$AK[t]/data$AL[t])^(1-data$phi[t])
+        # Output under Cobb Douglas
+        data$Y[t] = data$A[t]*((data$AK[t]*data$K[t])^(data$phi[t])*(data$AL[t]*data$L[t])^(1-data$phi[t]))
+        
       } else {
-        if(data$k1[t] < data$k2[t]){
-          data$k[t] = data$k1[t]
-          data$X[t] = 0
-        } else {
-          data$k[t] = round(uniroot(to_solve, interval = c(ceiling_digit(data$k1[t],3), (data$k1[t]*100)))$root, 1000)
-          data$X[t] = (data$sigma[t] + (1-data$phi[t])/data$phi[t] * (1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t] * (data$AK[t]/data$AL[t]*data$k[t])^((1-data$sigma[t])/data$sigma[t]))^(-1)
+        
+        # Limits
+        data$k1[t] = data$K[t]/data$Ny[t]
+        data$k2[t] = data$AL[t]/data$AK[t]*((1-data$phi[t])/data$phi[t]/data$eta[t])^(data$sigma[t]/(data$sigma[t]-1))
+        
+        # Function
+        to_solve = function(k){
+          F1 = (data$sigma[t]+(1-data$phi[t])/data$phi[t]*(1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t]*(data$AK[t]/data$AL[t]*k)^((1-data$sigma[t])/data$sigma[t]))^(-1) - 
+            log((data$Ny[t]/data$K[t]*k-1)/(data$phi[t]/(1-data$phi[t])*(data$AK[t]/data$AL[t]*k)^((data$sigma[t]-1)/data$sigma[t])*data$eta[t]-1))
         }
+        
+        # Sigma < 1
+        if(data$sigma[t] < 1){
+          if(data$k1[t] < data$k2[t]){
+            data$k[t] = round(uniroot(to_solve, interval = c(ceiling_digit(data$k1[t],3), flooring_digit(data$k2[t],3)))$root, 3)
+            data$X[t] = (data$sigma[t] + (1-data$phi[t])/data$phi[t] * (1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t] * (data$AK[t]/data$AL[t]*data$k[t])^((1-data$sigma[t])/data$sigma[t]))^(-1)
+          } else {
+            data$k[t] = data$k1[t]
+            data$X[t] = 0
+          }
+        }
+        # Sigma > 1
+        if(data$sigma[t] > 1){
+          if(data$k1[t] < data$k2[t]){
+            data$k[t] = data$k1[t]
+            data$X[t] = 0
+          } else {
+            data$k[t] = round(uniroot(to_solve, interval = c(ceiling_digit(data$k1[t],3), (data$k1[t]*10000)))$root, 3)
+            data$X[t] = (data$sigma[t] + (1-data$phi[t])/data$phi[t] * (1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t] * (data$AK[t]/data$AL[t]*data$k[t])^((1-data$sigma[t])/data$sigma[t]))^(-1)
+          }
+        }
+        
+        ## Other variables
+        # Labor
+        data$L[t] = data$K[t]/data$k[t]
+        # Wage
+        data$w[t] = data$A[t]*(1-data$phi[t])*data$AL[t]*(data$phi[t]*(data$k[t]*data$AK[t]/data$AL[t])^((data$sigma[t]-1)/data$sigma[t])+1-data$phi[t])^(1/(data$sigma[t]-1))
+        # Rental rate
+        data$r[t] = data$A[t]*data$phi[t]*data$AK[t]*(data$phi[t]+(1-data$phi[t])*(data$k[t]*data$AK[t]/data$AL[t])^((1-data$sigma[t])/data$sigma[t]))^(1/(data$sigma[t]-1))
+        # Output
+        data$Y[t] = data$A[t]*(data$phi[t]*(data$AK[t]*data$K[t])^((data$sigma[t]-1)/data$sigma[t])+(1-data$phi[t])*(data$AL[t]*data$L[t])^((data$sigma[t]-1)/data$sigma[t]))^(data$sigma[t]/(data$sigma[t]-1))
+        
       }
       
-      ## Other variables
-      # Labor
-      data$L[t] = data$K[t]/data$k[t]
-      # Wage
-      data$w[t] = data$A[t]*(1-data$phi[t])*data$AL[t]*(data$phi[t]*(data$k[t]*data$AK[t]/data$AL[t])^((data$sigma[t]-1)/data$sigma[t])+1-data$phi[t])^(1/(data$sigma[t]-1))
-      # Rental rate
-      data$r[t] = data$A[t]*data$phi[t]*data$AK[t]*(data$phi[t]+(1-data$phi[t])*(data$k[t]*data$AK[t]/data$AL[t])^((1-data$sigma[t])/data$sigma[t]))^(1/(data$sigma[t]-1))
-      # Output
-      data$Y[t] = data$A[t]*(data$phi[t]*(data$AK[t]*data$K[t])^((data$sigma[t]-1)/data$sigma[t])+(1-data$phi[t])*(data$AL[t]*data$L[t])^((data$sigma[t]-1)/data$sigma[t]))^(data$sigma[t]/(data$sigma[t]-1))
       # Unemployment rate
       data$u[t] = 1 - data$L[t]/data$Ny[t]
       # Labor share
