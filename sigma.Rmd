@@ -15,6 +15,7 @@ require(reshape2) # Reshape data frame
 require(ggplot2) # Plot
 require(bucky) # Robust standard errors
 require(sandwich) # If you are hungry
+require(strucchange) # Chow cacao
 
 # Define paths
 loc_final = file.path("data", "final")
@@ -182,6 +183,7 @@ summary(ols.btc)
 ols.both = pwt_test %>%
   lm(formula = THETA1_log_neg ~ Country + k_nor_log*Country + t*Country - 1 - k_nor_log - t, data = .)
 summary(ols.both)
+
 ```
 
 
@@ -627,7 +629,6 @@ df_break = df_break %>%
 
 df_break
 ```
-
 
 ```{r Break Year - Split Graph, echo = FALSE}
 df_break %>% 
