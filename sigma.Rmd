@@ -151,7 +151,10 @@ pwt %>% select("Country", "Year", "k_nor", "k_nor.avh_correct") %>%
 ```{r TEST }
 pwt_test = pwt %>%
   group_by(Country) %>%
+<<<<<<< HEAD
   subset(Year %in% c(1970:2010)) %>% 
+=======
+>>>>>>> 10f8d25918c93aeafc234a919b99829ecbd05c1b
   mutate(k_nor_log = log(k_nor),
          k_nor_log.avh_correct = log(k_nor.avh_correct),
          THETA1_log = log(THETA1),
@@ -183,11 +186,29 @@ summary(ols.btc)
 ols.both = pwt_test %>%
   lm(formula = THETA1_log_neg ~ Country + k_nor_log*Country + t*Country - 1 - k_nor_log - t, data = .)
 summary(ols.both)
+<<<<<<< HEAD
 
+=======
+<<<<<<< HEAD
+>>>>>>> d3e00905e8a6162df0766fcd8820bac95c257030
 ```
 
 
 ```{r TEST }
+=======
+
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> 10f8d25918c93aeafc234a919b99829ecbd05c1b
 # Robust standard errors
 robustify(ols.test) %>% summary()
 # Compute the associated sigma
@@ -626,10 +647,21 @@ for(splitter in c(1979:1990)){
 
 df_break = df_break %>% 
   setNames(c("splitter", "sigma_before", "p_before", "sigma_after", "p_after"))
+<<<<<<< HEAD
 
 df_break
 ```
 
+=======
+
+df_break
+```
+
+<<<<<<< HEAD
+=======
+>>>>>>> 10f8d25918c93aeafc234a919b99829ecbd05c1b
+
+>>>>>>> d3e00905e8a6162df0766fcd8820bac95c257030
 ```{r Break Year - Split Graph, echo = FALSE}
 df_break %>% 
   select(splitter, p_before, p_after) %>%
