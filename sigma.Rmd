@@ -15,6 +15,7 @@ require(reshape2) # Reshape data frame
 require(ggplot2) # Plot
 require(bucky) # Robust standard errors
 require(sandwich) # If you are hungry
+require(RColorBrewer)
 
 # Define paths
 loc_final = file.path("data", "final")

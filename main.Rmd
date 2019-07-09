@@ -926,20 +926,21 @@ baseline %>%
   rbind(fillgap) %>% 
   mutate(from = interaction(Specification, Country)) %>% 
   group_by(from) %>% 
-  mutate(
+  mutate(`b share` = b*u*Ny/tau/Y,
+         `h share` = h*No/tau/Y,
     # Deviation from the 1970 steady state
          "eta" = eta/eta[Year == 1970] -1,
-         "b" = b/b[Year == 1970] -1,
-         "h" = h/h[Year == 1970] -1,
-         "tau" = tau/tau[Year == 1970] -1) %>% 
+         "tau" = tau/tau[Year == 1970] -1,
+    "`b share`" = `b share`/`b share`[Year == 1970]-1,
+    "`h share`" = `h share`/`h share`[Year == 1970]-1) %>% 
   ungroup() %>% 
-  select(Specification, Country , Year, c("eta", "b", "h", "tau")) %>% 
+  select(Specification, Country , Year, c("eta", "tau", "`b share`", "`h share`")) %>% 
   subset(Year %in% c(1970:2010)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
   ggplot(aes(x = Year, y = value, linetype = Specification, color = Country)) +
-  geom_line() +
   geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_line() +
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
@@ -972,8 +973,8 @@ baseline %>%
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
   ggplot(aes(x = Year, y = value, linetype = Specification, color = Country)) +
-  geom_line() +
   geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_line() +
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
@@ -1005,8 +1006,8 @@ baseline %>%
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
   ggplot(aes(x = Year, y = value, linetype = Specification, color = Country)) +
-  geom_line() +
   geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_line() +
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
   scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
