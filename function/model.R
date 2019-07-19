@@ -23,7 +23,7 @@ model <- function(data, time, AFinder = FALSE){
         # Wage under Cobb Douglas
         data$w[t] = data$A[t]*(1-data$phi[t])*data$AL[t]*(data$k[t]*data$AK[t]/data$AL[t])^(data$phi[t])
         # Rental rate under Cobb Douglas
-        data$r[t] = data$A[t]*data$phi[t]*data$AK[t]*(data$k[t]*data$AK[t]/data$AL[t])^(1-data$phi[t])
+        data$r[t] = data$A[t]*data$phi[t]*data$AK[t]*(data$k[t]*data$AK[t]/data$AL[t])^(data$phi[t]-1)
         # Output under Cobb Douglas
         data$Y[t] = data$A[t]*((data$AK[t]*data$K[t])^(data$phi[t])*(data$AL[t]*data$L[t])^(1-data$phi[t]))
         
