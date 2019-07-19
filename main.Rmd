@@ -1772,6 +1772,7 @@ redis %>%
          C1 = C1/Y) %>% 
   select(Country, Year, C2, health_spen, Saving, C1, theta) %>% 
   melt(id.vars = c("Country", "Year", "theta")) %>% 
+  subset(Year <= 2050) %>% 
   
   ggplot(aes(x = Year)) +
   geom_col(aes(y = value, fill = variable),
