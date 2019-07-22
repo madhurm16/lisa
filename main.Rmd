@@ -1479,13 +1479,14 @@ welfare = baseline %>%
 
 # Computation
 welfare = welfare %>% 
-  # Individual consumptions
+  ## Individual consumptions
   mutate("c[1,t]^e" = 1/(1+alpha*p1)*(1-tau)*w,
          "c[1,t]^u" = 1/(1+alpha*p1)*b,
          "c[2,t]^e" = alpha*p/(1+alpha*p)*(1-tau)*r/p*(1-dplyr::lag(tau))*dplyr::lag(w),
          "c[2,t]^u" = alpha*p/(1+alpha*p)*(1-tau)*r/p*dplyr::lag(b),
          "c[2,t+1]^e" = alpha*p1/(1+alpha*p1)*(1-dplyr::lead(tau))*dplyr::lead(r)/p1*(1-tau)*w,
          "c[2,t+1]^u" = alpha*p1/(1+alpha*p1)*(1-dplyr::lead(tau))*dplyr::lead(r)/p1*b,
+  ## Utility
          # Utility for a individual of type i born at time t
          "U[t]^e" = log(`c[1,t]^e`) + 
            alpha*p1*(log(`c[2,t+1]^e`) + beta * log(dplyr::lead(h))),
@@ -1506,6 +1507,16 @@ welfare = welfare %>%
          "W[t]" = Ny*`U[t]^y` + No*`U[t]^o`,
          # Average welfare at time t
          "W[t]^{avg}" = `W[t]`/(Ny+No),
+  ## Aggregated consumption
+         "C[1,t]" = 1/(1+alpha*p1)*1/(1+beta+eta)*Y,
+         "C[2,t]" = alpha*p/(1+alpha*p)*1/(1+beta+eta)*Y,
+         "H[t]" = No*h,
+  ## Average
+         "c[1,t]^{avg}" = `C[1,t]`/Ny,
+         "c[2,t]^{avg}" = `C[2,t]`/No,
+  ## Average utility
+         "U[t]^{y,avg}" = log(`c[1,t]^{avg}`),
+         "U[t]^{o,avg}" = log(`c[2,t]^{avg}`) + log(h),
          )
 
 ```
@@ -1585,6 +1596,21 @@ welfare %>%
 
 ```
 
+```{r Avg utility per age}
+
+welfare %>% 
+  ungroup() %>% 
+  select(Country, Year, "c[1,t]^{avg}", "c[2,t]^{avg}") %>% 
+  melt(id.vars = c("Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, color = variable)) +
+  geom_line() +
+  facet_wrap(Country ~ ., scale = "free") +
+  theme_classic()
+
+```
+
+
 ### Redistribution
 
 ```{r}
@@ -1617,7 +1643,7 @@ redis = baseline %>%
          theta = wL/Y
          ) %>% 
   select(Country, Year, wL, rK, wL_net, rK_net, gov_rev, unemp_ben, health_spen,
-         C1, Saving, C2, inc_y, inc_o, Y, theta) %>% 
+         C1, Saving, C2, inc_y, inc_o, Y, theta, eta) %>% 
   ungroup()
 
 
@@ -1741,15 +1767,16 @@ redis %>%
   facet_wrap(Country ~ .) +
   scale_fill_manual(name = "",
                     breaks = c("rK_net", "health_spen", "unemp_ben", "wL_net"),
-                    labels = c("Net capital income", "Health spending",
-                               "Unemployment spending", "Net labor income"),
+                    labels = c("Net capital income", "Health spend.",
+                               "Unemployment spend.", "Net labor income"),
                     values = brewer.pal(11, "Set3")[c(4,6,3,5)],
                     na.value = "black") +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  theme_classic() +
+  theme_classic(base_size = 14) +
   labs(x = "", y = "Share of GDP") +
   theme(legend.position = "bottom") +
-  ggsave("stacked_test3.png", width = 1920/1080*5, height = 5)
+  ggsave(file.path(loc_result, "inc_gdp_shr.png"),
+         width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
@@ -1794,6 +1821,115 @@ redis %>%
 
 ```
 
+```{r Raw vs Net labor share, echo = FALSE}
+
+redis %>% 
+  mutate(
+    net_ls = (wL_net + unemp_ben)/(Y - health_spen)) %>% 
+  select(Country, Year, theta, net_ls) %>% 
+  melt(id.vars = c("Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = variable, color = Country)) +
+  geom_line() +
+  facet_wrap(Country ~ .) +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  scale_linetype_manual(name = "Labor share", breaks = c("theta", "net_ls"),
+                          labels = c("Raw", "Net"), values = c("solid", "dashed"),
+                        guide = FALSE) +
+  scale_color_manual(name = "", values = brewer.pal(8,"Set1"),
+                     guide = FALSE) +
+  theme_classic(base_size = 14) +
+  labs(x = "", y = "") +
+  theme(legend.position = "none") +
+  ggsave(file.path(loc_result, "raw_vs_net_labshr.png"), width = scale_graph*5, height = scale_graph*5/2)
+  
+
+```
+
+```{r Raw vs Net labor share - dev, echo = FALSE}
+
+redis %>% 
+  group_by(Country) %>% 
+  mutate(
+    net_ls = (wL_net + unemp_ben)/(Y),
+    theta = theta/theta[Year == 1970] -1,
+    net_ls = net_ls/net_ls[Year == 1970] -1,
+    ) %>% 
+  select(Country, Year, theta, net_ls) %>% 
+  melt(id.vars = c("Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = variable, color = Country)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(Country ~ .) +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  scale_linetype_manual(name = "Labor share", breaks = c("theta", "net_ls"),
+                          labels = c("Raw", "Net"), values = c("solid", "dashed")) +
+  scale_color_manual(name = "", values = brewer.pal(8,"Set1"),
+                     guide = FALSE) +
+  theme_classic() +
+  labs(x = "", y = "") +
+  theme(legend.position = "bottom")
+
+```
+
+```{r Factor ratio vs Income ratio, echo = FALSE}
+
+redis %>% 
+  select(Country, Year, inc_y, inc_o, wL, rK, health_spen, eta) %>% 
+  mutate(inc_ratio = inc_y/inc_o,
+         inc_ratio_with_h = inc_y/(inc_o + health_spen),
+         lab_to_cap_ratio = wL/rK) %>% 
+  select(Country, Year, lab_to_cap_ratio, inc_ratio, inc_ratio_with_h) %>% 
+  melt(id.vars = c("Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = variable, color = Country)) +
+  geom_line() +
+  facet_wrap(Country ~ .) +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  scale_linetype_manual(name = "", breaks = c("lab_to_cap_ratio", "inc_ratio",
+                                              "inc_ratio_with_h"),
+                          labels = c("Labor-to-capital income ratio",
+                                     "Young-to-old income ratio",
+                                     "Young-to-old income ratio (with health spending)"),
+                        values = c("solid", "dashed", "dotted")) +
+  scale_color_manual(name = "", values = brewer.pal(8,"Set1"), guide = FALSE) +
+  theme_classic(base_size = 14) +
+  labs(x = "", y = "") +
+  theme(legend.position = "none") +
+  ggsave(file.path(loc_result, "raw_vs_net_inc_ratio.png"),
+         width = scale_graph*5, height = scale_graph*5/2)
+
+```
+
+```{r Factor ratio vs Income ratio - dev, echo = FALSE}
+
+redis %>% 
+  select(Country, Year, inc_y, inc_o, wL, rK, health_spen, eta) %>% 
+  group_by(Country) %>% 
+  mutate(inc_ratio = inc_y/inc_o,
+         lab_to_cap_ratio = wL/rK,
+         # Deviations
+         inc_ratio = inc_ratio/inc_ratio[Year == 1970] -1,
+         lab_to_cap_ratio = lab_to_cap_ratio/lab_to_cap_ratio[Year == 1970] -1,) %>% 
+  select(Country, Year, lab_to_cap_ratio, inc_ratio) %>% 
+  melt(id.vars = c("Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = variable, color = Country)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(Country ~ .) +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  scale_linetype_manual(name = "", breaks = c("lab_to_cap_ratio", "inc_ratio"),
+                          labels = c("Labor-to-capital income ratio",
+                                     "Young-to-old income ratio"),
+                        values = c("solid", "dashed", "dotted")) +
+  scale_color_manual(name = "", values = brewer.pal(8,"Set1"), guide = FALSE) +
+  theme_classic() +
+  labs(x = "", y = "") +
+  theme(legend.position = "bottom")
+
+```
 
 ### Counterfactual simulation
 
