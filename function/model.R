@@ -81,7 +81,7 @@ model <- function(data, time, AFinder = FALSE){
       # Unemployment benefits per capita
       data$b[t] = (1-data$tau[t])*data$w[t]*exp(-data$X[t])
       # Health spending per capita
-      data$h[t] = (data$tau[t]*data$Y[t]/data$Ny[t]-data$b[t]*data$u[t])*data$n[t]/data$p[t]
+      data$h[t] = (data$tau[t]*data$Y[t]-data$b[t]*data$u[t]*data$Ny[t])/data$No[t]
       # Savings
       data$S[t] = data$alpha[t]*data$p1[t]/(1+data$alpha[t]*data$p1[t])*((1-data$tau[t])*data$w[t]*(1-data$u[t])+data$b[t]*data$u[t])*data$Ny[t]
       # Capital accumulation

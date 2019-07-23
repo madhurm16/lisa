@@ -962,7 +962,7 @@ baseline %>% select(Country, Year, p) %>% subset(Year >= 2010) %>% group_by(Coun
 
 ```
 
-##### Demography
+  ##### Demography
 
 ```{r Graph - FillGap vs Baseline - Demo 70-10, echo = FALSE}
 
@@ -1931,7 +1931,10 @@ redis %>%
 
 ```
 
-### Counterfactual simulation
+### Counterfactual and Decomposition
+
+
+#### Simulation
 
 ```{r Aging effect decomposition, include = FALSE}
 
@@ -2024,6 +2027,8 @@ write.csv(final, file.path(loc_sim, paste0("final_", "counter", ".csv")), row.na
 
 ```
 
+##### Counterfactual
+
 ```{r Graph CModel - Prepare Data, include = FALSE}
 
 # Reshape dataframe
@@ -2037,7 +2042,7 @@ decomp = final %>%
         df %>% 
           mutate(Specification = "data_2010") %>%
           select(Specification, Country, Year, theta)) %>% 
-  mutate(from = ifelse(grepl("data", Specification), "data", "sim")) %>%
+  mutate(from = ifelse(!grepl("data", Specification), "sim", "data")) %>%
   filter(complete.cases(.)) %>% 
   mutate(PG = ifelse(from == "data", NA, ifelse(grepl("TPG", Specification), "TPG", "FPG")),
          SR = ifelse(from == "data", NA, ifelse(grepl("TSR", Specification), "TSR", "FSR")),
@@ -2082,42 +2087,46 @@ decomp %>%
 
 ```
 
-```{r Graph CModel - SR counterfactual, echo = FALSE}
-
+```{r Graph CModel - PGSR Counterfactual - Global Picture, echo = FALSE}
 
 decomp %>% 
-  subset(break_year == 2010 & PG %in% c("TPG", NA) & DE %in% c("TDE", NA) & IE %in% c("TIE", NA)) %>% 
-
-  ggplot(aes(x = Year, y = theta, color = interaction(PG, SR), linetype = from)) +
-  geom_line(size = 0.5) +
-  facet_wrap(Country ~ ., scales = "fixed") +
+  subset(DE %in% c("TDE", NA) & IE %in% c("TIE", NA)) %>%
+  subset(break_year == 1970) %>% 
+  mutate(PGSR = as.character(interaction(PG, SR)),
+         PGSR = ifelse(from == "data", "data", PGSR),
+         PGSR = as.factor(PGSR)) %>% 
+  
+  ggplot(aes(x = Year, y = theta, color = PGSR, linetype = PGSR)) +
+  facet_wrap(Country ~ .) +
+  geom_line() +
   # geom_label_repel(aes(label = round(theta, 3)),
-  #                  data = subset(decomp, break_year == 2010 & PG == "TPG" &
-  #                                  Year == 2080 & DE == "TDE" & IE == "TIE"),
-  #                  segment.size = 0,
-  #                  xlim = c(2080, NA),
-  #                  # direction = "y",
-  #                  hjust = 0,
-  #                  na.rm = TRUE,
+  #                  data = subset(decomp, Year == 2080 & DE == "TDE" & IE == "TIE" &
+  #                                  break_year == 1970), 
+  #                  nudge_x = 0, na.rm = TRUE,
   #                  segment.color = "transparent") +
-  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years, lim = c(NA, 2080)) +
-  scale_linetype_manual(name = "From",
-                        breaks = c("data", "sim"),
-                        labels = c("Data", "Model"),
-                        values = c("solid", "dashed")) +
-  scale_color_manual(name = "Specification",
-                     breaks = c("TPG.TSR", "TPG.FSR",
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  scale_linetype_manual(name = "",
+                        breaks = c("data","TPG.TSR", "TPG.FSR",
                                 "FPG.TSR", "FPG.FSR"),
-                     labels = c("Benchmark", "Constant Survival Rate",
-                                "Constant Pop. Growth", "Constant Dep. Ratio"),
-                     values = brewer.pal(8, "Set1")[c(1:4)] %>% 
-                       setNames(c("TPG.TSR", "TPG.FSR", "FPG.TSR", "FPG.FSR")),
-                     na.value = "black") +
+                        labels = c("Data", "Benchmark", expression(p[1970]),
+                                expression(n[1970]), expression(p[1970]*", "*n[1970])),
+                        values = c(rep("dashed", 4), "solid") %>% 
+                       setNames(c("TPG.TSR", "TPG.FSR", "FPG.TSR", "FPG.FSR", "data"))) +
+  scale_color_manual(name = "",
+                     breaks = c("data","TPG.TSR", "TPG.FSR",
+                                "FPG.TSR", "FPG.FSR"),
+                     labels = c("Data", "Benchmark", expression(p[1970]),
+                                expression(n[1970]), expression(p[1970]*", "*n[1970])),
+                     values = c(brewer.pal(8, "Set1")[c(1:4)],"black") %>% 
+                       setNames(c("TPG.TSR", "TPG.FSR", "FPG.TSR", "FPG.FSR", "data"))) +
   theme_classic(base_size = 14) +
-  guides(color = guide_legend(order = 0), linetype = guide_legend(order = 1)) +
-  theme(legend.position = "none", legend.direction = "vertical") +
-  labs(x = "Year", y = "Labor income share") +
-  ggsave(file.path(loc_dev, "counter_facet_SR.png"), width = 1920/1080*5, height = 5)
+  theme(legend.position = c(0.99, 0.99),
+        legend.justification = c("right", "top"),
+        legend.direction = "vertical") +
+  labs(x = "", y = "") +
+  ggsave(file.path(loc_result, "counter_PGSR_1970.png"),
+         width = scale_graph*5, height = scale_graph*5/2)
+
 
 ```
 
@@ -2156,14 +2165,61 @@ decomp %>%
 
 ```
 
+```{r Graph CModel - PGSR Counterfactual - Global Picture, echo = FALSE}
+
+decomp %>% 
+  subset(PG %in% c("TPG", NA) & SR %in% c("TSR", NA)) %>%
+  subset(break_year == 1970) %>% 
+  mutate(DEIE = as.character(interaction(DE, IE)),
+         DEIE = ifelse(from == "data", "data", DEIE),
+         DEIE = as.factor(DEIE)) %>% 
+  
+  ggplot(aes(x = Year, y = theta, color = DEIE, linetype = DEIE)) +
+  facet_wrap(Country ~ .) +
+  geom_line() +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  scale_linetype_manual(name = "",
+                        breaks = c("data","TDE.TIE", "TDE.FIE",
+                                "FDE.TIE", "FDE.FIE"),
+                        labels = c("Data", "Benchmark", expression(eta[1970]),
+                                expression(N[1970]^y*", "*N[1970]^o),
+                                expression(eta[1970]*", "*N[1970]^y*", "*N[1970]^o)),
+                        values = c(rep("dashed", 4), "solid") %>% 
+                       setNames(c("TDE.TIE", "TDE.FIE", "FDE.TIE", "FDE.FIE", "data"))) +
+  scale_color_manual(name = "",
+                     breaks = c("data","TDE.TIE", "TDE.FIE",
+                                "FDE.TIE", "FDE.FIE"),
+                     labels = c("Data", "Benchmark", expression(eta[1970]),
+                                expression(N[1970]^y*", "*N[1970]^o),
+                                expression(eta[1970]*", "*N[1970]^y*", "*N[1970]^o)),
+                     values = c(brewer.pal(8, "Set1")[c(1,5,8,4)],"black") %>% 
+                       setNames(c("TDE.TIE", "TDE.FIE", "FDE.TIE", "FDE.FIE", "data"))) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = c(0.99, 0.99),
+        legend.justification = c("right", "top"),
+        legend.direction = "vertical") +
+  labs(x = "", y = "") +
+  ggsave(file.path(loc_result, "counter_DEIE_1970.png"),
+         width = scale_graph*5, height = scale_graph*5/2)
+
+
+```
+
+#### Decomposition
+
+
 ```{r Computation CModel - Decomposition, echo = FALSE}
 
 decomp2 = final %>% 
   select(Country, Specification, Year, theta) %>% 
-  mutate(PG = ifelse(Specification == "data", NA, ifelse(grepl("TPG", Specification), "TPG", "FPG")),
-         SR = ifelse(Specification == "data", NA, ifelse(grepl("TSR", Specification), "TSR", "FSR")),
-         DE = ifelse(Specification == "data", NA, ifelse(grepl("TDE", Specification), "TDE", "FDE")),
-         IE = ifelse(Specification == "data", NA, ifelse(grepl("TIE", Specification), "TIE", "FIE")),
+  mutate(PG = ifelse(Specification == "data", NA,
+                     ifelse(grepl("TPG", Specification), "TPG", "FPG")),
+         SR = ifelse(Specification == "data", NA, 
+                     ifelse(grepl("TSR", Specification), "TSR", "FSR")),
+         DE = ifelse(Specification == "data", NA, 
+                     ifelse(grepl("TDE", Specification), "TDE", "FDE")),
+         IE = ifelse(Specification == "data", NA, 
+                     ifelse(grepl("TIE", Specification), "TIE", "FIE")),
          break_year = as.numeric(gsub("[^0-9]", "\\1", Specification)),
          Spe_PGSR = interaction(PG, SR),
          Spe_DEIE = interaction(DE, IE)) %>% 
@@ -2192,27 +2248,25 @@ decomp2 = final %>%
 
 decomp2 %>% 
   subset(variable %in% c("TPG.FSR", "FPG.TSR")) %>% 
-  mutate(Country_break = interaction(break_year, Country, sep = " - ")) %>% 
+  subset(break_year == 1970) %>% 
   
   ggplot(aes(x = Year)) +
-  geom_col(aes(y = value, fill = variable),
-           color = "black", size = .7, alpha = .5) +
-  geom_hline(yintercept = 0, size = 1) +
-  geom_line(aes(y = position_PGSR),
-            color = brewer.pal(8, "Set1")[1], size = 1) +
-  facet_wrap(Country_break ~ .,
-             scales = "free") +
-  # scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  geom_col(aes(y = value, fill = variable), color = "black", alpha = .5) +
+  geom_hline(yintercept = 0) +
+  geom_line(aes(y = position_PGSR), color = brewer.pal(8, "Set1")[1]) +
+  facet_wrap(Country ~ .) +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   scale_fill_manual(name = "",
-                    breaks = c("FPG.TSR", "TPG.FSR"),
-                    labels = c("Population growth", "Survival rate"),
-                    values = brewer.pal(8, "Set1")[c(3,2)] %>% 
-                      setNames(c("FPG.TSR", "TPG.FSR")),
-                    na.value = "black") +
+                    breaks = c("TPG.FSR", "FPG.TSR"),
+                    labels = c("Survival rate effect", "Population growth effect"),
+                    values = brewer.pal(8, "Set1")[c(2,3)] %>% 
+                      setNames(c("TPG.FSR","FPG.TSR"))) +
   theme_classic(base_size = 14) +
-  # theme(legend.direction = "vertical", legend.box = "horizontal", 
-  #      legend.position = c(1,1), legend.justification = c(1, 1)) +
-  labs(x = "Year", y = "Difference with counterfactual (in pp.)")
+  theme(legend.direction = "vertical", legend.box = "horizontal",
+       legend.position = c(0.99, 0.01), legend.justification = c("right", "bottom")) +
+  labs(x = "", y = "Difference with counterfactual (in pp.)") +
+  ggsave(file.path(loc_result, "decomp_PGSR_1970.png"),
+         width = scale_graph*5, height = scale_graph*5/2)
   
 ```
 
@@ -2220,27 +2274,26 @@ decomp2 %>%
 ```{r Graph CModel - DEIE Decomposition, echo = FALSE}
 
 decomp2 %>% 
-  subset(variable %in% c("TDE.FIE", "FDE.TIE")) %>% 
-  mutate(Country_break = interaction(break_year, Country, sep = " - ")) %>% 
+  subset(variable %in% c("FDE.TIE", "TDE.FIE")) %>% 
+  subset(break_year == 1970) %>% 
   
   ggplot(aes(x = Year)) +
-  geom_col(aes(y = value, fill = variable),
-           color = "black", size = .7, alpha = .5) +
-  geom_hline(yintercept = 0, size = 1) +
-  geom_line(aes(y = position_DEIE),
-            color = brewer.pal(8, "Set1")[1], size = 1) +
-  facet_wrap(Country_break ~ ., scales = "free") +
-  # scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  geom_col(aes(y = value, fill = variable), color = "black", alpha = .5) +
+  geom_hline(yintercept = 0) +
+  geom_line(aes(y = position_DEIE), color = brewer.pal(8, "Set1")[1]) +
+  facet_wrap(Country ~ .) +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   scale_fill_manual(name = "",
                     breaks = c("FDE.TIE", "TDE.FIE"),
-                    labels = c("Direct effect", "Indirect effect"),
+                    labels = c("Direct cohort effect", "Indirect cohort effect"),
                     values = brewer.pal(8, "Set1")[c(5,8)] %>% 
-                      setNames(c("FDE.TIE", "TDE.FIE")),
-                    na.value = "black") +
+                      setNames(c("FDE.TIE", "TDE.FIE"))) +
   theme_classic(base_size = 14) +
-  # theme(legend.direction = "vertical", legend.box = "horizontal", 
-  #       legend.position = c(0.01,1), legend.justification = c(0, 1)) +
-  labs(x = "Year", y = "Difference with counterfactual (in pp.)")
+  theme(legend.direction = "vertical", legend.box = "horizontal",
+        legend.position = c(0.99, 0.01), legend.justification = c("right", "bottom")) +
+  labs(x = "", y = "Difference with counterfactual (in pp.)") +
+  ggsave(file.path(loc_result, "decomp_DEIE_1970.png"),
+         width = scale_graph*5, height = scale_graph*5/2)
   
 ```
 
@@ -2293,20 +2346,26 @@ decomp_mean.period
 decomp_mean.period %>% 
   melt(id.vars = c("Country_break", "Period")) %>% 
   mutate(value = value*100) %>% 
+  subset(Country_break %in% c("1970 - France", "1970 - United States")) %>% 
+  mutate(Country = ifelse(Country_break == "1970 - France", "France", "United States")) %>% 
   
   ggplot(aes(x = Period, y = value, fill = variable)) +
   geom_bar(stat = "identity", position = position_dodge(),
-           color = "black", size = .7, alpha = .5) +
-  facet_wrap(Country_break ~ ., scales = "fixed") +
+           color = "black", alpha = .5) +
+  facet_wrap(Country ~ .) +
   scale_x_discrete(breaks = c("P1", "P2"), labels = c("1980-2010", "2020-2050")) +
   scale_fill_manual(name = "",
-                    breaks = c("FPG.TSR.share", "TPG.FSR.share", "FDE.TIE.share", "TDE.FIE.share"),
-                    labels = c("Population growth", "Survival rate", "Direct effect", "Indirect effect"),
-                    values = brewer.pal(8, "Set1")[c(3,2,5,8)] %>% 
-                      setNames(c("FPG.TSR.share", "TPG.FSR.share", "FDE.TIE.share", "TDE.FIE.share")),
-                    na.value = "black") +
+                    breaks = c("TPG.FSR.share", "FPG.TSR.share",
+                               "FDE.TIE.share", "TDE.FIE.share"),
+                    labels = c("Survival rate", "Population growth",
+                               "Direct cohort", "Indirect cohort"),
+                    values = brewer.pal(8, "Set1")[c(2,3,5,8)] %>% 
+                      setNames(c("TPG.FSR.share", "FPG.TSR.share",
+                                 "FDE.TIE.share", "TDE.FIE.share"))) +
   theme_classic(base_size = 14) +
-  labs(x = "", y = "Percent")
+  theme(legend.position = "bottom") +
+  labs(x = "", y = "Percent") +
+  ggsave(file.path(loc_result, "decomp_1970.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
