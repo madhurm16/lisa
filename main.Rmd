@@ -837,7 +837,7 @@ data = data_base %>%
 
 # Simulate the fillthegap model for France
 fillgap = data %>%
-  subset(Country == "France") %>% 
+  subset(Country == "France") %>%
   model(time = 3)
 
 # Write fillgap
@@ -2231,14 +2231,20 @@ decomp2 = final %>%
              "benchmark")) %>% 
   mutate(FPG.TSR = (benchmark - FPG.TSR)*100,
          TPG.FSR = (benchmark - TPG.FSR)*100,
-         FPG.TSR.share = abs(FPG.TSR)/(abs(FPG.TSR) + abs(TPG.FSR)),
-         TPG.FSR.share = abs(TPG.FSR)/(abs(FPG.TSR) + abs(TPG.FSR)),
-         position_PGSR = (FPG.TSR + TPG.FSR),
+         FPG.FSR = (benchmark - FPG.FSR)*100,
+         FPG.FSR = FPG.FSR - FPG.TSR - TPG.FSR,
+         position_PGSR = (FPG.TSR + TPG.FSR + FPG.FSR),
+         FPG.TSR.share = abs(FPG.TSR)/(abs(FPG.TSR) + abs(TPG.FSR) + abs(FPG.FSR)),
+         TPG.FSR.share = abs(TPG.FSR)/(abs(FPG.TSR) + abs(TPG.FSR) + abs(FPG.FSR)),
+         FPG.FSR.share = abs(FPG.FSR)/(abs(FPG.TSR) + abs(TPG.FSR) + abs(FPG.FSR)),
          FDE.TIE = (benchmark - FDE.TIE)*100,
          TDE.FIE = (benchmark - TDE.FIE)*100,
-         FDE.TIE.share = abs(FDE.TIE)/(abs(FDE.TIE) + abs(TDE.FIE)),
-         TDE.FIE.share = abs(TDE.FIE)/(abs(FDE.TIE) + abs(TDE.FIE)),
-         position_DEIE = (FDE.TIE + TDE.FIE)) %>% 
+         FDE.FIE = (benchmark - FDE.FIE)*100,
+         FDE.FIE = FDE.FIE - FDE.TIE - TDE.FIE,
+         position_DEIE = (FDE.TIE + TDE.FIE + FDE.FIE),
+         FDE.TIE.share = abs(FDE.TIE)/(abs(FDE.TIE) + abs(TDE.FIE) + abs(FDE.FIE)),
+         TDE.FIE.share = abs(TDE.FIE)/(abs(FDE.TIE) + abs(TDE.FIE) + abs(FDE.FIE)),
+         FDE.FIE.share = abs(FDE.FIE)/(abs(FDE.TIE) + abs(TDE.FIE) + abs(FDE.FIE))) %>% 
   melt(id.vars = c("Country", "Year", "break_year", "position_PGSR", "position_DEIE"))
 
 ```
@@ -2247,8 +2253,8 @@ decomp2 = final %>%
 ```{r Graph CModel - PGSR Decomposition, echo = FALSE}
 
 decomp2 %>% 
-  subset(variable %in% c("TPG.FSR", "FPG.TSR")) %>% 
   subset(break_year == 1970) %>% 
+  subset(variable %in% c("FPG.TSR", "TPG.FSR", "FPG.FSR")) %>% 
   
   ggplot(aes(x = Year)) +
   geom_col(aes(y = value, fill = variable), color = "black", alpha = .5) +
@@ -2257,13 +2263,14 @@ decomp2 %>%
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   scale_fill_manual(name = "",
-                    breaks = c("TPG.FSR", "FPG.TSR"),
-                    labels = c("Survival rate effect", "Population growth effect"),
-                    values = brewer.pal(8, "Set1")[c(2,3)] %>% 
-                      setNames(c("TPG.FSR","FPG.TSR"))) +
+                    breaks = c("TPG.FSR", "FPG.TSR", "FPG.FSR"),
+                    labels = c("Survival rate effect", "Population growth effect",
+                               "Interaction effect"),
+                    values = brewer.pal(8, "Set1")[c(2,3,4)] %>% 
+                      setNames(c("TPG.FSR","FPG.TSR", "FPG.FSR"))) +
   theme_classic(base_size = 14) +
   theme(legend.direction = "vertical", legend.box = "horizontal",
-       legend.position = c(0.99, 0.01), legend.justification = c("right", "bottom")) +
+        legend.position = c(0.99, 0.01), legend.justification = c("right", "bottom")) +
   labs(x = "", y = "Difference with counterfactual (in pp.)") +
   ggsave(file.path(loc_result, "decomp_PGSR_1970.png"),
          width = scale_graph*5, height = scale_graph*5/2)
@@ -2274,7 +2281,7 @@ decomp2 %>%
 ```{r Graph CModel - DEIE Decomposition, echo = FALSE}
 
 decomp2 %>% 
-  subset(variable %in% c("FDE.TIE", "TDE.FIE")) %>% 
+  subset(variable %in% c("FDE.TIE", "TDE.FIE", "FDE.FIE")) %>% 
   subset(break_year == 1970) %>% 
   
   ggplot(aes(x = Year)) +
@@ -2284,10 +2291,11 @@ decomp2 %>%
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   scale_fill_manual(name = "",
-                    breaks = c("FDE.TIE", "TDE.FIE"),
-                    labels = c("Direct cohort effect", "Indirect cohort effect"),
-                    values = brewer.pal(8, "Set1")[c(5,8)] %>% 
-                      setNames(c("FDE.TIE", "TDE.FIE"))) +
+                    breaks = c("FDE.TIE", "TDE.FIE", "FDE.FIE"),
+                    labels = c("Direct cohort effect", "Indirect cohort effect",
+                               "Interaction effect"),
+                    values = brewer.pal(8, "Set1")[c(5,8,4)] %>% 
+                      setNames(c("FDE.TIE", "TDE.FIE", "FDE.FIE"))) +
   theme_classic(base_size = 14) +
   theme(legend.direction = "vertical", legend.box = "horizontal",
         legend.position = c(0.99, 0.01), legend.justification = c("right", "bottom")) +
@@ -2308,7 +2316,7 @@ decomp_mean.period = decomp2 %>%
                          ifelse(Year %in% c(2020:2050), "P2", "P3"))) %>% 
   subset(Period != "P3") %>% 
   group_by(Country_break, Period) %>% 
-  summarise_at(vars(FPG.TSR.share:TDE.FIE.share), mean, na.rm = TRUE)
+  summarise_at(vars(FPG.TSR.share:FDE.FIE.share), mean, na.rm = TRUE)
 
 # ## Assign values for text
 # # France 1980-2010
@@ -2355,13 +2363,13 @@ decomp_mean.period %>%
   facet_wrap(Country ~ .) +
   scale_x_discrete(breaks = c("P1", "P2"), labels = c("1980-2010", "2020-2050")) +
   scale_fill_manual(name = "",
-                    breaks = c("TPG.FSR.share", "FPG.TSR.share",
-                               "FDE.TIE.share", "TDE.FIE.share"),
-                    labels = c("Survival rate", "Population growth",
-                               "Direct cohort", "Indirect cohort"),
-                    values = brewer.pal(8, "Set1")[c(2,3,5,8)] %>% 
-                      setNames(c("TPG.FSR.share", "FPG.TSR.share",
-                                 "FDE.TIE.share", "TDE.FIE.share"))) +
+                    breaks = c("TPG.FSR.share", "FPG.TSR.share", "FPG.FSR.share",
+                               "FDE.TIE.share", "TDE.FIE.share", "FDE.FIE.share"),
+                    labels = c("Survival rate", "Population growth", "Interaction",
+                               "Direct cohort", "Indirect cohort", "Interaction"),
+                    values = brewer.pal(8, "Set1")[c(2,3,4,5,8,4)] %>% 
+                      setNames(c("TPG.FSR.share", "FPG.TSR.share", "FPG.FSR.share",
+                                 "FDE.TIE.share", "TDE.FIE.share", "FDE.FIE.share"))) +
   theme_classic(base_size = 14) +
   theme(legend.position = "bottom") +
   labs(x = "", y = "Percent") +
