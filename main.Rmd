@@ -2319,13 +2319,17 @@ decomp_mean.period %>%
   melt(id.vars = c("Country_break", "Period")) %>% 
   mutate(value = value*100) %>% 
   subset(Country_break %in% c("1970 - France", "1970 - United States")) %>% 
-  mutate(Country = ifelse(Country_break == "1970 - France", "France", "United States")) %>% 
+  mutate(Country = ifelse(Country_break == "1970 - France", "France", "United States"),
+         effect = factor(ifelse(variable %>% grepl(pattern = "PG", .),
+                                "first", "second")),
+         Period = ifelse(Period == "P1", "1980-2010", "2020-2050")) %>% 
   
-  ggplot(aes(x = Period, y = value, fill = variable)) +
+  ggplot(aes(x = effect, y = value, fill = variable)) +
   geom_bar(stat = "identity", position = position_dodge(),
            color = "black", alpha = .5) +
-  facet_wrap(Country ~ .) +
-  scale_x_discrete(breaks = c("P1", "P2"), labels = c("1980-2010", "2020-2050")) +
+  facet_grid(Period ~ Country) +
+  scale_x_discrete(breaks = c("first", "second"),
+                   labels = c("Determinants", "Channels")) +
   scale_fill_manual(name = "",
                     breaks = c("TPG.FSR.share", "FPG.TSR.share",
                                "FDE.TIE.share", "TDE.FIE.share", "FDE.FIE.share"),
@@ -2341,6 +2345,31 @@ decomp_mean.period %>%
 
 ```
 
+```{r Graph CModel - Explanation Power - Pie chart, echo = FALSE}
+
+decomp_mean.period %>% 
+  melt(id.vars = c("Country_break", "Period")) %>% 
+  mutate(value = value*100) %>% 
+  subset(Country_break %in% c("1970 - France", "1970 - United States")) %>% 
+  mutate(Country = ifelse(Country_break == "1970 - France", "France", "United States"),
+         effect = ifelse(variable %>% grepl(pattern = "PG", .), "determinant", "channel")) %>% 
+  
+  ggplot(aes(x = "", y = value, fill = variable)) +
+  geom_bar(stat = "identity", alpha = .5) +
+  facet_wrap(interaction(Country, Period, effect) ~ ., ncol = 4) +
+  coord_polar("y", start = 0) +
+  scale_fill_manual(name = "",
+                    breaks = c("TPG.FSR.share", "FPG.TSR.share",
+                               "FDE.TIE.share", "TDE.FIE.share", "FDE.FIE.share"),
+                    labels = c("Survival rate", "Population growth",
+                               "Direct cohort", "Indirect cohort", "Interaction"),
+                    values = brewer.pal(8, "Set1")[c(2,3,4,8,5,4)] %>% 
+                      setNames(c("TPG.FSR.share", "FPG.TSR.share", "FPG.FSR.share",
+                                 "FDE.TIE.share", "TDE.FIE.share", "FDE.FIE.share"))) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "bottom")
+
+```
 
 
 
