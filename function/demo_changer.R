@@ -22,25 +22,13 @@ demo_changer = function(data = data, break_year = 1970,
     }
     
   } else {
-  
-   ## Computation
-   # Compute population
-   for(seq in 1:4){
-     for(t in 2:3){
-       # Young population dynamics
-       data$Ny[data$Period == t & data$Sequence == seq] = 
-         data$Ny[data$Period == t-1 & data$Sequence == seq] * data$n[data$Period == t & data$Sequence == seq]
-       # Old population dynamics
-       data$No[data$Period == t & data$Sequence == seq] = 
-         data$Ny[data$Period == t-1 & data$Sequence == seq] * data$p[data$Period == t & data$Sequence == seq]
-     }
-   }
-  
-  ## Fix variables
-  data = breakers %>%
-    subset(Year == break_year) %>% 
-    select(Country, n_fix = n, p_fix = p, p1_fix = p1, Ny_fix = Ny, No_fix = No, eta_fix = eta) %>% 
-    merge(data, .)
+    
+    
+   ## Fix variables
+   data = breakers %>%
+     subset(Year == break_year) %>% 
+     select(Country, n_fix = n, p_fix = p, p1_fix = p1, Ny_fix = Ny, No_fix = No, eta_fix = eta) %>% 
+     merge(data, .)
   
   ## Constant population growth
   if(PG == "FPG"){
@@ -61,7 +49,7 @@ demo_changer = function(data = data, break_year = 1970,
       data = data %>% mutate(p1 = ifelse(Year > break_year, p_fix, p1))
     }
   }
-  
+   
   # Compute eta
   data = data %>% mutate(eta = n / p * (1 + alpha*p1) / omega)
   
@@ -82,6 +70,19 @@ demo_changer = function(data = data, break_year = 1970,
     if(p1_equals_p_fix == TRUE){
       data = data %>% mutate(p1 = ifelse(Year > break_year, p_fix, p1))
     }
+  }
+   
+  ## Computation
+  # Compute population
+  for(seq in 1:4){
+   for(t in 2:3){
+     # Young population dynamics
+     data$Ny[data$Period == t & data$Sequence == seq] = 
+       data$Ny[data$Period == t-1 & data$Sequence == seq] * data$n[data$Period == t & data$Sequence == seq]
+     # Old population dynamics
+     data$No[data$Period == t & data$Sequence == seq] = 
+       data$Ny[data$Period == t-1 & data$Sequence == seq] * data$p[data$Period == t & data$Sequence == seq]
+   }
   }
   
   ## Constant political power (eta)

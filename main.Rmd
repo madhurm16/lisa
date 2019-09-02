@@ -202,12 +202,12 @@ ols.france_before = est_sigma %>%
 ols.france_before %>% summary()
 
 # Sigma
-sigma.fr_before = 1/(1 + ols.france_before$coefficients[2]) %>% unname()
-sigma.fr_before
+# sigma.fr_before = 1/(1 + ols.france_before$coefficients[2]) %>% unname()
+# sigma.fr_before
 
 # # Not significant => sigma.fr_before = 1
-# sigma.fr_before = 1
-# sigma.fr_before
+sigma.fr_before = 1
+sigma.fr_before
 
 ```
 
@@ -945,7 +945,9 @@ baseline %>%
   scale_linetype_manual(breaks = c("fill", "other"),
                         values = c("dashed", "solid")) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines")) +
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_result, "baseline7010_facet2.png"),
          width = scale_graph*5, height = scale_graph*5/2)
@@ -979,7 +981,9 @@ baseline %>%
   scale_linetype_manual(breaks = c("fill", "other"),
                         values = c("dashed", "solid")) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines")) +
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_result, "baseline7080_facet2.png"),
          width = scale_graph*5, height = scale_graph*5/2)
@@ -1028,7 +1032,9 @@ baseline %>%
   scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines")) +
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_dev, "dev_demo_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
   
@@ -1063,7 +1069,9 @@ baseline %>%
   scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines")) +
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_dev, "dev_demo_1080.png"), width = scale_graph*5, height = scale_graph*5/3)
   
@@ -1104,7 +1112,9 @@ baseline %>%
   scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines")) +
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_dev, "dev_public_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
   
@@ -1143,7 +1153,9 @@ baseline %>%
   scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines")) +
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_dev, "dev_public_1080.png"), width = scale_graph*5, height = scale_graph*5/3)
   
@@ -1179,7 +1191,9 @@ baseline %>%
   scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines")) +
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_dev, "dev_outside_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
   
@@ -1215,7 +1229,9 @@ baseline %>%
   scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines")) +
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_dev, "dev_outside_1080.png"), width = scale_graph*5, height = scale_graph*5/3)
   
@@ -1251,7 +1267,9 @@ baseline %>%
   scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines")) +
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_dev, "dev_bargain_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
   
@@ -1286,7 +1304,9 @@ baseline %>%
   scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines")) +
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_dev, "dev_bargain_1080.png"), width = scale_graph*5, height = scale_graph*5/3)
   
@@ -1320,7 +1340,9 @@ baseline %>%
   scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines")) +
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_dev, "dev_prod_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
 
@@ -1354,7 +1376,9 @@ baseline %>%
                      labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines")) +
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_dev, "dev_prod_1080.png"), width = scale_graph*5, height = scale_graph*5/3)
 
@@ -1389,7 +1413,9 @@ baseline %>%
   scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines")) +
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_dev, "dev_unemp_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
 
@@ -1423,7 +1449,9 @@ baseline %>%
                      labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines")) +
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_dev, "dev_unemp_1080.png"), width = scale_graph*5, height = scale_graph*5/3)
 
@@ -1458,7 +1486,9 @@ baseline %>%
   scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines")) +
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_dev, "dev_laborshare_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
 
@@ -1492,7 +1522,9 @@ baseline %>%
                      labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines")) +
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_dev, "dev_laborshare_1080.png"), width = scale_graph*5, height = scale_graph*5/3)
 
@@ -1810,7 +1842,9 @@ redis %>%
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_classic(base_size = 14) +
   labs(x = "", y = "Share of GDP") +
-  theme(legend.position = "bottom") +
+  theme(legend.position = "bottom",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   ggsave(file.path(loc_result, "inc_gdp_shr.png"),
          width = scale_graph*5, height = scale_graph*5/2)
 
@@ -1903,7 +1937,7 @@ redis %>%
                           labels = c("Raw", "Net"), values = c("solid", "dashed")) +
   scale_color_manual(name = "", values = brewer.pal(8,"Set1"),
                      guide = FALSE) +
-  theme_classic() +
+  theme_classic(base_size = 14) +
   labs(x = "", y = "") +
   theme(legend.position = "bottom")
 
@@ -1944,9 +1978,11 @@ redis %>%
   select(Country, Year, inc_y, inc_o, wL, rK, health_spen, eta) %>% 
   group_by(Country) %>% 
   mutate(inc_ratio = inc_y/inc_o,
+         #inc_ratio_with_h = inc_y/(inc_o + health_spen),
          lab_to_cap_ratio = wL/rK,
          # Deviations
          inc_ratio = inc_ratio/inc_ratio[Year == 1970] -1,
+         #inc_ratio_with_h = inc_ratio_with_h/inc_ratio_with_h[Year == 1970] -1,
          lab_to_cap_ratio = lab_to_cap_ratio/lab_to_cap_ratio[Year == 1970] -1,) %>% 
   select(Country, Year, lab_to_cap_ratio, inc_ratio) %>% 
   melt(id.vars = c("Country", "Year")) %>% 
@@ -1956,14 +1992,19 @@ redis %>%
   geom_hline(yintercept = 0, linetype = "dashed") +
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  scale_linetype_manual(name = "", breaks = c("lab_to_cap_ratio", "inc_ratio"),
+  scale_linetype_manual(name = "", breaks = c("lab_to_cap_ratio",
+                                              "inc_ratio"),
                           labels = c("Labor-to-capital income ratio",
                                      "Young-to-old income ratio"),
                         values = c("solid", "dashed", "dotted")) +
   scale_color_manual(name = "", values = brewer.pal(8,"Set1"), guide = FALSE) +
-  theme_classic() +
+  theme_classic(base_size = 14) +
   labs(x = "", y = "") +
-  theme(legend.position = "bottom")
+  theme(legend.position = "none",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+    ggsave(file.path(loc_result, "raw_vs_net_inc_ratio_dev.png"),
+         width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
@@ -1972,7 +2013,7 @@ redis %>%
 
 #### Simulation
 
-```{r Aging effect decomposition - 1960 break_year, include = FALSE}
+```{r Aging effect decomposition - 1970 break_year, include = FALSE}
 
 # Re initialize result data frame
 result = result[0,]
@@ -2117,7 +2158,9 @@ decomp %>%
   theme_classic(base_size = 14) +
   theme(legend.position = c(0.99, 0.99),
         legend.justification = c("right", "top"),
-        legend.direction = "vertical") +
+        legend.direction = "vertical",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_result, "counter_PGSR.png"),
          width = scale_graph*5, height = scale_graph*5/2)
@@ -2141,23 +2184,25 @@ decomp %>%
   scale_linetype_manual(name = "",
                      breaks = c("data","TDE.TIE", "FDE.TIE", "TDE.FIE", "FDE.FIE"),
                      labels = c("Data", "Benchmark", 
-                                expression(n[1970]*", "*p[1970]),
+                                expression(p[1970]*", "*n[1970]),
                                 expression(eta[1970]),
-                                expression(eta[1970]*", "*n[1970]*", "*p[1970])),
+                                expression(p[1970]*", "*n[1970]*", "*eta[1970])),
                         values = c(rep("dashed", 4), "solid") %>% 
                        setNames(c("TDE.TIE", "TDE.FIE", "FDE.TIE", "FDE.FIE", "data"))) +
   scale_color_manual(name = "",
                      breaks = c("data","TDE.TIE", "FDE.TIE", "TDE.FIE", "FDE.FIE"),
                      labels = c("Data", "Benchmark", 
-                                expression(n[1970]*", "*p[1970]),
+                                expression(p[1970]*", "*n[1970]),
                                 expression(eta[1970]),
-                                expression(eta[1970]*", "*n[1970]*", "*p[1970])),
+                                expression(p[1970]*", "*n[1970]*", "*eta[1970])),
                      values = c(brewer.pal(8, "Set1")[c(1,5,8,4)],"black") %>% 
                        setNames(c("TDE.TIE", "TDE.FIE", "FDE.TIE", "FDE.FIE", "data"))) +
   theme_classic(base_size = 14) +
   theme(legend.position = c(0.99, 0.99),
         legend.justification = c("right", "top"),
-        legend.direction = "vertical") +
+        legend.direction = "vertical",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
   labs(x = "", y = "") +
   ggsave(file.path(loc_result, "counter_DEIE.png"),
          width = scale_graph*5, height = scale_graph*5/2)
@@ -2231,7 +2276,8 @@ decomp2 %>%
                       setNames(c("TPG.FSR","FPG.TSR", "FPG.FSR"))) +
   theme_classic(base_size = 14) +
   theme(legend.direction = "horizontal", legend.box = "horizontal",
-        legend.position = "bottom") +
+        legend.position = "bottom",
+        axis.title.x = element_blank()) +
   labs(x = "", y = "Difference with counterfactual (in pp.)") +
   ggsave(file.path(loc_result, "decomp_PGSR.png"),
          width = scale_graph*5, height = scale_graph*5/2)
@@ -2260,7 +2306,8 @@ decomp2 %>%
                       setNames(c("FDE.TIE", "TDE.FIE", "FDE.FIE"))) +
   theme_classic(base_size = 14) +
   theme(legend.direction = "horizontal", legend.box = "horizontal",
-        legend.position = "bottom") +
+        legend.position = "bottom",
+        axis.title.x = element_blank()) +
   labs(x = "", y = "Difference with counterfactual (in pp.)") +
   ggsave(file.path(loc_result, "decomp_DEIE.png"),
          width = scale_graph*5, height = scale_graph*5/2)
@@ -2339,7 +2386,8 @@ decomp_mean.period %>%
                       setNames(c("TPG.FSR.share", "FPG.TSR.share", "FPG.FSR.share",
                                  "FDE.TIE.share", "TDE.FIE.share", "FDE.FIE.share"))) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "bottom") +
+  theme(legend.position = "bottom",
+        axis.title.x = element_blank()) +
   labs(x = "", y = "Percent") +
   ggsave(file.path(loc_result, "decomp.png"), width = scale_graph*5, height = scale_graph*5/2)
 
@@ -2371,6 +2419,54 @@ decomp_mean.period %>%
 
 ```
 
+### Retirement age
+
+
+```{r Retirement age - 2010 break_year - Specification 1, include = FALSE}
+
+# Retirement specification
+ret_spe = 1
+
+# Re initialize result data frame
+result = result[0,]
+
+# Define break_year
+break_year = 2010
+
+for(ret_spe in c(1,2)){
+  
+  spe = paste0("ret_age_", break_year, "_spe", ret_spe)
+  
+  # Prepare data
+  data = data_base %>% 
+  # No biased technical change
+  mutate(AK = 1, AL = 1) %>% 
+  # Add parameters
+  merge(param) %>% 
+  # Demography
+  demo_changer(break_year = break_year, p1_equals_p_fix = TRUE, SR = "FSR") %>% 
+  # Define specification model
+  mutate(Specification = spe) %>%
+  #Reorder variables
+  select(Specification, everything())
+  
+  # Simulate the model for each country
+  for(country in country_set){
+    result = data %>%
+    subset(Country == country) %>% 
+    model(time = 3) %>% 
+    rbind(result, .)
+  }
+  
+}
+
+# Remove duplicates
+ret_age = distinct(result)
+
+# Write ret_age
+write.csv(ret_age, file.path(loc_sim, "ret_age.csv"), row.names = FALSE)
+
+```
 
 
 
