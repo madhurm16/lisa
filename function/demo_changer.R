@@ -1,7 +1,8 @@
 demo_changer = function(data = data, break_year = 1970,
                         PG = "TPG", SR = "TSR", DE = "TDE", IE = "TIE",
                         p1_equals_p_fix = FALSE,
-                        init_spe = FALSE, AFinder = FALSE){
+                        init_spe = FALSE, AFinder = FALSE,
+                        ret_spe = 0){
   
   if(init_spe == TRUE | AFinder == TRUE){
     # Compute population
@@ -30,22 +31,24 @@ demo_changer = function(data = data, break_year = 1970,
      select(Country, n_fix = n, p_fix = p, p1_fix = p1, Ny_fix = Ny, No_fix = No, eta_fix = eta) %>% 
      merge(data, .)
   
-  ## Constant population growth
+  ## Constant population growth : not necessary to change K_0 for FPG
   if(PG == "FPG"){
     data = data %>% mutate(Ny = ifelse(Year >= break_year, Ny*n_fix/n, Ny),
                            n = ifelse(Year >= break_year, n_fix, n))
   }
   
-  ## Constant survival rate
+  ## Constant survival rate : also change K_0
   if(SR == "FSR"){
     data = data %>% mutate(No = ifelse(Year >= break_year, No*p_fix/p, No),
+                           # Also changing initial capital stock 
+                           K = ifelse(Year > break_year, K*p_fix/p*(1+alpha*p)/(1+alpha*p_fix), K),
                            p = ifelse(Year >= break_year, p_fix, p),
-                           # p1 only has > instead of >= to attribute the difference with counterfactual 
-                           # to 2010 instead of 1970
                            # Same initial labor income share required : same fixed point
                            p1 = ifelse(Year >= break_year, p1_fix, p1))
     
     if(p1_equals_p_fix == TRUE){
+      # p1 only has > instead of >= to attribute the difference with counterfactual 
+      # to 2010 instead of 1970
       data = data %>% mutate(p1 = ifelse(Year > break_year, p_fix, p1))
     }
   }
@@ -57,6 +60,8 @@ demo_changer = function(data = data, break_year = 1970,
   if(DE == "FDE"){
     data = data %>% mutate(Ny = ifelse(Year >= break_year, Ny*n_fix/n, Ny),
                            No = ifelse(Year >= break_year, No*p_fix/p, No),
+                           # Also changing initial capital stock 
+                           K = ifelse(Year > break_year, K*p_fix/p*(1+alpha*p)/(1+alpha*p_fix), K),
                            n = ifelse(Year >= break_year, n_fix, n),
                            p = ifelse(Year >= break_year, p_fix, p),
                            # p1 only has > instead of >= to attribute the difference with counterfactual 
@@ -92,6 +97,7 @@ demo_changer = function(data = data, break_year = 1970,
   
   }
   
+  ## Remove fixed variables
   data = data %>% select(-contains("fix"))
   
   return(data)
