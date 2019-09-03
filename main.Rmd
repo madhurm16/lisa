@@ -2540,22 +2540,26 @@ fillgap %>%
           select(Specification, Country, Year, theta) %>% 
           melt(id.vars = c("Specification" ,"Country", "Year"))) %>% 
   
-  ggplot(aes(x = Year, y = value, color = variable, linetype = fill)) +
+  ggplot(aes(x = Year, y = value, color = interaction(variable, Country),
+             linetype = Specification)) +
   geom_line() +
   facet_wrap(Country ~ ., scales = "fixed") +
-  scale_color_manual(breaks = c("base.fr", "base.us", "data", "fill.fr"),
-                    values = c(brewer.pal(8, "Set1")[c(1,2)], "black", brewer.pal(8, "Set1")[1]) %>% 
-                      setNames(c("base.fr", "base.us", "a.data", "fill.fr"))) +
+  scale_color_manual(breaks = c("a.data.France", "a.data.United States",
+                                "theta.France", "theta.United States"),
+                    values = c("black", "black",brewer.pal(8, "Set1")[c(1,2)]) %>% 
+                      setNames(c("a.data.France", "a.data.United States",
+                                "theta.France", "theta.United States"))) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  scale_linetype_manual(breaks = c("fill", "other"),
-                        values = c("dashed", "solid")) +
+  scale_linetype_manual(breaks = c("data", "base2", "ret_age_2020_spe1_-0.1pct"),
+                        values = c("solid", "solid", "dashed")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_result, "baseline7080_facet2.png"),
-         width = scale_graph*5, height = scale_graph*5/2)
+  labs(x = "", y = "") 
+#+
+  #ggsave(file.path(loc_result, "baseline7080_facet2.png"),
+  #      width = scale_graph*5, height = scale_graph*5/2)
 
 
 
