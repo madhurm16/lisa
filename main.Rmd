@@ -2585,23 +2585,22 @@ fillgap %>%
                     name = "") +
   scale_x_continuous(breaks = seq(2020, 2080, 10),
                      labels = c("2020", "", "2040", "", "2060", "", "2080")) +
-  scale_linetype_manual(breaks = c("base2", "ret_age_2020_spe1", "ret_age_2020_spe2",
-                                "ret_age_2020_spe3"),
-                     labels = c("Benchmark", "Shift -10%",
-                                "Constant", "Half growth"),
-                        values = c("solid", "dashed", "dashed", "dashed") %>% 
-                          setNames(c("base2", "ret_age_2020_spe1", "ret_age_2020_spe2",
-                                "ret_age_2020_spe3")),
+  scale_linetype_manual(breaks = c("p", "p1"),
+                     labels = c(expression(p[t]), expression(p[t+1])),
+                        values = c("solid", "dashed") %>% 
+                          setNames(c("p", "p1")),
                         name = "") +
   theme_classic(base_size = 14) +
-  theme(legend.position = c(0.99, 0.99),
+  theme(legend.position = c(0.85,0.99),
         legend.justification = c("right", "top"),
         legend.direction = "vertical",
+        legend.box = "horizontal",
         panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
-        axis.title.y = element_blank()) +
+        axis.title.y = element_blank(),
+        legend.text.align = 0) +
   labs(x = "Year", y = "Labor share") +
-  ggsave(file.path(loc_result, "ret_age.png"), width = scale_graph*5, height = scale_graph*5/2)
+  ggsave(file.path(loc_result, "ret_age_p.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 
 ```
