@@ -396,20 +396,27 @@ split.coef = split.coef %>%
                        ifelse(pvalue > 0.05, "*",
                               ifelse(pvalue > 0.01, "**", "***"))))
 
+# Display
 split.coef[3:6] = split.coef[3:6] %>% apply(., 2, function(x){round(x, digits = 3)})
 split.coef
 
 split.R2$R2 = split.R2$R2 %>% round(digits = 3)
+split.R2
 
 ```
 
 
 ```{r Estimation for the Break Year, echo = FALSE}
 
+# Max R2 : define the break_year
+break_year = split.R2 %>% subset(R2 == max(R2)) %>% pull("splitter")
+print(paste0("Break in the regime in : ", break_year))
+
+
 ### With BTC
 ## Before
 ols.fr.btc_before = df.fr %>% 
-  subset(Year <= 1985) %>% 
+  subset(Year <= break_year) %>% 
   lm(formula = THETA1_log ~ k.avh_log + t_diff)
 
 ols.fr.btc_before %>% summary()
@@ -419,7 +426,7 @@ sigma.fr.btc_before
 
 ## After
 ols.fr.btc_after = df.fr %>% 
-  subset(Year > 1985) %>% 
+  subset(Year > break_year) %>% 
   lm(formula = THETA1_log ~ k.avh_log + t_diff)
 
 ols.fr.btc_after %>% summary()
@@ -429,7 +436,7 @@ sigma.fr.btc_after
 
 ### Without BTC
 ols.fr_before = df.fr %>% 
-  subset(Year <= 1985) %>% 
+  subset(Year <= break_year) %>% 
   lm(formula = THETA1_log ~ k.avh_log)
 
 ols.fr_before %>% summary()
@@ -439,7 +446,7 @@ sigma.fr_before
 
 ## After
 ols.fr_after = df.fr %>% 
-  subset(Year > 1985) %>% 
+  subset(Year > break_year) %>% 
   lm(formula = THETA1_log ~ k.avh_log)
 
 ols.fr_after %>% summary()
