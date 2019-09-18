@@ -2089,17 +2089,24 @@ decomp_mean.period %>%
 
 ### Retirement age
 
+```{r Define break_year and first_years, include = FALSE}
+
+# Define break_year
+break_year = 2020
+# Define first years after the reform
+first_years = seq(break_year+10, (break_year+40), by = 10)
+
+# Reset ret_age
+ret_age = NULL
+```
+
+
 #### Specification 1 
 
 ```{r Retirement age - 2020 break_year - Specification 1, include = FALSE}
 
 # Re initialize result data frame
 result = result[0,]
-
-# Define break_year
-break_year = 2020
-# Define first years after the reform
-first_years = seq(break_year+10, (break_year+40), by = 10)
 
 # Size of the shock (in %)
 shock = -1/10
@@ -2124,17 +2131,14 @@ data = data_base %>%
   ## Modification of demographic data
   
   group_by(Country, Sequence) %>% 
-  mutate(# Scale for the affected periods
-         from_No.to.Ny = 1-shock,
-         
-         # New p, p1 and n
+  mutate(# New p, p1 and n
          p.new = ifelse(Year > break_year, p*(1+shock), p),
          p1.new = ifelse(Year > break_year, p1*(1+shock), p1),
-         n.new = ifelse(Year %in% first_years, n*from_No.to.Ny, n),
-         
+         n.new = ifelse(Year %in% first_years, n*(1-shock), n),
+         #*(1-1/40*(Year-break_year-10))
          # Compute Ny and No for the affected periods
-         Ny.new = ifelse(Year %in% first_years, Ny*from_No.to.Ny, NA),
-         No.new = ifelse(Year %in% first_years, No*p.new/p, NA),
+         Ny.new = ifelse(Year %in% first_years, Ny*(1-shock), NA),
+         No.new = ifelse(Year %in% first_years, No*(1+shock), NA),
          
          # Compute Ny and No for last sequence/periods
          Ny.new = ifelse(Year > max(first_years), lag(Ny.new,1)*n, Ny.new),
@@ -2153,7 +2157,7 @@ data = data_base %>%
          
          ) %>% 
   select(Specification, Country, Year, Sequence, Period, Ny, No, n, p, p1, 
-         eta, everything(), -contains("new"), -from_No.to.Ny, ) %>%
+         eta, everything(), -contains("new"), ) %>%
   ungroup()
 
 # Simulate the model for each country
@@ -2167,9 +2171,6 @@ for(country in country_set){
 
 # Remove duplicates
 ret_age = distinct(result)
-
-# Write ret_age
-#write.csv(ret_age, file.path(loc_sim, "ret_age.csv"), row.names = FALSE)
 
 ```
 
@@ -2216,12 +2217,7 @@ fillgap %>%
   theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") 
-#+
-  #ggsave(file.path(loc_result, "baseline7080_facet2.png"),
-  #      width = scale_graph*5, height = scale_graph*5/2)
-
-
+  labs(x = "", y = "")
 
 ```
 
@@ -2232,10 +2228,8 @@ fillgap %>%
 # Re initialize result data frame
 result = result[0,]
 
-# Define break_year
-break_year = 2020
-# Define first years after the reform
-first_years = seq(break_year+10, (break_year+40), by = 10)
+# Fraction
+frac = 0
 
 # Specification
 ret_spe = 2
@@ -2261,18 +2255,20 @@ data = data_base %>%
   ## Modification of demographic data
   
   group_by(Country, Sequence) %>% 
-  mutate(# Scale for the affected periods
-         shock = (p_fix-p)/p,
-         from_No.to.Ny = 1-shock,
-         
-         # New p, p1 and n
-         p.new = ifelse(Year > break_year, p_fix, p),
-         p1.new = ifelse(Year > break_year, p_fix, p1),
-         n.new = ifelse(Year %in% first_years, n*from_No.to.Ny, n),
-         
+  mutate(
+         p1_to_p_dist = p1 - p,
+         # New p and p1
+         p.new = ifelse(Year > break_year, frac*(p-p_fix) + p_fix, p),
+         p1.new = ifelse(Year > break_year & Period < 3, dplyr::lead(p.new,1),
+                         ifelse(Period == 3, p.new + p1_to_p_dist*frac, p1)),
+         # Scale for the affected periods
+         shock = (p.new - p)/p,
+         # New n
+         n.new = ifelse(Year %in% first_years, n*(1-shock), n),
+         #*(1-1/40*(Year-break_year-10))
          # Compute Ny and No for the affected periods
-         Ny.new = ifelse(Year %in% first_years, Ny*from_No.to.Ny, NA),
-         No.new = ifelse(Year %in% first_years, No*p.new/p, NA),
+         Ny.new = ifelse(Year %in% first_years, Ny*(1-shock), NA),
+         No.new = ifelse(Year %in% first_years, No*(1+shock), NA),
          
          # Compute Ny and No for last sequence/periods
          Ny.new = ifelse(Year > max(first_years), lag(Ny.new,1)*n, Ny.new),
@@ -2291,7 +2287,7 @@ data = data_base %>%
          
          ) %>% 
   select(Specification, Country, Year, Sequence, Period, Ny, No, n, p, p1, 
-         eta, everything(), -contains("new"), -from_No.to.Ny, -shock, -p_fix ) %>%
+         eta, everything(), -contains("new"), -shock, -p_fix, -p1_to_p_dist ) %>%
   ungroup()
 
 # Simulate the model for each country
@@ -2305,9 +2301,6 @@ for(country in country_set){
 
 # Remove duplicates
 ret_age = rbind(ret_age, distinct(result))
-
-# Write ret_age
-#write.csv(ret_age, file.path(loc_sim, "ret_age.csv"), row.names = FALSE)
 
 ```
 
@@ -2354,12 +2347,7 @@ fillgap %>%
   theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") 
-#+
-  #ggsave(file.path(loc_result, "baseline7080_facet2.png"),
-  #      width = scale_graph*5, height = scale_graph*5/2)
-
-
+  labs(x = "", y = "")
 
 ```
 
@@ -2369,11 +2357,6 @@ fillgap %>%
 
 # Re initialize result data frame
 result = result[0,]
-
-# Define break_year
-break_year = 2020
-# Define first years after the reform
-first_years = seq(break_year+10, (break_year+40), by = 10)
 
 # Fraction
 frac = 0.5
@@ -2410,13 +2393,12 @@ data  = data_base %>%
                          ifelse(Period == 3, p.new + p1_to_p_dist*frac, p1)),
          # Scale for the affected periods
          shock = (p.new - p)/p,
-         from_No.to.Ny = 1-shock,
          # New n
-         n.new = ifelse(Year %in% first_years, n*from_No.to.Ny, n),
+         n.new = ifelse(Year %in% first_years, n*(1-shock), n),
          
          # Compute Ny and No for the affected periods
-         Ny.new = ifelse(Year %in% first_years, Ny*from_No.to.Ny, NA),
-         No.new = ifelse(Year %in% first_years, No*p.new/p, NA),
+         Ny.new = ifelse(Year %in% first_years, Ny*(1-shock), NA),
+         No.new = ifelse(Year %in% first_years, No*(1+shock), NA),
          
          # Compute Ny and No for last sequence/periods
          Ny.new = ifelse(Year > max(first_years), lag(Ny.new,1)*n, Ny.new),
@@ -2435,8 +2417,7 @@ data  = data_base %>%
          
          ) %>% 
   select(Specification, Country, Year, Sequence, Period, Ny, No, n, p, p1, 
-         eta, everything(), -contains("new"), -from_No.to.Ny,
-         -shock, -p_fix, -p1_to_p_dist ) %>%
+         eta, everything(), -contains("new"), -shock, -p_fix, -p1_to_p_dist ) %>%
   ungroup()
 
 # Simulate the model for each country
@@ -2450,9 +2431,6 @@ for(country in country_set){
 
 # Remove duplicates
 ret_age = rbind(ret_age, distinct(result))
-
-# Write ret_age
-#write.csv(ret_age, file.path(loc_sim, "ret_age.csv"), row.names = FALSE)
 
 ```
 
@@ -2499,12 +2477,15 @@ fillgap %>%
   theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") 
-#+
-  #ggsave(file.path(loc_result, "baseline7080_facet2.png"),
-  #      width = scale_graph*5, height = scale_graph*5/2)
+  labs(x = "", y = "")
+
+```
 
 
+```{r Retirement age - save results, include = FALSE}
+
+# Write ret_age
+write.csv(ret_age, file.path(loc_sim, "ret_age.csv"), row.names = FALSE)
 
 ```
 
@@ -2653,6 +2634,325 @@ fillgap %>%
   ggsave(file.path(loc_result, "ret_age.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 ```
+
+```{r Other variables, echo = FALSE}
+
+fillgap %>%
+  rbind(., baseline %>% subset(Country == "United States")) %>% 
+  mutate(Specification = "base2") %>% 
+  rbind(ret_age) %>% 
+  mutate(source = ifelse(Specification == "base2", "base2","ret_age"),
+         from = interaction(Specification, Country)) %>% 
+  group_by(from) %>% 
+  mutate(`b share` = b*u*Ny/tau/Y,
+         `h share` = h*No/tau/Y,
+         bh = b/h,
+    # Deviation from the 2020 steady state
+         "eta" = eta/eta[Year == 2020] -1,
+         "tau" = tau/tau[Year == 2020] -1,
+         "b" = b/b[Year == 2020]-1,
+         "h" = h/h[Year == 2020]-1,
+         "`b share`" = `b share`/`b share`[Year == 2020]-1,
+         "`h share`" = `h share`/`h share`[Year == 2020]-1,
+         "b/h" = bh/bh[Year == 2020]-1,
+    # Rename countries
+         Country = ifelse(Country == "France", "France", "United~States")) %>% 
+  ungroup() %>% 
+  select(from, source, Specification, Country , Year, c("eta", "tau", "`b share`")) %>% 
+  subset(Year %in% c(2020:2080)) %>% 
+  melt(id.vars = c("from", "source", "Specification", "Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = source, color = Specification)) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_line() +
+  facet_grid(Country ~ variable, scale = "free", labeller = label_parsed) +
+  scale_x_continuous(breaks = seq(2020, 2080, 10),
+                     labels = c("2020", "", "2040", "", "2060", "", "2080")) +
+  scale_linetype_manual(breaks = c("base2", "ret_age"), values = c("solid", "dashed")) +
+  scale_color_manual(breaks = c("base2", "ret_age_2020_spe1",
+                                "ret_age_2020_spe2", "ret_age_2020_spe3"),
+                     values = c("black", brewer.pal(8, "Set1")[c(1:3)])) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  labs(x = "", y = "")
+  # ggsave(file.path(loc_dev, "dev_public_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+```
+
+
+```{r}
+
+
+fillgap %>%
+  rbind(., baseline %>% subset(Country == "United States")) %>% 
+  mutate(Specification = "base2") %>% 
+  rbind(ret_age) %>% 
+  mutate(source = ifelse(Specification == "base2", "base2","ret_age"),
+         from = interaction(Specification, Country)) %>% 
+  group_by(from) %>% 
+  mutate(net = 1-tau,
+         outside = b/(1-tau),
+         # Deviation from the 2020 steady state
+         "b" = b/b[Year == 2020] -1,
+         "1-tau" = net/net[Year == 2020] -1,
+         "b/(1-tau)" = outside/outside[Year == 2020] -1,
+         # Rename countries
+         Country = ifelse(Country == "France", "France", "United~States")) %>% 
+  ungroup() %>% 
+  select(from, source, Specification, Country, Year, c("b", "1-tau", "b/(1-tau)")) %>% 
+  subset(Year %in% c(2020:2080)) %>% 
+  melt(id.vars = c("from", "source", "Specification", "Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = source, color = Specification)) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_line() +
+  facet_grid(Country ~ variable, scale = "free", labeller = label_parsed) +
+  scale_x_continuous(breaks = seq(2020, 2080, 10),
+                     labels = c("2020", "", "2040", "", "2060", "", "2080")) +
+  scale_linetype_manual(breaks = c("base2", "ret_age"), values = c("solid", "dashed")) +
+  scale_color_manual(breaks = c("base2", "ret_age_2020_spe1",
+                                "ret_age_2020_spe2", "ret_age_2020_spe3"),
+                     values = c("black", brewer.pal(8, "Set1")[c(1:3)])) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  labs(x = "", y = "")
+
+```
+
+
+```{r}
+
+
+fillgap %>%
+  rbind(., baseline %>% subset(Country == "United States")) %>% 
+  mutate(Specification = "base2") %>% 
+  rbind(ret_age) %>% 
+  mutate(source = ifelse(Specification == "base2", "base2","ret_age"),
+         from = interaction(Specification, Country)) %>% 
+  group_by(from) %>% 
+  mutate(outside = b/(1-tau),
+         # Deviation from the 2020 steady state
+         "b/(1-tau)" = outside/outside[Year == 2020] -1,
+         "w" = w/w[Year == 2020] -1,
+         "X" = X/X[Year == 2020] -1,
+         # Rename countries
+         Country = ifelse(Country == "France", "France", "United~States")) %>% 
+  ungroup() %>% 
+  select(from, source, Specification, Country, Year, c("b/(1-tau)", "w", "X")) %>% 
+  subset(Year %in% c(2020:2080)) %>% 
+  melt(id.vars = c("from", "source", "Specification", "Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = source, color = Specification)) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_line() +
+  facet_grid(Country ~ variable, scale = "free", labeller = label_parsed) +
+  scale_x_continuous(breaks = seq(2020, 2080, 10),
+                     labels = c("2020", "", "2040", "", "2060", "", "2080")) +
+  scale_linetype_manual(breaks = c("base2", "ret_age"), values = c("solid", "dashed")) +
+  scale_color_manual(breaks = c("base2", "ret_age_2020_spe1",
+                                "ret_age_2020_spe2", "ret_age_2020_spe3"),
+                     values = c("black", brewer.pal(8, "Set1")[c(1:3)])) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  labs(x = "", y = "")
+
+```
+
+```{r}
+
+
+fillgap %>%
+  rbind(., baseline %>% subset(Country == "United States")) %>% 
+  mutate(Specification = "base2") %>% 
+  rbind(ret_age) %>% 
+  mutate(source = ifelse(Specification == "base2", "base2","ret_age"),
+         from = interaction(Specification, Country)) %>% 
+  group_by(from) %>% 
+  mutate(
+         # Deviation from the 2020 steady state
+         "K" = K/K[Year == 2020] -1,
+         "L" = L/L[Year == 2020] -1,
+         "Y" = Y/Y[Year == 2020] -1,
+         # Rename countries
+         Country = ifelse(Country == "France", "France", "United~States")) %>% 
+  ungroup() %>% 
+  select(from, source, Specification, Country, Year, c("K", "L", "Y")) %>% 
+  subset(Year %in% c(2020:2080)) %>% 
+  melt(id.vars = c("from", "source", "Specification", "Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = source, color = Specification)) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_line() +
+  facet_grid(Country ~ variable, scale = "free", labeller = label_parsed) +
+  scale_x_continuous(breaks = seq(2020, 2080, 10),
+                     labels = c("2020", "", "2040", "", "2060", "", "2080")) +
+  scale_linetype_manual(breaks = c("base2", "ret_age"), values = c("solid", "dashed")) +
+  scale_color_manual(breaks = c("base2", "ret_age_2020_spe1",
+                                "ret_age_2020_spe2", "ret_age_2020_spe3"),
+                     values = c("black", brewer.pal(8, "Set1")[c(1:3)])) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  labs(x = "", y = "")
+
+```
+
+
+
+
+```{r}
+
+
+fillgap %>%
+  rbind(., baseline %>% subset(Country == "United States")) %>% 
+  mutate(Specification = "base2") %>% 
+  rbind(ret_age) %>% 
+  mutate(source = ifelse(Specification == "base2", "base2","ret_age"),
+         from = interaction(Specification, Country)) %>% 
+  group_by(from) %>% 
+  mutate(
+         # Deviation from the 2020 steady state
+         "N^y" = Ny/Ny[Year == 2020] -1,
+         "L" = L/L[Year == 2020] -1,
+         "u" = u/u[Year == 2020] -1,
+         # Rename countries
+         Country = ifelse(Country == "France", "France", "United~States")) %>% 
+  ungroup() %>% 
+  select(from, source, Specification, Country, Year, c("N^y", "L", "u")) %>% 
+  subset(Year %in% c(2020:2080)) %>% 
+  melt(id.vars = c("from", "source", "Specification", "Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = source, color = Specification)) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_line() +
+  facet_grid(Country ~ variable, scale = "free", labeller = label_parsed) +
+  scale_x_continuous(breaks = seq(2020, 2080, 10),
+                     labels = c("2020", "", "2040", "", "2060", "", "2080")) +
+  scale_linetype_manual(breaks = c("base2", "ret_age"), values = c("solid", "dashed")) +
+  scale_color_manual(breaks = c("base2", "ret_age_2020_spe1",
+                                "ret_age_2020_spe2", "ret_age_2020_spe3"),
+                     values = c("black", brewer.pal(8, "Set1")[c(1:3)])) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  labs(x = "", y = "")
+
+```
+
+```{r}
+
+fillgap %>%
+  rbind(., baseline %>% subset(Country == "United States")) %>% 
+  mutate(Specification = "base2") %>% 
+  rbind(ret_age) %>% 
+  mutate(source = ifelse(Specification == "base2", "base2","ret_age"),
+         from = interaction(Specification, Country)) %>% 
+  group_by(from) %>% 
+  mutate("YL" = Y/L,
+         # Deviation from the 2020 steady state
+         "w" = w/w[Year == 2020] -1,
+         "u" = u/u[Year == 2020] -1,
+         "Y/L" = YL/YL[Year == 2020] -1,
+         "theta" = theta/theta[Year == 2020] -1,
+         # Rename countries
+         Country = ifelse(Country == "France", "France", "United~States")) %>% 
+  ungroup() %>% 
+  select(from, source, Specification, Country, Year, c("w", "Y/L", "theta")) %>% 
+  subset(Year %in% c(2020:2080)) %>% 
+  melt(id.vars = c("from", "source", "Specification", "Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = source, color = Specification)) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_line() +
+  facet_grid(Country ~ variable, scale = "free", labeller = label_parsed) +
+  scale_x_continuous(breaks = seq(2020, 2080, 10),
+                     labels = c("2020", "", "2040", "", "2060", "", "2080")) +
+  scale_linetype_manual(breaks = c("base2", "ret_age"), values = c("solid", "dashed")) +
+  scale_color_manual(breaks = c("base2", "ret_age_2020_spe1",
+                                "ret_age_2020_spe2", "ret_age_2020_spe3"),
+                     values = c("black", brewer.pal(8, "Set1")[c(1:3)])) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  labs(x = "", y = "")
+
+```
+
+```{r Retirement age - Savings, echo = FALSE}
+
+fillgap %>%
+  rbind(., baseline %>% subset(Country == "United States")) %>% 
+  mutate(Specification = "base2") %>% 
+  rbind(ret_age) %>% 
+  mutate(source = ifelse(Specification == "base2", "base2","ret_age"),
+         from = interaction(Specification, Country)) %>% 
+  group_by(from) %>% 
+  mutate(`Saving~share` = alpha*p1/(1+alpha*p1),
+         `Y^y` = eta/(1+beta+eta)*Y,
+         # Deviation from the 2020 steady state
+         `Saving~share` = `Saving~share`/`Saving~share`[Year == 2020] -1,
+         `Y^y` = `Y^y`/`Y^y`[Year == 2020] -1,
+         S = S/S[Year == 2020] -1,
+         # Rename countries
+         Country = ifelse(Country == "France", "France", "United~States")) %>% 
+  ungroup() %>% 
+  select(from, source, Specification, Country, Year, `Saving~share`, `Y^y`, S) %>% 
+  subset(Year %in% c(2020:2080)) %>% 
+  melt(id.vars = c("from", "source", "Specification", "Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = source, color = Specification)) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_line() +
+  facet_grid(Country ~ variable, scale = "free", labeller = label_parsed) +
+  scale_x_continuous(breaks = seq(2020, 2080, 10),
+                     labels = c("2020", "", "2040", "", "2060", "", "2080")) +
+  scale_linetype_manual(breaks = c("base2", "ret_age"), values = c("solid", "dashed")) +
+  scale_color_manual(breaks = c("base2", "ret_age_2020_spe1",
+                                "ret_age_2020_spe2", "ret_age_2020_spe3"),
+                     values = c("black", brewer.pal(8, "Set1")[c(1:3)])) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", legend.direction = "vertical",
+        panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  labs(x = "", y = "")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
