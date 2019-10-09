@@ -1,40 +1,39 @@
 ---
-title: "Capital-Labor elasticity of substitution"	
+title: "Appendix CD"	
 author: "Fabien Petit"	
-date: "24/05/2019"	
+date: "`r format(Sys.time(), '%d/%m/%Y')`"
 output:	
   github_document:	
     pandoc_args: --webtex
 ---
 
-```{r Init, include = FALSE}	
+This notebook refers to the Appendix C **"Estimation of σ"** and the Appendix D **"Two σ regimes in France "**. All the graphs used in these appendices are generated in this notebook.
 
-# Define required packages
-require(dplyr) # The FAMOUS one
-require(reshape2) # Reshape data frame
-require(ggplot2) # Plot
-require(bucky) # Robust standard errors
-require(sandwich) # If you are hungry
-require(RColorBrewer)
+```{r init, results = "hide", message = FALSE}	
+
+# Load packages
+packages <- c("dplyr", "ggplot2", "RColorBrewer", "reshape2", "bucky", "sandwich")
+lapply(packages, require, character.only = TRUE)
+rm(packages)
 
 # Define paths
 loc_final = file.path("data", "final")
-loc_result_sigma = file.path("result", "sigma")
+loc_appCD = file.path(getwd(), "result", "appendix_CD")
 
 # Define country set
-# country_set = c("Australia", "Canada", "France", "Italy", "Japan", "United States")
 country_set = c("France", "United States")
 
 # Graphic parameter
 scale_graph = 1920/1080
+red = brewer.pal(8, "Set1")[1]
 
 ```	
 
 ## Methodology
 
-I estimate the elasticity of substitution between capital and labor using the methodology of **Leon-Ledesma, McAdam & Willman (2013)**. Estimation are done for France and United States between 1970 and 2010, using Penn World Table 9.1 data.
+I estimate the elasticity of substitution between capital and labor with a single-equation from the two first-order conditions of the profit maximization. Estimation are done for France and United States between 1970 and 2010, using Penn World Table 9.1 data.
 
-Following the methodology of Leon-Ledesma, McAdam & Willman (2013), I estimate the following equation :	
+I estimate the following equation :	
 <center>
 $$\ln \Theta_t = \alpha + \frac{1-\sigma}{\sigma} \ln k_t + \frac{1-\sigma}{\sigma} \left( a_K-a_L\right)t + \varepsilon_t$$
 </center>
@@ -42,25 +41,12 @@ Therefore, I need to compute the capital-to-labor ratio $~k_t~$ and the capital-
 
 ## Data
 
-```{r Load Data, echo = FALSE}
+```{r load_data}
 
 # Penn World Table
-pwt = read.csv(file.path(loc_final, "pwt.csv"), header = TRUE) %>%
+df = read.csv(file.path(loc_final, "pwt.csv"), header = TRUE) %>%
   select("Country", "Year", "emp", "avh", "rgdpna", "rnna", "lab_sh1", "lab_sh2") %>% 
   subset(Country %in% country_set & Year >= 1970)
-
-# OECD data
-oecd = read.csv(file.path(loc_final, "oecd.csv"), header = TRUE) %>% 
-  select("Country", "Year", tax_rate = "tax_rev_PC_GDP", union_density = "union_density.lin_inter", union_coverage = "union_coverage.lin_inter") %>% 
-  subset(Country %in% country_set & Year >= 1970)
-
-# Demographic data
-demo = read.csv(file.path(loc_final, "demo.csv"), header = TRUE) %>% 
-  select("Country", "Year", "young", "young_1564", "old", "dep", "n", "p") %>% 
-  subset(Country %in% country_set & Year >= 1970)
-
-## Merge
-df = merge(merge(pwt, oecd, all = TRUE), demo, all = TRUE)
 
 # Variable modifications
 df = df %>%
@@ -92,14 +78,13 @@ head(df)
 
 The variables from the **Penn World Table 9.1** are the following :	
 
-
 * *emp* : Number of persons engaged (in millions)	
-* *avh* : Average annual hours worked by persons engaged	
-* *rnna* : Capital stock at constant 2011 national prices (in mil. 2011US$)	
+* *avh* : Average annual hours worked by persons engaged
+* *rnna* : Capital stock at constant 2011 national prices (in mil. 2011 US$)	
 * *lab_sh1* : Share of labour compensation in GDP at current national prices (**Adjustment method 1**)
 * *lab_sh2* : Share of labour compensation in GDP at current national prices (**Adjustment method 2**)
 
-```{r Compare both labor share, echo = FALSE}
+```{r compare_both_ls}
 
 df %>% select(Country, Year, theta1, theta2) %>% 
   melt(id.vars = c("Country", "Year")) %>% 
@@ -112,9 +97,7 @@ df %>% select(Country, Year, theta1, theta2) %>%
   theme_classic(base_size = 14) +
   theme(legend.direction = "horizontal", legend.position = "bottom")
 
-
 ```
-
 
 I use the first adjustment method (see **Frenstra, Inklaar and Timmer 2015** and **Gollin 2002** for more details). An adjustment method is required to take into account self-employed income.
 
@@ -130,7 +113,7 @@ $$LS = \frac{COMP}{GDP-MIX}$$
 
 In the model, workers are only young individuals and provide only labor supply. Therefore, I assume that self-employed people earn an income that is characterized as a compensation. Hence, I will use the first adjustment method. I normalize the capital-to-labor ratio to the initial year (i.e. 1970).
 
-```{r Plot k_nor, echo = FALSE}
+```{r plot_k_normalized}
 
 df %>% select("Country", "Year", "k", "k.avh") %>%
   melt(id.vars = c("Country", "Year")) %>%
@@ -139,17 +122,19 @@ df %>% select("Country", "Year", "k", "k.avh") %>%
   facet_wrap(Country ~ .) +
   scale_color_discrete(name = "", breaks = c("k", "k.avh"),
                        labels = c("Standard", "AVH correction")) +
-  labs(x = "Year", y = "Normalized capital-to-labor ratio (1970 = 1)") +
+  labs(x = "Year", y = "Normalized capital-to-labor ratio") +
   theme_classic(base_size = 14) +
   theme(legend.direction = "horizontal", legend.position = "bottom")
   
 ```	
 
-```{r Income ratio and logarithm, echo = FALSE}
+```{r computation}
 
 df = df %>% 
   group_by(Country) %>% 
-  mutate(THETA1 = theta1/(1-theta1),
+  mutate(
+         # Compute the income ratio
+         THETA1 = theta1/(1-theta1),
          THETA2 = theta2/(1-theta2),
          THETA1.avh = THETA1*avh,
          THETA2.avh = THETA2*avh,
@@ -165,7 +150,9 @@ df = df %>%
 
 ```
 
-```{r Adjustment 1, eco = FALSE}
+## Appendix C - Estimation of σ
+
+```{r est_adjust1}
 
 ols1.raw = df %>% 
   lm(formula = THETA1_log ~ Country + k_log*Country - 1 - k_log)
@@ -189,7 +176,7 @@ sigma1.both = 1/(1 + ols1.both$coefficients[c(3,4)])
 
 ```
 
-```{r Adjustment 2, echo = FALSE}
+```{r est_adjust2}
 
 ols2.raw = df %>% 
   lm(formula = THETA2_log ~ Country + k_log*Country - 1 - k_log)
@@ -213,7 +200,7 @@ sigma2.both = 1/(1 + ols2.both$coefficients[c(3,4)])
 
 ```
 
-```{r Gather results, echo = FALSE, warning = FALSE}
+```{r gather_results, warning = FALSE}
 
 data.frame(sigma1.raw, sigma1.hwc, sigma1.btc, sigma1.both,
            sigma2.raw, sigma2.hwc, sigma2.btc, sigma2.both)
@@ -221,13 +208,13 @@ data.frame(sigma1.raw, sigma1.hwc, sigma1.btc, sigma1.both,
 
 ```
 
-## Break Year
+## Appendix D - Two σ regimes in France
 
-The purpose of this section is to investigate whether there is a break in the estimated elasticity of substitution. In particular for France. Indeed, there capital-per-worker $k_t$ grows at a relatively constant rate while the labor share $\Theta_t$ faces a huge decrease during the 80's.
+The purpose of this section is to investigate whether there is a break in the estimated elasticity of substitution. In particular for France. Indeed, there capital-per-worker $k_t$ grows at a relatively constant rate while the labor income share $~\Theta_t~$ faces a huge decrease during the 80's.
 
 I consider only France with adjustment method 1 and capital with average hours worked correction. Estimation is done with biased technical change.
 
-```{r Break Year - Graph 1, echo = FALSE}
+```{r break_year_graph_1}
 
 df.fr = df %>% 
   ungroup() %>% 
@@ -247,17 +234,19 @@ df.fr %>%
   theme_classic(base_size = 14) +
   labs(x = "", y = "") +
   theme(legend.position = "none") +
-  ggsave(file.path(loc_result_sigma, "k_Theta_log.png"), width = scale_graph*5, height = scale_graph*5/2)
+  ggsave(file.path(loc_appCD, "k_Theta_log.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 ```
-```{r Break Year - Correlation, echo = FALSE}
-
+```{r break_year_corr_1}
 # 1982 included in before
 df.fr %>% 
   mutate(period = ifelse(Year <= 1983, "before", "after")) %>% 
   group_by(period) %>% 
   summarise(cor(k.avh_log, THETA1_log))
+```
 
+
+```{r break_year_corr2}
 # 1982 included in after
 df.fr %>% 
   mutate(period = ifelse(Year < 1983, "before", "after")) %>% 
@@ -266,10 +255,9 @@ df.fr %>%
 
 ```
 
-
 This is the baseline regression, where I estimate the capital-labor elasticity of substitution for the whole sample. 
 
-```{r Break Year - Baseline estimation, echo = FALSE}
+```{r break_year_baseline_est}
 
 ols_base = df.fr %>% 
   lm(THETA1_log ~ k.avh_log + t_diff, data = .)
@@ -282,8 +270,7 @@ sigma.fr_all
 
 There is a biased technical change, which is constant and significant. I have to keep the same rate of technical change. Because if I split the sample, I would obtain two different BTC growth rates. Thus, a way is to detrend the capital-per-worker and the capital-to-labor income ratio. Such a methodology comes from the **Frisch–Waugh–Lovell theorem**.
 
-
-```{r Break Year - Detrend, echo = FALSE, warnings = FALSE}
+```{r break_year_detrend, warnings = FALSE}
 
 # Detrend k
 df.fr$k.avh_log_detrend = df.fr %>% 
@@ -311,16 +298,15 @@ df.fr %>%
   theme_classic(base_size = 14) +
   labs(x = "", y = "") +
   theme(legend.position = "none") +
-  ggsave(file.path(loc_result_sigma, "k_Theta_log_detrend.png"), width = scale_graph*5,
-         height = scale_graph*5/2)
+  ggsave(file.path(loc_appCD, "k_Theta_log_detrend.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
 This is an example of the regressions when I break the sample in 1985. It seems that there are two regimes. There are three main potential breaks around the years 1982, 1985 and 1989. 
 
-```{r Break Year - Max k , echo = FALSE}
+```{r break_year_max_k}
 
-# Find the max of the red curve
+# Find the max of the red and blue curves
 df.fr %>% 
   subset(k.avh_log_detrend == max(k.avh_log_detrend) | 
            THETA1_log_detrend == max(THETA1_log_detrend) |
@@ -328,18 +314,9 @@ df.fr %>%
 
 ```
 
-However, the break may have occur during the 80's. I have to determine which year optimize the split. To do so, I use a grid-search approach between 1980 and 1990. Below is the baseline regression leading to an elasticity of 1.356.
+However, the break may have occur during the 80's. I have to determine which year optimize the split. To do so, I use a grid-search approach between 1980 and 1990.
 
-
-```{r Break Year - Baseline Regression, echo = FALSE}
-# Baseline estimate
-ols_base.detrend = df.fr %>% 
-  lm(THETA1_log_detrend ~ k.avh_log_detrend -1, data = .)
-summary(ols_base.detrend)
-
-```
-
-```{r Break Year - Plot regimes, echo = FALSE}
+```{r break_year_graph_2regimes}
 
 df.fr %>% 
   select(Year, k.avh_log_detrend, THETA1_log_detrend) %>% 
@@ -354,12 +331,11 @@ df.fr %>%
   labs(x = "", y = "") +
   theme(legend.direction = "vertical", legend.box = "horizontal", 
           legend.position = c(0.02,1), legend.justification = c(0,1)) +
-  ggsave(file.path(loc_result_sigma, "k_Theta_log_reg85.png"), width = scale_graph*5, height = scale_graph*5/2)
+  ggsave(file.path(loc_appCD, "k_Theta_log_reg85.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
-```{r Break Year - Optimal Splitter, echo = FALSE}
-
+```{r break_year_optimal_splitter}
 split.coef = data.frame(matrix(nrow = 0, ncol = 6))
 split.R2 = data.frame(matrix(nrow = 0, ncol = 2))
 
@@ -395,10 +371,18 @@ split.coef = split.coef %>%
   mutate(star = ifelse(pvalue > 0.1, NA,
                        ifelse(pvalue > 0.05, "*",
                               ifelse(pvalue > 0.01, "**", "***"))))
+```
 
-# Display
+
+```{r break_year_optimal_splitter_coef}
+
 split.coef[3:6] = split.coef[3:6] %>% apply(., 2, function(x){round(x, digits = 3)})
 split.coef
+
+```
+
+
+```{r break_year_optimal_splitter_R2}
 
 split.R2$R2 = split.R2$R2 %>% round(digits = 3)
 split.R2
@@ -406,7 +390,7 @@ split.R2
 ```
 
 
-```{r Estimation for the Break Year, echo = FALSE}
+```{r break_year_optimal_year_est}
 
 # Max R2 : define the break_year
 break_year = split.R2 %>% subset(R2 == max(R2)) %>% pull("splitter")
@@ -456,34 +440,3 @@ sigma.fr_after
 
 
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,7 +1,7 @@
 Appendix A
 ================
 Fabien Petit
-17/06/2019
+09/10/2019
 
 This notebook refers to the Appendix A **“Uniqueness of the
 equilibrium”**. All the graphs used in the appendix are generated in
@@ -15,6 +15,7 @@ rm(packages)
 
 # Define paths
 loc_appA = file.path(getwd(), "result", "appendix_A")
+
 # Graphic parameter
 scale_graph = 1920/1080
 red = brewer.pal(8, "Set1")[1]

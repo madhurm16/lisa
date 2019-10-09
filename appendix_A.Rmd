@@ -1,13 +1,15 @@
 ---
 title: "Appendix A"
 author: "Fabien Petit"
-date: "17/06/2019"
-output: github_document
+date: "`r format(Sys.time(), '%d/%m/%Y')`"
+output: 
+  github_document:	
+    pandoc_args: --webtex
 ---
 
 This notebook refers to the Appendix A **"Uniqueness of the equilibrium"**. All the graphs used in the appendix are generated in this notebook.
 
-```{r Initialization, results = "hide", message = FALSE}
+```{r init, results = "hide", message = FALSE}
 
 # Load packages
 packages <- c("dplyr", "ggplot2", "ggrepel", "RColorBrewer", "reshape2", "extrafont")
@@ -16,6 +18,7 @@ rm(packages)
 
 # Define paths
 loc_appA = file.path(getwd(), "result", "appendix_A")
+
 # Graphic parameter
 scale_graph = 1920/1080
 red = brewer.pal(8, "Set1")[1]
