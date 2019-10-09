@@ -1,6 +1,6 @@
 # Data
 
-Data are identical to *data > raw* folder (except **populstat**, extraction has been done with scraping, not provided in this git).
+Data are identical to *data > raw* folder (except **populstat**, extraction has been done with scraping, not provided in this repository).
 
 - **oecd** : data from the OECD database.
 - **populstat** : data from the Population Statistics website (http://www.populstat.info/).
