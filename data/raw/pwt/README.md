@@ -1,6 +1,6 @@
 # Penn World Table
 
-Data downloaded from : https://www.rug.nl/ggdc/productivity/pwt/
+Data downloaded from : https://www.rug.nl/ggdc/productivity/pwt/ downloaded on the 23rd November 2018.
 
 PWT version 9.1 is a database with information on relative levels of income, output, input and productivity, covering 182 countries between 1950 and 2017.
 
