@@ -1,4 +1,4 @@
-# Data
+# Data in .csv format
 
 Data are identical to *data > raw* folder (except **populstat**, extraction has been done with scraping, not provided in this repository).
 
