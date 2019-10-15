@@ -15,6 +15,9 @@ Files are organized as follows :
 - **appendix_CD.md** : Appendix C & D notebook.
 - appendix_CD.Rmd : Appendix C & D notebook (R code).
 
+- **gamma.md** : Gamma (bargaining power) analysis.
+- gamma.Rmd : Gamma (bargaining power) analysis (R code).
+
 - **main.md** : Main notebook.
 - main.Rmd : Main notebook (R code).
 
