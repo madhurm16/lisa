@@ -16,7 +16,7 @@ Data are from :
 * OECD Database
 * United Nations (World Population Prospects)
 
-```{r Initialization, include = FALSE}
+```{r init, results = "hide", message = FALSE}
 
 # Define paths
 loc_result = file.path(getwd(), "result")
@@ -32,10 +32,6 @@ rm(packages)
 # Load functions
 sapply(list.files(pattern = "[.]R$", path = loc_function, full.names = TRUE), source)
 
-```
-
-```{r Simulation specification, include = FALSE}
-
 # Country set
 country_set = c("France", "United States")
 
@@ -47,7 +43,7 @@ est_sample = c(1970:2010)
 
 ```
 
-```{r Load data, include = FALSE}
+```{r load_data, include = FALSE}
 
 # Penn World Table
 pwt = read.csv(file.path(loc_final, "pwt.csv"), header = TRUE) %>%
@@ -56,7 +52,8 @@ pwt = read.csv(file.path(loc_final, "pwt.csv"), header = TRUE) %>%
 
 # OECD data
 oecd = read.csv(file.path(loc_final, "oecd.csv"), header = TRUE) %>% 
-  select("Country", "Year", tax_rate = "tax_rev_PC_GDP", union_density = "union_density.lin_inter", union_coverage = "union_coverage.lin_inter") %>% 
+  select("Country", "Year", tax_rate = "tax_rev_PC_GDP",
+         union_density = "union_density.lin_inter", union_coverage = "union_coverage.lin_inter") %>% 
   subset(Country %in% country_set & Year >= 1970)
 
 # Demographic data
@@ -70,7 +67,7 @@ df = merge(merge(pwt, oecd, all = TRUE), demo, all = TRUE) %>%
 
 ```
 
-```{r Data retreatment, echo = FALSE}
+```{r data_treatment}
 
 # Variable modifications
 df = df %>%
@@ -104,7 +101,7 @@ write.csv(df, file.path(loc_sim, "data.csv"), row.names = FALSE)
 
 ### Data for simulation
 
-```{r Data for simulation, echo = FALSE}
+```{r data_sim_prep}
 
 init_seq = seq(1970, 2000, 10)
 
@@ -134,7 +131,7 @@ head(data_base)
 
 ```
 
-```{r Initial Specification, include = FALSE}
+```{r init_spe}
 
 data = data_base %>% 
   # No biased technical change
@@ -149,7 +146,7 @@ data = data_base %>%
 
 The discount factor *alpha* is set to `r round(0.99^40,3)`. The relative bargaining power of the union *gamma* is set to `r 0.5`. *For more details, please consult "gamma.md" file.*
 
-```{r Parameter - Dataframe, include = FALSE}
+```{r param}
 
 param_base = data.frame("Country" = rep(c("France", "United States"), each = length(sim)),
                    "Year" = sim, "alpha" = (0.99)^40, "gamma" = 0.5)
@@ -160,7 +157,7 @@ param_base = data.frame("Country" = rep(c("France", "United States"), each = len
 
 I estimate the elasticity of substitution between capital and labor using the first order conditions from the profit maximization. Estimation are done for France and United States between 1970 and 2010, using Penn World Table 9.1 data. *For more details, please consult "sigma.md" file.*
 
-```{r Parameter - Production function - DataFrame, echo = FALSE}
+```{r param_prod}
 
 # Dataframe for estimation
 est_sigma = df %>% 
@@ -176,7 +173,7 @@ est_sigma = df %>%
 
 #### France
 
-```{r Parameter - Production function - France, echo = FALSE}
+```{r param_prod_fr}
 
 ### Regression : one sigma for the whole period
   ols.france_all = est_sigma %>% 
@@ -211,7 +208,7 @@ est_sigma = df %>%
 
 #### United States
 
-```{r Parameter - Production function - United-States, echo = FALSE}
+```{r param_prod_us}
 
 ### Regression : one sigma for the whole period
   ols.us_all = est_sigma %>% 
@@ -225,7 +222,7 @@ est_sigma = df %>%
 
 #### Summary
 
-```{r Parameter - Production function - Summary, echo = FALSE}
+```{r param_prod_summary}
 
 # Add production function parameters
 param_base = param_base %>%
@@ -242,61 +239,23 @@ param_base %>% subset(Year == 1970) %>% select(Country, phi, sigma, a)
 
 The relative per-capita influence of old households *omega* is deduced such that the capital-to-labor ratio is matched in 1970. The preference for government health expenditure *beta* is deduced such that the tax rate in 1970 is matched.
 
-
-```{r Parameter - Preferences, echo = FALSE}
+```{r param_pref}
 
 # Compute omega and beta
-omega_beta = df %>%
-  merge(param_base) %>%
+param_base = param_base %>%
+  merge(., df) %>% 
   mutate(X = (sigma + (1-phi)/phi*(1-gamma*(1-sigma))/gamma*k^((1-sigma)/sigma))^(-1),
          eta = (1-phi)/phi*k^((1-sigma)/sigma) * ((Ny/K*k-1)*exp(-X) + 1),
-         omega.raw = n/p*(1+alpha*p1)/eta,
-         beta.raw = 1/(1 - tau)/(1-theta) - 1 - eta)
-
-```
-
-```{r Parameter - Omega/Beta analysis, echo = FALSE}
-
-omega_beta %>% 
-  select(Country, Year, omega.raw, beta.raw) %>%
-  setNames(c("Country", "Year", "omega", "beta")) %>% 
-  subset(Year <= 2010) %>%
-  melt(id.vars = c("Country", "Year")) %>% 
-  
-  ggplot(aes(x = Year, y = value, color = Country)) +
-  geom_line() +
-  facet_wrap(variable ~ ., scale = "free", labeller = label_parsed) +
-  theme_classic()
-
-```
-
-
-```{r Parameter - Preferences, echo = FALSE}
-
-# Compute different values for omega/beta
-param_base = omega_beta %>% 
+         omega = n/p*(1+alpha*p1)/eta,
+         beta = 1/(1 - tau)/(1-theta) - 1 - eta) %>% 
   group_by(Country) %>% 
-  mutate(omega.avg = mean(omega.raw, na.rm = TRUE),
-         beta.avg = mean(beta.raw, na.rm = TRUE),
-         omega.init = first(omega.raw),
-         beta.init = first(beta.raw)) %>% 
-  select(Country, Year, starts_with("omega"), starts_with("beta")) %>% 
-  merge(param_base, .)
+  mutate(omega = first(omega),
+         beta = first(beta)) %>% 
+  select(Country, Year, alpha, gamma, phi, sigma, a, omega, beta) %>% 
+  ungroup()
 
 # Visualization
-param_base %>% subset(Year == 1970) %>% select(Country, starts_with("omega"), starts_with("beta"))
-
-```
-
-```{r Parameter - Preferences - Select omega/beta, echo = FALSE}
-
-# Choose beta and omega
-param_base = param_base %>%
-  group_by(Country) %>%
-  mutate(omega = omega.init,
-         beta = beta.init) %>%
-  select(Country, Year, alpha, gamma, phi, sigma, a, omega, beta)
-
+param_base %>% subset(Year == 1970) %>% select(Country, omega, beta)
 
 ```
 
@@ -305,7 +264,7 @@ param_base = param_base %>%
 
 The scale parameter *A* is decuded using grid search to match the average labor share between 2008 and 2012.
 
-```{r Parameter - Scale parameter, echo = FALSE}
+```{r param_A}
 
 data = data_base %>% 
   # No biased technical change
@@ -327,7 +286,7 @@ param_base$A = data$A
 
 All parameters are constant over time.
 
-```{r Parameter -  Summary, echo = FALSE}
+```{r param_summary}
 
 # Visualization
 param_base %>% subset(Year == 1970) %>% select(-Year, -a) 
@@ -339,7 +298,7 @@ param = param_base
 
 ## Simulation
 
-```{r Graph - Parameters, include = FALSE}
+```{r graph_param}
 
 breaks_10_years = seq(1970, 2080, 10)
 labs_20_years = as.vector(rbind(seq(1970, 2080, 20), rep("", length(breaks_10_years)/2)))
@@ -349,8 +308,9 @@ scale_graph = 1920/1080
 
 ### Demography : break years
 
-```{r Breakers, echo = FALSE}
+Prepare the dataset for the counterfactual analysis.
 
+```{r breakers}
 
 breakers = demo %>% 
   ## Compute demographic data for 1960
@@ -391,7 +351,7 @@ breakers
 
 ### Baseline model
 
-```{r Simulation - BModel, include = FALSE}
+```{r sim_bmodel}
 
 # Specification
 spe = "baseline"
@@ -436,7 +396,7 @@ write.csv(baseline, file.path(loc_sim, paste0("final_", spe, ".csv")), row.names
 
 #### Performance
 
-```{r Graph - BModel - Performance, echo = FALSE}
+```{r sim_bmodel_perf}
 
 # Prepare data and regression
 perf = baseline %>% 
@@ -463,29 +423,27 @@ perf = baseline %>%
                            - Country) %>%
            fitted.values() %>% unname())
 
-# Plot
-perf %>% 
+# Core plot
+perf_plot = perf %>% 
   select(Country, Year, theta, labsh, labsh.fitted) %>% 
   melt(id.vars = c("Country", "Year")) %>% 
   
-  ggplot(aes(x = Year, y = value, color = variable)) +
+  ggplot(aes(x = Year, y = value, linetype = variable)) +
   geom_line() +
   facet_wrap(Country ~ .) +
-  scale_color_manual(name = "",
-                     breaks = c("theta", "labsh", "labsh.fitted"),
-                     labels = c("Model", "Data", "Smoothed data"),
-                     values = c(brewer.pal(8, "Set1")[1],
-                                "black",
-                                brewer.pal(8, "Set1")[2]),
-                     na.value = "black") +
   theme_classic(base_size = 14) +
-  guides(color = guide_legend(order = 0), linetype = guide_legend(order = 1)) +
   theme(legend.position = c(0.99, 0.99),
         legend.justification = c("right", "top"),
         legend.direction = "vertical",
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
   labs(x = "Year", y = "Labor income share")
+
+## Paper version
+perf_plot +
+  scale_linetype_manual(name = "",
+                     breaks = c("theta", "labsh", "labsh.fitted"), labels = c("Model", "Data", "Smoothed data"),
+                     values = c("dotted", "solid", "dashed"))
 
 # Performance regression France
 perf %>% 
@@ -499,13 +457,12 @@ perf %>%
   lm(labsh.fitted ~ theta, data = .) %>% 
   summary()
   
-
-
 ```
 
 ### Fill the gap : France 1980
 
-```{r FGapModel - Parameter, echo = FALSE}
+```{r sim_fgap_france_param}
+
 # Change param for France
 param = param %>% 
   mutate(sigma = ifelse(Country == "France",
@@ -534,7 +491,7 @@ param %>% subset(Year == 1970) %>% select(Country, A)
 ```
 
 
-```{r FGapModel - Simulation, echo = FALSE}
+```{r sim_fgap_france}
 
 # Specification
 spe = "fillgap"
@@ -566,9 +523,10 @@ write.csv(fillgap, file.path(loc_sim, paste0("final_", spe, ".csv")), row.names 
 
 ```
 
-```{r Graph - FGapModel - LS 1970-2010, echo = FALSE}
+```{r bmodel_plot_LS7010}
 
-baseline %>% 
+## Core
+bmodel_plot_LS7010 = baseline %>% 
   subset(Specification == "baseline") %>% 
   select(Country, Year, theta) %>% 
   melt(id.vars = c("Country", "Year")) %>% 
@@ -588,27 +546,41 @@ baseline %>%
          variable = ifelse(variable == "data", "a.data", variable),
          variable = as.factor(variable)) %>% 
   
-  ggplot(aes(x = Year, y = value, color = variable, linetype = fill)) +
+  ggplot(aes(x = Year, y = value, linetype = variable, color = variable)) +
   geom_line() +
   facet_wrap(Country ~ ., scales = "fixed") +
-  scale_color_manual(breaks = c("base.fr", "base.us", "a.data", "fill.fr"),
-                    values = c(brewer.pal(8, "Set1")[c(1,2)], "black", brewer.pal(8, "Set1")[1]) %>% 
-                      setNames(c("base.fr", "base.us", "a.data", "fill.fr"))) +
-  scale_linetype_manual(breaks = c("fill", "other"),
-                        values = c("dashed", "solid")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_result, "baseline7010_facet.png"),
-         width = scale_graph*5, height = scale_graph*5/2)
+  labs(x = "", y = "")
+
+## Paper version
+bmodel_plot_LS7010 +
+  scale_linetype_manual(breaks = c("base.fr", "base.us", "a.data", "fill.fr"), 
+                        values = c("dashed", "dashed", "solid", "dotted") %>% 
+                        setNames(c("base.fr", "base.us", "a.data", "fill.fr"))) +
+  scale_color_manual(breaks = c("base.fr", "base.us", "a.data", "fill.fr"), 
+                        values = rep("black", 4) %>% 
+                        setNames(c("base.fr", "base.us", "a.data", "fill.fr"))) +
+  ggsave(file.path(loc_result, "baseline7010.png"), width = scale_graph*5, height = scale_graph*5/2)
+
+## Color version
+bmodel_plot_LS7010 +
+  scale_linetype_manual(breaks = c("base.fr", "base.us", "a.data", "fill.fr"), 
+                        values = c("solid", "solid", "solid", "dashed") %>% 
+                        setNames(c("base.fr", "base.us", "a.data", "fill.fr"))) +
+  scale_color_manual(breaks = c("base.fr", "base.us", "a.data", "fill.fr"), 
+                     values = c(brewer.pal(8, "Set1")[c(1,2)], "black", brewer.pal(8, "Set1")[1]) %>%
+                       setNames(c("base.fr", "base.us", "a.data", "fill.fr"))) +
+  ggsave(file.path(loc_result, "baseline7010_color.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
-```{r Graph - FGapModel - LS 1970-2080, echo = FALSE}
+```{r bmodel_plot_LS7080}
 
-baseline %>% 
+## Core
+bmodel_plot_LS7080 = baseline %>% 
   subset(Specification == "baseline") %>% 
   select(Country, Year, theta) %>% 
   melt(id.vars = c("Country", "Year")) %>% 
@@ -628,42 +600,60 @@ baseline %>%
          variable = ifelse(variable == "data", "a.data", variable),
          variable = as.factor(variable)) %>% 
   
-  ggplot(aes(x = Year, y = value, color = variable, linetype = fill)) +
+  ggplot(aes(x = Year, y = value, linetype = variable, color = variable)) +
   geom_line() +
   facet_wrap(Country ~ ., scales = "fixed") +
-  scale_color_manual(breaks = c("base.fr", "base.us", "data", "fill.fr"),
-                    values = c(brewer.pal(8, "Set1")[c(1,2)], "black", brewer.pal(8, "Set1")[1]) %>% 
-                      setNames(c("base.fr", "base.us", "a.data", "fill.fr"))) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  scale_linetype_manual(breaks = c("fill", "other"),
-                        values = c("dashed", "solid")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_result, "baseline7080_facet.png"),
-         width = scale_graph*5, height = scale_graph*5/2)
+  labs(x = "", y = "")
+
+## Paper version
+bmodel_plot_LS7080 +
+  scale_linetype_manual(breaks = c("base.fr", "base.us", "a.data", "fill.fr"), 
+                        values = c("dashed", "dashed", "solid", "dotted") %>% 
+                        setNames(c("base.fr", "base.us", "a.data", "fill.fr"))) +
+  scale_color_manual(breaks = c("base.fr", "base.us", "a.data", "fill.fr"),
+                    values = rep("black", 4) %>%
+                      setNames(c("base.fr", "base.us", "a.data", "fill.fr"))) +
+  ggsave(file.path(loc_result, "baseline7080.png"), width = scale_graph*5, height = scale_graph*5/2)
+
+## Color version
+bmodel_plot_LS7080 +
+  scale_color_manual(breaks = c("base.fr", "base.us", "a.data", "fill.fr"),
+                    values = c(brewer.pal(8, "Set1")[c(1,2)], "black", brewer.pal(8, "Set1")[1]) %>%
+                      setNames(c("base.fr", "base.us", "a.data", "fill.fr"))) +
+  scale_linetype_manual(breaks = c("base.fr", "base.us", "a.data", "fill.fr"), 
+                        values = c("solid", "solid", "solid", "dashed") %>% 
+                        setNames(c("base.fr", "base.us", "a.data", "fill.fr"))) +
+  ggsave(file.path(loc_result, "baseline7080_color.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
-
 ### Variables dynamics
 
-```{r Graph - Loc, echo = FALSE}
+```{r loc_dev}
 
 loc_dev = file.path(loc_result, "deviation")
 
 # Computation average growth rate of p on 10 years per country
-baseline %>% select(Country, Year, p) %>% subset(Year >= 2010) %>% group_by(Country) %>% mutate(p = p/dplyr::lag(p) -1)%>% summarize(mean(p, na.rm = T))
+baseline %>% 
+  select(Country, Year, p) %>% 
+  subset(Year >= 2010) %>% 
+  group_by(Country) %>% 
+  mutate(p = p/dplyr::lag(p) -1) %>% 
+  summarize(mean(p, na.rm = T))
 
 ```
 
 #### Demography
 
-```{r Graph - FGapModel - Demo 70-10, echo = FALSE}
+```{r dev_demo7010}
 
-baseline %>%
+## Core
+dev_demo7010 = baseline %>%
   # subset(Country == "France") %>% 
   rbind(fillgap) %>% 
   mutate(from = interaction(Specification, Country)) %>% 
@@ -675,7 +665,11 @@ baseline %>%
          "p[+1]" = p1/p1[Year == 1970] -1,
          "eta" = eta/eta[Year == 1970] -1) %>% 
   ungroup() %>% 
-  select(Specification, Country , Year, c("n", "p", "p[+1]", "eta")) %>% 
+  select(Specification, Country , Year,
+         "Population~growth~(n)"= "n", 
+         "Survival~rate~(p)"= "p", 
+         "Exp.~survival~rate~(p[+1])"= "p[+1]", 
+         "Youth~political~weight~(eta)" = "eta") %>% 
   subset(Year %in% c(1970:2010)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   subset(Specification == "baseline") %>% 
@@ -686,21 +680,28 @@ baseline %>%
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_dev, "dev_demo_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+  labs(x = "", y = "")
+
+## Paper version
+dev_demo7010 +
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_dev, "dev_demo7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+## Color version
+dev_demo7010 +
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_dev, "dev_demo7010_color.png"), width = scale_graph*5, height = scale_graph*5/3)
   
 ```
 
-```{r Graph - FGapModel - Demo 10-80, echo = FALSE}
+```{r dev_demo1080}
 
-baseline %>%
-  # subset(Country == "France") %>% 
+## Paper version
+dev_demo1080 = baseline %>%
   rbind(fillgap) %>% 
   mutate(from = interaction(Specification, Country)) %>% 
   group_by(from) %>% 
@@ -711,7 +712,11 @@ baseline %>%
          "p[+1]" = p1/p1[Year == 2010] -1,
          "eta" = eta/eta[Year == 2010] -1) %>% 
   ungroup() %>% 
-  select(Specification, Country , Year, c("n", "p", "p[+1]", "eta")) %>% 
+  select(Specification, Country , Year,
+         "Population~growth~(n)"= "n", 
+         "Survival~rate~(p)"= "p", 
+         "Exp.~survival~rate~(p[+1])"= "p[+1]", 
+         "Youth~political~weight~(eta)" = "eta") %>% 
   subset(Year %in% c(2010:2080)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   subset(Specification == "baseline") %>% 
@@ -720,27 +725,35 @@ baseline %>%
   geom_hline(yintercept = 0, linetype = "dotted") +
   geom_line() +
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
-  scale_x_continuous(breaks = seq(2010,2080,10), 
+  scale_x_continuous(breaks = seq(2010, 2080, 10), 
                      labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_dev, "dev_demo_1080.png"), width = scale_graph*5, height = scale_graph*5/3)
+  labs(x = "", y = "") 
+
+## Paper version
+dev_demo1080 +
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_dev, "dev_demo1080.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+## Color version
+dev_demo1080 +
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_dev, "dev_demo1080_color.png"), width = scale_graph*5, height = scale_graph*5/3)
   
 ```
 
 
 ##### Public
 
-```{r Graph - FGapModel - Public 70-10, echo = FALSE}
+```{r dev_public7010}
 
-baseline %>%
-  # subset(Country == "France") %>% 
+## Core
+
+dev_public7010 = baseline %>%
   rbind(fillgap) %>% 
   mutate(from = interaction(Specification, Country)) %>% 
   group_by(from) %>% 
@@ -756,7 +769,10 @@ baseline %>%
          "`h share`" = `h share`/`h share`[Year == 1970]-1,
          "b/h" = bh/bh[Year == 1970]-1) %>% 
   ungroup() %>% 
-  select(Specification, Country , Year, c("eta", "tau", "`b share`")) %>% 
+  select(Specification, Country , Year,
+         "Youth~political~weight~(eta)" = "eta", 
+         "Tax~rate~(tau)" = "tau", 
+         "Unemp.~benefits~share" = "`b share`") %>% 
   subset(Year %in% c(1970:2010)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
@@ -766,21 +782,28 @@ baseline %>%
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_dev, "dev_public_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
-  
+  labs(x = "", y = "")
+
+## Paper version
+dev_public7010 +
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_dev, "dev_public7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+## Color version
+dev_public7010 +
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_dev, "dev_public7010_color.png"), width = scale_graph*5, height = scale_graph*5/3)
+
 ```
 
-```{r Graph - FGapModel - Public 10-80, echo = FALSE}
+```{r dev_public1080}
 
-baseline %>%
-  # subset(Country == "France") %>% 
+## Core
+dev_public1080 = baseline %>%
   rbind(fillgap) %>% 
   mutate(from = interaction(Specification, Country)) %>% 
   group_by(from) %>% 
@@ -796,7 +819,10 @@ baseline %>%
          "`h share`" = `h share`/`h share`[Year == 2010]-1,
          "b/h" = bh/bh[Year == 2010]-1) %>% 
   ungroup() %>% 
-  select(Specification, Country , Year, c("eta", "tau", "`b share`")) %>% 
+  select(Specification, Country , Year,
+         "Youth~political~weight~(eta)" = "eta", 
+         "Tax~rate~(tau)" = "tau", 
+         "Unemp.~benefits~share" = "`b share`") %>% 
   subset(Year %in% c(2010:2080)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
@@ -807,25 +833,31 @@ baseline %>%
   scale_x_continuous(breaks = seq(2010,2080,10), 
                      labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_dev, "dev_public_1080.png"), width = scale_graph*5, height = scale_graph*5/3)
-  
+  labs(x = "", y = "")
+
+## Paper version
+dev_public1080 +
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_dev, "dev_public1080.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+## Color version
+dev_public1080 +
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_dev, "dev_public1080_color.png"), width = scale_graph*5, height = scale_graph*5/3)
+
 ```
 
 ##### Outside
 
-```{r Graph - FGapModel - Outside 70-10, echo = FALSE}
+```{r dev_outside7010}
 
-baseline %>%
-  # subset(Country == "France") %>% 
+## Core 
+dev_outside7010 = baseline %>%
   rbind(fillgap) %>% 
-  
   mutate(from = interaction(Specification, Country)) %>%
   group_by(from) %>% 
   mutate(net = 1-tau,
@@ -835,7 +867,10 @@ baseline %>%
          "1-tau" = net/net[Year == 1970] -1,
          "b/(1-tau)" = outside/outside[Year == 1970] -1) %>% 
   ungroup() %>% 
-  select(Specification, Country, Year, c("b", "1-tau", "b/(1-tau)")) %>% 
+  select(Specification, Country, Year,
+         "Unemployment~benefits~(b)" = "b", 
+         "Disposable~income~rate~(1-tau)" = "1-tau", 
+         "Outside~option" = "b/(1-tau)") %>% 
   subset(Year %in% c(1970:2010)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
@@ -845,34 +880,43 @@ baseline %>%
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_dev, "dev_outside_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+  labs(x = "", y = "")
+
+## Paper version
+dev_outside7010 +
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_dev, "dev_outside7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+## Color version
+dev_outside7010 +
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_dev, "dev_outside7010_color.png"), width = scale_graph*5, height = scale_graph*5/3)
   
 ```
 
 
-```{r Graph - FGapModel - Outside 10-80, echo = FALSE}
+```{r dev_outside1080}
 
-baseline %>%
-  # subset(Country == "France") %>% 
+## Core
+dev_outside1080 = baseline %>%
   rbind(fillgap) %>% 
-  
   mutate(from = interaction(Specification, Country)) %>%
   group_by(from) %>% 
   mutate(net = 1-tau,
          outside = b/(1-tau),
-         # Deviation from the 1970 steady state
+         # Deviation from the 2010 steady state
          "b" = b/b[Year == 2010] -1,
          "1-tau" = net/net[Year == 2010] -1,
          "b/(1-tau)" = outside/outside[Year == 2010] -1) %>% 
   ungroup() %>% 
-  select(Specification, Country, Year, c("b", "1-tau", "b/(1-tau)")) %>% 
+  select(Specification, Country, Year, 
+         "Unemployment~benefits~(b)" = "b", 
+         "Disposable~income~rate~(1-tau)" = "1-tau", 
+         "Outside~option" = "b/(1-tau)") %>% 
   subset(Year %in% c(2010:2080)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
@@ -883,26 +927,32 @@ baseline %>%
   scale_x_continuous(breaks = seq(2010,2080,10), 
                      labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_dev, "dev_outside_1080.png"), width = scale_graph*5, height = scale_graph*5/3)
+  labs(x = "", y = "")
+
+## Paper version
+dev_outside1080 +
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_dev, "dev_outside1080.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+## Color version
+dev_outside1080 +
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_dev, "dev_outside1080_color.png"), width = scale_graph*5, height = scale_graph*5/3)
   
 
 ```
 
 ##### Bargaining
 
-```{r Graph - FGapModel - Bargaining 70-10, echo = FALSE}
+```{r dev_bargaining7010}
 
-baseline %>%
-  # subset(Country == "France") %>% 
+## Core
+dev_bargaining7010 = baseline %>%
   rbind(fillgap) %>% 
-  
   mutate(from = interaction(Specification, Country)) %>%
   group_by(from) %>% 
   mutate(outside = b/(1-tau),
@@ -911,7 +961,10 @@ baseline %>%
          "w" = w/w[Year == 1970] -1,
          "X" = X/X[Year == 1970] -1) %>% 
   ungroup() %>% 
-  select(Specification, Country, Year, c("b/(1-tau)", "w", "X")) %>% 
+  select(Specification, Country, Year,
+         "Outside~option" = "b/(1-tau)", 
+         "Wage~rate~(w)" = "w", 
+         "Job~value~added~(X)" = "X") %>% 
   subset(Year %in% c(1970:2010)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
@@ -921,23 +974,29 @@ baseline %>%
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_dev, "dev_bargain_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+  labs(x = "", y = "")
+
+## Paper version
+dev_bargaining7010 +
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_dev, "dev_bargain7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+## Color version
+dev_bargaining7010 +
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_dev, "dev_bargain7010_color.png"), width = scale_graph*5, height = scale_graph*5/3)
   
 ```
 
-```{r Graph - FGapModel - Bargaining 10-50, echo = FALSE}
+```{r dev_bargaining1080}
 
-baseline %>%
-  # subset(Country == "France") %>% 
+## Core
+dev_bargaining1080 = baseline %>%
   rbind(fillgap) %>% 
-  
   mutate(from = interaction(Specification, Country)) %>%
   group_by(from) %>% 
   mutate(outside = b/(1-tau),
@@ -947,7 +1006,10 @@ baseline %>%
          "w" = w/w[Year == 2010] -1,
          "X" = X/X[Year == 2010] -1) %>% 
   ungroup() %>% 
-  select(Specification, Country, Year, c("b/(1-tau)", "w", "X")) %>% 
+  select(Specification, Country, Year,
+         "Outside~option" = "b/(1-tau)", 
+         "Wage~rate~(w)" = "w", 
+         "Job~value~added~(X)" = "X") %>% 
   subset(Year %in% c(2010:2080)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
@@ -958,23 +1020,30 @@ baseline %>%
   scale_x_continuous(breaks = seq(2010,2080,10), 
                      labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_dev, "dev_bargain_1080.png"), width = scale_graph*5, height = scale_graph*5/3)
+  labs(x = "", y = "")
+
+## Paper version
+dev_bargaining1080 +
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_dev, "dev_bargain1080.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+## Color version
+dev_bargaining1080 +
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_dev, "dev_bargain1080_color.png"), width = scale_graph*5, height = scale_graph*5/3)
   
 ```
 
 ##### Production
 
-```{r Graph - FGapModel - Production 70-10, echo = FALSE}
+```{r dev_prod7010}
 
-baseline %>%
-  # subset(Country == "France") %>% 
+## Core
+dev_prod7010 = baseline %>%
   rbind(fillgap) %>% 
   mutate(from = interaction(Specification, Country)) %>%
   group_by(from) %>%  
@@ -984,7 +1053,10 @@ baseline %>%
          "L" = L/L[Year == 1970] -1,
          "Y" = Y/Y[Year == 1970] -1) %>% 
   ungroup() %>% 
-  select(Specification, Country, Year, c("K", "L", "Y")) %>% 
+  select(Specification, Country, Year, 
+         "Capital~stock~(K)" = "K", 
+         "Labor~(L)" = "L", 
+         "Production~(Y)" = "Y") %>% 
   subset(Year %in% c(1970:2010)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
@@ -993,23 +1065,30 @@ baseline %>%
   geom_line() +
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_dev, "dev_prod_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+  labs(x = "", y = "")
+
+## Paper version
+dev_prod7010 +
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_dev, "dev_prod7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+## Color version
+dev_prod7010 +
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_dev, "dev_prod7010_color.png"), width = scale_graph*5, height = scale_graph*5/3)
 
 ```
 
 
-```{r Graph - FGapModel - Production 10-80, echo = FALSE}
+```{r dev_prod1080}
 
-baseline %>%
-  # subset(Country == "France") %>% 
+## Core
+dev_prod1080 = baseline %>%
   rbind(fillgap) %>% 
   mutate(from = interaction(Specification, Country)) %>%
   group_by(from) %>%  
@@ -1019,7 +1098,10 @@ baseline %>%
          "L" = L/L[Year == 2010] -1,
          "Y" = Y/Y[Year == 2010] -1) %>% 
   ungroup() %>% 
-  select(Specification, Country, Year, c("K", "L", "Y")) %>% 
+  select(Specification, Country, Year, 
+         "Capital~stock~(K)" = "K",
+         "Labor~(L)" = "L",
+         "Production~(Y)" = "Y") %>% 
   subset(Year %in% c(2010:2080)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
@@ -1028,26 +1110,32 @@ baseline %>%
   geom_line() +
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   scale_x_continuous(breaks = seq(2010,2080,10), 
                      labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_dev, "dev_prod_1080.png"), width = scale_graph*5, height = scale_graph*5/3)
+  labs(x = "", y = "")
+
+## Paper version
+dev_prod1080 +
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_dev, "dev_prod1080.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+## Color version
+dev_prod1080 +
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_dev, "dev_prod1080_color.png"), width = scale_graph*5, height = scale_graph*5/3)
 
 ```
 
 ##### Unemployment
 
+```{r dev_unemp7010}
 
-```{r Graph - FGapModel - Unemployment 70-10, echo = FALSE}
-
-baseline %>%
-  # subset(Country == "France") %>% 
+## Core
+dev_unemp7010 = baseline %>%
   rbind(fillgap) %>% 
   mutate(from = interaction(Specification, Country)) %>%
   group_by(from) %>%  
@@ -1057,7 +1145,10 @@ baseline %>%
          "L" = L/L[Year == 1970] -1,
          "u" = u/u[Year == 1970] -1) %>% 
   ungroup() %>% 
-  select(Specification, Country, Year, c("N^y", "L", "u")) %>% 
+  select(Specification, Country, Year,
+         "Young~households~(N^y)" = "N^y",
+         "Labor~(L)" = "L",
+         "Unemployment~rate~(u)" = "u") %>% 
   subset(Year %in% c(1970:2010)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
@@ -1066,23 +1157,30 @@ baseline %>%
   geom_line() +
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_dev, "dev_unemp_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+  labs(x = "", y = "")
+
+## Paper version
+dev_unemp7010 + 
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_dev, "dev_unemp7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+## Color version
+dev_unemp7010 + 
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_dev, "dev_unemp7010_color.png"), width = scale_graph*5, height = scale_graph*5/3)
 
 ```
 
 
-```{r Graph - FGapModel - Unemployment 10-80, echo = FALSE}
+```{r dev_unemp1080}
 
-baseline %>%
-  # subset(Country == "France") %>% 
+## Core
+dev_unemp1080 = baseline %>%
   rbind(fillgap) %>% 
   mutate(from = interaction(Specification, Country)) %>%
   group_by(from) %>%  
@@ -1092,7 +1190,10 @@ baseline %>%
          "L" = L/L[Year == 2010] -1,
          "u" = u/u[Year == 2010] -1) %>% 
   ungroup() %>% 
-  select(Specification, Country, Year, c("N^y", "L", "u")) %>% 
+  select(Specification, Country, Year, 
+         "Young~households~(N^y)" = "N^y", 
+         "Labor~(L)" = "L", 
+         "Unemployment~rate~(u)" = "u") %>% 
   subset(Year %in% c(2010:2080)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
@@ -1101,25 +1202,33 @@ baseline %>%
   geom_line() +
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
   scale_x_continuous(breaks = seq(2010,2080,10), 
                      labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_dev, "dev_unemp_1080.png"), width = scale_graph*5, height = scale_graph*5/3)
+  labs(x = "", y = "")
+
+## Paper version
+dev_unemp1080 + 
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_dev, "dev_unemp1080.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+## Color version
+dev_unemp1080 + 
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_dev, "dev_unemp1080_color.png"), width = scale_graph*5, height = scale_graph*5/3)
 
 ```
 
 ##### Labor share
 
-```{r Graph - FGapModel - LS 70-10, echo = FALSE}
+```{r dev_laborshare7010}
 
-baseline %>%
-  # subset(Country == "France") %>% 
+## Core
+dev_laborshare7010 = baseline %>%
   rbind(fillgap) %>% 
   mutate(from = interaction(Specification, Country)) %>%
   group_by(from) %>%  
@@ -1130,7 +1239,10 @@ baseline %>%
          "Y/L" = YL/YL[Year == 1970] -1,
          "theta" = theta/theta[Year == 1970] -1) %>% 
   ungroup() %>% 
-  select(Specification, Country, Year, c("w", "Y/L", "theta")) %>% 
+  select(Specification, Country, Year,
+         "Wage~rate~(w)" = "w", 
+         "Production-per-worker~(Y/L)" = "Y/L", 
+         "Labor~share~(theta)" = "theta") %>% 
   subset(Year %in% c(1970:2010)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
@@ -1139,22 +1251,29 @@ baseline %>%
   geom_line() +
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   scale_x_continuous(labels = c("1970", "", "1990", "", "2010")) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_dev, "dev_laborshare_7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+  labs(x = "", y = "")
+
+## Paper version
+dev_laborshare7010 +
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_dev, "dev_laborshare7010.png"), width = scale_graph*5, height = scale_graph*5/3)
+  
+## Color version
+dev_laborshare7010 +
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_dev, "dev_laborshare7010_color.png"), width = scale_graph*5, height = scale_graph*5/3)
 
 ```
 
-```{r Graph - FGapModel - LS 10-80, echo = FALSE}
+```{r dev_laborshare1080}
 
-baseline %>%
-  # subset(Country == "France") %>% 
+## Core
+dev_laborshare1080 = baseline %>%
   rbind(fillgap) %>% 
   mutate(from = interaction(Specification, Country)) %>%
   group_by(from) %>%  
@@ -1165,7 +1284,10 @@ baseline %>%
          "Y/L" = YL/YL[Year == 2010] -1,
          "theta" = theta/theta[Year == 2010] -1) %>% 
   ungroup() %>% 
-  select(Specification, Country, Year, c("w", "Y/L", "theta")) %>% 
+  select(Specification, Country, Year,
+         "Wage~rate~(w)" = "w", 
+         "Production-per-worker~(Y/L)" = "Y/L", 
+         "Labor~share~(theta)" = "theta") %>% 
   subset(Year %in% c(2010:2080)) %>% 
   melt(id.vars = c("Specification", "Country", "Year")) %>% 
   
@@ -1173,172 +1295,43 @@ baseline %>%
   geom_hline(yintercept = 0, linetype = "dotted") +
   geom_line() +
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
-  scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
-  scale_x_continuous(breaks = seq(2010,2080,10), 
+  scale_x_continuous(breaks = seq(2010, 2080, 10),
                      labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
+  scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
   theme_classic(base_size = 14) +
-  theme(legend.position = "none", legend.direction = "vertical",
-        panel.spacing.x = unit(1.5, "lines"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) +
-  labs(x = "", y = "") +
-  ggsave(file.path(loc_dev, "dev_laborshare_1080.png"), width = scale_graph*5, height = scale_graph*5/3)
+  labs(x = "", y = "")
+
+## Paper version
+dev_laborshare1080 +
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_dev, "dev_laborshare1080.png"), width = scale_graph*5, height = scale_graph*5/3)
+
+## Color version
+dev_laborshare1080 +
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_dev, "dev_laborshare1080_color.png"), width = scale_graph*5, height = scale_graph*5/3)
 
 ```
 
-### Welfare analysis
+```{r clean_dev}
 
-I only consider France in the fillgap specification, so the one with a break in the regime of the elasticity of substitution. I also consider the baseline specification for the United-States.
-
-```{r Welfare - Computation, echo = FALSE}
-
-# Data selection
-welfare = baseline %>%
-  rbind(fillgap) %>% 
-  mutate(from = interaction(Specification, Country)) %>%
-  subset(from != "baseline.France") %>% 
-  mutate(Country_Seq = interaction(Country, Sequence)) %>% 
-  select(Country_Seq, everything(), -from) %>% 
-  group_by(Country_Seq)
-
-# Computation
-welfare = welfare %>% 
-  ## Individual consumptions
-  mutate("c[1,t]^e" = 1/(1+alpha*p1)*(1-tau)*w,
-         "c[1,t]^u" = 1/(1+alpha*p1)*b,
-         "c[2,t]^e" = alpha*p/(1+alpha*p)*(1-tau)*r/p*(1-dplyr::lag(tau))*dplyr::lag(w),
-         "c[2,t]^u" = alpha*p/(1+alpha*p)*(1-tau)*r/p*dplyr::lag(b),
-         "c[2,t+1]^e" = alpha*p1/(1+alpha*p1)*(1-dplyr::lead(tau))*dplyr::lead(r)/p1*(1-tau)*w,
-         "c[2,t+1]^u" = alpha*p1/(1+alpha*p1)*(1-dplyr::lead(tau))*dplyr::lead(r)/p1*b,
-  ## Utility
-         # Utility for a individual of type i born at time t
-         "U[t]^e" = log(`c[1,t]^e`) + 
-           alpha*p1*(log(`c[2,t+1]^e`) + beta * log(dplyr::lead(h))),
-         "U[t]^u" = log(`c[1,t]^u`) + 
-           alpha*p1*(log(`c[2,t+1]^u`) + beta * log(dplyr::lead(h))),
-         # Utility of a young household (born at time t) at time t (do not consider old age)
-         "U[t]^{y,e}" = log(`c[1,t]^e`),
-         "U[t]^{y,u}" = log(`c[1,t]^u`),
-         # Utility of an old household (born at time t-1) at time t (cancel the effect of p)
-         "U[t]^{o,e}" = log(`c[2,t]^e`) + beta * log(h),
-         "U[t]^{o,u}" = log(`c[2,t]^u`) + beta * log(h),
-         # Average utility - Young and old
-         "U[t]^y" = (1-u)*`U[t]^{y,e}` + u*`U[t]^{y,u}`,
-         "U[t]^o" = (1-dplyr::lag(u))*`U[t]^{o,e}` + dplyr::lag(u)*`U[t]^{o,u}`,
-         # Average utility - All
-         "U[t]" = (1-u)*`U[t]^e`+u*`U[t]^u`,
-         # Welfare at time t
-         "W[t]" = Ny*`U[t]^y` + No*`U[t]^o`,
-         # Average welfare at time t
-         "W[t]^{avg}" = `W[t]`/(Ny+No),
-  ## Aggregated consumption
-         "C[1,t]" = 1/(1+alpha*p1)*1/(1+beta+eta)*Y,
-         "C[2,t]" = alpha*p/(1+alpha*p)*1/(1+beta+eta)*Y,
-         "H[t]" = No*h,
-  ## Average
-         "c[1,t]^{avg}" = `C[1,t]`/Ny,
-         "c[2,t]^{avg}" = `C[2,t]`/No,
-  ## Average utility
-         "U[t]^{y,avg}" = log(`c[1,t]^{avg}`),
-         "U[t]^{o,avg}" = log(`c[2,t]^{avg}`) + log(h),
-         )
-
-```
-
-```{r Welfare - Plot, echo = FALSE}
-
-# Utilities of the 4 type of agents at time t
-welfare %>% 
-  ungroup() %>% 
-  select(Country, Year, "U[t]^{y,e}", "U[t]^{y,u}", "U[t]^{o,e}", "U[t]^{o,u}",
-         "U[t]^y", "U[t]^o",
-         "U[t]^e", "U[t]^u", "U[t]"
-         ) %>% 
-  melt(id.vars = c("Country", "Year")) %>% 
-  
-  ggplot(aes(x = Year, y = value, color = variable)) +
-  geom_line() +
-  facet_wrap(Country ~ ., scale = "free") +
-  theme_classic()
-
-```
-```{r}
-
-# Full Utility of employed versus unemployed born at time t
-welfare %>% 
-  ungroup() %>% 
-  select(Country, Year, "U[t]^e", "U[t]^u") %>% 
-  melt(id.vars = c("Country", "Year")) %>% 
-  
-  ggplot(aes(x = Year, y = value, color = variable)) +
-  geom_line() +
-  facet_wrap(Country ~ ., scale = "free") +
-  theme_classic()
-
-```
-```{r}
-
-# Average utility of young and old at time t
-welfare %>% 
-  ungroup() %>% 
-  select(Country, Year, "U[t]^y", "U[t]^o") %>% 
-  melt(id.vars = c("Country", "Year")) %>% 
-  
-  ggplot(aes(x = Year, y = value, color = variable)) +
-  geom_line() +
-  facet_wrap(Country ~ ., scale = "free") +
-  theme_classic()
-
-```
-
-```{r}
-
-# Global average utility
-welfare %>% 
-  ungroup() %>% 
-  select(Country, Year, "U[t]") %>% 
-  melt(id.vars = c("Country", "Year")) %>% 
-  
-  ggplot(aes(x = Year, y = value, color = variable)) +
-  geom_line() +
-  facet_wrap(Country ~ ., scale = "free") +
-  theme_classic()
-
-```
-```{r Welfare}
-
-# Welfare
-welfare %>% 
-  ungroup() %>% 
-  select(Country, Year, "W[t]", "W[t]^{avg}") %>% 
-  melt(id.vars = c("Country", "Year")) %>% 
-  
-  ggplot(aes(x = Year, y = value, color = variable)) +
-  geom_line() +
-  facet_wrap(Country ~ ., scale = "free") +
-  theme_classic()
-
-```
-
-```{r Avg utility per age}
-
-welfare %>% 
-  ungroup() %>% 
-  select(Country, Year, "c[1,t]^{avg}", "c[2,t]^{avg}") %>% 
-  melt(id.vars = c("Country", "Year")) %>% 
-  
-  ggplot(aes(x = Year, y = value, color = variable)) +
-  geom_line() +
-  facet_wrap(Country ~ ., scale = "free") +
-  theme_classic()
+# Clean the environment of all "dev_" graphs
+rm(list = ls(pattern = "dev_"))
 
 ```
 
 
 ### Redistribution
 
-```{r}
+I only consider France in the fillgap specification, so the one with a break in the regime of the elasticity of substitution. I also consider the baseline specification for the United-States.
+
+```{r redistribution}
+
+# Location save graphs
+loc_redis = file.path(loc_result, "redistribution")
 
 # Data selection
 redis = baseline %>%
@@ -1348,97 +1341,139 @@ redis = baseline %>%
   select(-from) %>% 
   group_by(Country) %>% 
   
-  mutate(wL = w*L,
-         rK = r*K,
-         # Step 2
-         wL_net = (1-tau)*wL,
-         rK_net = (1-tau)*rK,
-         gov_rev = tau*Y,
-         # Step 3
-         unemp_ben = b*u*Ny,
-         health_spen = h*No,
-         # Step 4
-         C1 = 1/(1+alpha*p1)*(wL_net+unemp_ben),
-         Saving = alpha*p1/(1+alpha*p1)*(wL_net+unemp_ben),
-         C2 = rK_net,
-         # Incomes
-         inc_y = wL_net + unemp_ben,
-         inc_o = rK_net,
-         # Labor share
-         theta = wL/Y
-         ) %>% 
+  mutate(
+    # Step 1
+    wL = w*L,
+    rK = r*K,
+    # Step 2
+    wL_net = (1-tau)*wL,
+    rK_net = (1-tau)*rK,
+    gov_rev = tau*Y,
+    # Step 3
+    unemp_ben = b*u*Ny,
+    health_spen = h*No,
+    # Step 4
+    C1 = 1/(1+alpha*p1)*(wL_net+unemp_ben),
+    Saving = alpha*p1/(1+alpha*p1)*(wL_net+unemp_ben),
+    C2 = rK_net,
+    # Incomes
+    inc_y = wL_net + unemp_ben,
+    inc_o = rK_net,
+    # Labor share
+    theta = wL/Y
+    ) %>% 
   select(Country, Year, wL, rK, wL_net, rK_net, gov_rev, unemp_ben, health_spen,
          C1, Saving, C2, inc_y, inc_o, Y, theta, eta) %>% 
   ungroup()
 
-
-
 ```
 
-```{r}
+```{r redis_step1}
 
-redis %>% 
+## Core
+redis_step1 = redis %>% 
   mutate(wL_bis = wL) %>% 
   select(Country, Year, rK, wL, wL_bis) %>% 
   melt(id.vars = c("Country", "Year", "wL_bis")) %>% 
   
   ggplot(aes(x = Year)) +
-  geom_col(aes(y = value, fill = variable),
-           alpha = .7) +
-  geom_line(aes(y = wL_bis), linetype = "dashed") +
+  geom_col(aes(y = value, fill = variable)) +
+  geom_line(aes(y = wL_bis), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
-  scale_fill_manual(name = "",
-                    breaks = c("rK", "wL"),
-                    labels = c("Capital income", "Labor income"),
-                    values = brewer.pal(8, "Set1")[c(1,2)],
-                    na.value = "black") +
-  theme_classic()
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  theme_classic() +
+  theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(), axis.title.y = element_blank()) +
+  labs(x = "", y = "")
 
-redis %>% 
+## Paper version
+redis_step1 +
+  scale_fill_grey(name = "", 
+                  breaks = c("rK", "wL"), labels = c("Capital income", "Labor income"), 
+                  start = 0.5, end = 0.9)
+
+## Color version
+redis_step1 +
+  scale_fill_manual(name = "",
+                    breaks = c("rK", "wL"), labels = c("Capital income", "Labor income"),
+                    values = brewer.pal(11, "Set3")[c(4,5)], na.value = "black")
+
+```
+
+
+```{r redis_step1_stacked}
+
+## Core
+redis_step1_stacked = redis %>% 
   mutate(wL = wL/Y,
          rK = rK/Y) %>% 
   select(Country, Year, rK, wL, theta) %>% 
   melt(id.vars = c("Country", "Year", "theta")) %>% 
   
   ggplot(aes(x = Year)) +
-  geom_col(aes(y = value, fill = variable),
-           alpha = 1) +
-  geom_line(aes(y = theta), linetype = "dashed") +
+  geom_col(aes(y = value, fill = variable)) +
+  geom_line(aes(y = theta), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
-  scale_fill_manual(name = "",
-                    breaks = c("rK", "wL"),
-                    labels = c("Capital income", "Labor income"),
-                    values = brewer.pal(11, "Set3")[c(4,5)],
-                    na.value = "black") +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_classic() +
-  labs(x = "", y = "Share of GDP") +
-  theme(legend.position = "bottom") +
-  ggsave("stacked_test1.png", width = 1920/1080*5, height = 5)
+  theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank()) +
+  labs(x = "", y = "Share of GDP")
+
+## Paper version
+redis_step1_stacked +
+  scale_fill_grey(name = "", 
+                  breaks = c("rK", "wL"), labels = c("Capital income", "Labor income"), 
+                  start = 0.5, end = 0.9) +
+  ggsave(file.path(loc_redis, "redis_step1_stacked.png"), width = scale_graph*5, height = scale_graph*5/2)
+
+## Color version
+redis_step1_stacked +
+  scale_fill_manual(name = "",
+                    breaks = c("rK", "wL"), labels = c("Capital income", "Labor income"),
+                    values = brewer.pal(11, "Set3")[c(4,5)], na.value = "black") +
+  ggsave(file.path(loc_redis, "redis_step1_stacked_color.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
-```{r}
+```{r redis_step2}
 
-
-redis %>% 
+## Core
+redis_step2 = redis %>% 
   select(Country, Year, rK_net, gov_rev, wL_net, wL) %>% 
   melt(id.vars = c("Country", "Year", "wL")) %>% 
   
   ggplot(aes(x = Year)) +
-  geom_col(aes(y = value, fill = variable),
-           alpha = .7) +
-  geom_line(aes(y = wL), linetype = "dashed") +
+  geom_col(aes(y = value, fill = variable)) +
+  geom_line(aes(y = wL), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
-  scale_fill_manual(name = "",
-                    breaks = c("rK_net", "gov_rev", "wL_net"),
-                    labels = c("Net capital income", "Government revenue",
-                               "Net labor income"),
-                    values = brewer.pal(8, "Set1")[c(1,3,2)],
-                    na.value = "black") +
-  theme_classic()
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  theme_classic() +
+  theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(), axis.title.y = element_blank()) +
+  labs(x = "", y = "")
 
-redis %>% 
+## Paper version
+redis_step2 +
+  scale_fill_grey(name = "", 
+                  breaks = c("rK_net", "gov_rev", "wL_net"), 
+                  labels = c("Net capital income", "Government revenue", "Net labor income"), 
+                  start = 0.5, end = 0.9)
+
+## Color version
+redis_step2 + 
+  scale_fill_manual(name = "", 
+                    breaks = c("rK_net", "gov_rev", "wL_net"), 
+                    labels = c("Net capital income", "Government revenue", "Net labor income"),
+                    values = brewer.pal(11, "Set3")[c(4,7,5)], na.value = "black")
+
+```
+
+
+```{r redis_step2_stacked}
+
+## Core
+redis_step2_stacked = redis %>% 
   mutate(wL_net = wL_net/Y,
          gov_rev = gov_rev/Y,
          rK_net = rK_net/Y) %>% 
@@ -1446,113 +1481,188 @@ redis %>%
   melt(id.vars = c("Country", "Year", "theta")) %>% 
   
   ggplot(aes(x = Year)) +
-  geom_col(aes(y = value, fill = variable),
-           alpha = 1) +
-  geom_line(aes(y = theta), linetype = "dashed") +
+  geom_col(aes(y = value, fill = variable)) +
+  geom_line(aes(y = theta), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
-  scale_fill_manual(name = "",
-                    breaks = c("rK_net", "gov_rev", "wL_net"),
-                    labels = c("Net capital income", "Government revenue",
-                               "Net labor income"),
-                    values = brewer.pal(11, "Set3")[c(4,7,5)],
-                    na.value = "black") +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_classic() +
-  labs(x = "", y = "Share of GDP") +
-  theme(legend.position = "bottom") +
-  ggsave("stacked_test2.png", width = 1920/1080*5, height = 5)
+  theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank()) +
+  labs(x = "", y = "Share of GDP")
+
+## Paper version
+redis_step2_stacked +
+  scale_fill_grey(name = "", 
+                  breaks = c("rK_net", "gov_rev", "wL_net"), 
+                  labels = c("Net capital income", "Government revenue", "Net labor income"), 
+                  start = 0.5, end = 0.9)
+  ggsave(file.path(loc_redis, "redis_step2_stacked.png"), width = scale_graph*5, height = scale_graph*5/2)
+
+## Color version
+redis_step2_stacked +
+  scale_fill_manual(name = "", 
+                    breaks = c("rK_net", "gov_rev", "wL_net"), 
+                    labels = c("Net capital income", "Government revenue", "Net labor income"),
+                    values = brewer.pal(11, "Set3")[c(4,7,5)], na.value = "black") +
+  ggsave(file.path(loc_redis, "redis_step2_stacked_color.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
-```{r}
+```{r redis_step3}
 
-
-redis %>% 
+## Core
+redis_step3 = redis %>% 
   select(Country, Year, rK_net, health_spen, unemp_ben, wL_net, wL) %>% 
   melt(id.vars = c("Country", "Year", "wL")) %>% 
   
   ggplot(aes(x = Year)) +
   geom_col(aes(y = value, fill = variable)) +
-  geom_line(aes(y = wL), linetype = "dashed") +
+  geom_line(aes(y = wL), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
-  theme_classic()
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  theme_classic() +
+  theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(), axis.title.y = element_blank()) +
+  labs(x = "", y = "")
 
-redis %>% 
+## Paper version
+redis_step3 +
+  scale_fill_grey(name = "", 
+                  breaks = c("rK_net", "health_spen", "unemp_ben", "wL_net"),
+                  labels = c("Net capital income", "Health spending", 
+                             "Unemployment spending", "Net labor income"),
+                  start = 0.5, end = 0.9)
+
+## Color version
+redis_step3 + 
+  scale_fill_manual(name = "", 
+                  breaks = c("rK_net", "health_spen", "unemp_ben", "wL_net"),
+                  labels = c("Net capital income", "Health spending", 
+                             "Unemployment spending", "Net labor income"),
+                    values = brewer.pal(11, "Set3")[c(4,6,3,5)], na.value = "black")
+
+```
+
+
+```{r redis_step3_stacked}
+
+## Core
+redis_step3_stacked = redis %>% 
   mutate(wL_net = wL_net/Y,
          unemp_ben = unemp_ben/Y,
          health_spen = health_spen/Y,
          rK_net = rK_net/Y) %>% 
   select(Country, Year, rK_net, health_spen, unemp_ben, wL_net, theta) %>% 
-  melt(id.vars = c("Country", "Year", "theta")) %>% 
+  melt(id.vars = c("Country", "Year", "theta")) %>%
   
   ggplot(aes(x = Year)) +
-  geom_col(aes(y = value, fill = variable),
-           alpha = 1) +
-  geom_line(aes(y = theta), linetype = "dashed") +
+  geom_col(aes(y = value, fill = variable)) +
+  geom_line(aes(y = theta), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
-  scale_fill_manual(name = "",
-                    breaks = c("rK_net", "health_spen", "unemp_ben", "wL_net"),
-                    labels = c("Net capital income", "Health spend.",
-                               "Unemployment spend.", "Net labor income"),
-                    values = brewer.pal(11, "Set3")[c(4,6,3,5)],
-                    na.value = "black") +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  theme_classic(base_size = 14) +
-  labs(x = "", y = "Share of GDP") +
-  theme(legend.position = "bottom",
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank()) +
-  ggsave(file.path(loc_result, "inc_gdp_shr.png"),
-         width = scale_graph*5, height = scale_graph*5/2)
+  theme_classic() +
+  theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank()) +
+  labs(x = "", y = "Share of GDP")
+
+## Paper version
+redis_step3_stacked +
+  scale_fill_grey(name = "", 
+                  breaks = c("rK_net", "health_spen", "unemp_ben", "wL_net"),
+                  labels = c("Net capital income", "Health spending", 
+                             "Unemployment spending", "Net labor income"),
+                  start = 0.5, end = 0.9)
+  ggsave(file.path(loc_redis, "redis_step3_stacked.png"), width = scale_graph*5, height = scale_graph*5/2)
+
+## Color version
+redis_step3_stacked +
+  scale_fill_manual(name = "", 
+                    breaks = c("rK_net", "health_spen", "unemp_ben", "wL_net"), 
+                    labels = c("Net capital income", "Health spending", 
+                               "Unemployment spending", "Net labor income"),
+                    values = brewer.pal(11, "Set3")[c(4,6,3,5)], na.value = "black") +
+  ggsave(file.path(loc_redis, "redis_step3_stacked_color.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
-```{r}
-
-redis %>% 
+```{r redis_step4}
+## Core
+redis_step3 = redis %>% 
   select(Country, Year, C2, health_spen, Saving, C1, wL) %>% 
   melt(id.vars = c("Country", "Year", "wL")) %>% 
   
   ggplot(aes(x = Year)) +
   geom_col(aes(y = value, fill = variable)) +
-  geom_line(aes(y = wL), linetype = "dashed") +
+  geom_line(aes(y = wL), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
-  theme_classic()
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  theme_classic() +
+  theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(), axis.title.y = element_blank()) +
+  labs(x = "", y = "")
 
-redis %>% 
+## Paper version
+redis_step3 +
+  scale_fill_grey(name = "", 
+                  breaks = c("C2", "health_spen", "Saving", "C1"),
+                  labels = c("Old HH. cons.", "Health spending", "Savings", "Young HH. cons."),
+                  start = 0.5, end = 0.9)
+
+## Color version
+redis_step3 + 
+  scale_fill_manual(name = "", 
+                  breaks = c("C2", "health_spen", "Saving", "C1"),
+                  labels = c("Old HH. cons.", "Health spending", "Savings", "Young HH. cons."),
+                  values = brewer.pal(11, "Set3")[c(4,6,8,10)], na.value = "black")
+
+```
+
+
+
+```{r redis_step4_stacked}
+
+## Core
+redis_step4_stacked = redis %>% 
   mutate(C2 = C2/Y,
          health_spen = health_spen/Y,
          Saving = Saving/Y,
          C1 = C1/Y) %>% 
   select(Country, Year, C2, health_spen, Saving, C1, theta) %>% 
   melt(id.vars = c("Country", "Year", "theta")) %>% 
-  subset(Year <= 2050) %>% 
   
   ggplot(aes(x = Year)) +
-  geom_col(aes(y = value, fill = variable),
-           alpha = 1) +
-  geom_line(aes(y = theta), linetype = "dashed") +
+  geom_col(aes(y = value, fill = variable)) +
+  geom_line(aes(y = theta), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
-  scale_fill_manual(name = "",
-                    breaks = c("C2", "health_spen", "Saving", "C1"),
-                    labels = c("Old HH. cons.", "Health spending",
-                               "Savings", "Young HH. cons."),
-                    values = brewer.pal(11, "Set3")[c(4,6,8,10)],
-                    na.value = "black") +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_classic() +
-  labs(x = "", y = "Share of GDP") +
-  theme(legend.position = "bottom") +
-  ggsave("stacked_test4.png", width = 1920/1080*5, height = 5)
+  theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank()) +
+  labs(x = "", y = "Share of GDP")
 
+## Paper version
+redis_step4_stacked +
+  scale_fill_grey(name = "", 
+                  breaks = c("C2", "health_spen", "Saving", "C1"),
+                  labels = c("Old HH. cons.", "Health spending", "Savings", "Young HH. cons."),
+                  start = 0.5, end = 0.9)
+  ggsave(file.path(loc_redis, "redis_step4_stacked.png"), width = scale_graph*5, height = scale_graph*5/2)
+
+## Color version
+redis_step4_stacked +
+  scale_fill_manual(name = "", 
+                  breaks = c("C2", "health_spen", "Saving", "C1"),
+                  labels = c("Old HH. cons.", "Health spending", "Savings", "Young HH. cons."),
+                  values = brewer.pal(11, "Set3")[c(4,6,8,10)], na.value = "black") +
+  ggsave(file.path(loc_redis, "redis_step4_stacked_color.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
-```{r Raw vs Net labor share, echo = FALSE}
+```{r ls_raw_vs_net}
 
-redis %>% 
-  mutate(
-    net_ls = (wL_net + unemp_ben)/(Y - health_spen)) %>% 
+## Core
+ls_raw_vs_net = redis %>% 
+  mutate(net_ls = (wL_net + unemp_ben)/(Y - health_spen)) %>% 
   select(Country, Year, theta, net_ls) %>% 
   melt(id.vars = c("Country", "Year")) %>% 
   
@@ -1561,21 +1671,33 @@ redis %>%
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   scale_linetype_manual(name = "Labor share", breaks = c("theta", "net_ls"),
-                          labels = c("Raw", "Net"), values = c("solid", "dashed"),
+                        labels = c("Raw", "Net"), values = c("solid", "dashed"), 
                         guide = FALSE) +
-  scale_color_manual(name = "", values = brewer.pal(8,"Set1"),
-                     guide = FALSE) +
   theme_classic(base_size = 14) +
   labs(x = "", y = "") +
-  theme(legend.position = "none") +
-  ggsave(file.path(loc_result, "raw_vs_net_labshr.png"), width = scale_graph*5, height = scale_graph*5/2)
-  
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(), axis.title.y = element_blank())
 
+## Paper version
+ls_raw_vs_net +
+  scale_color_manual(name = "", breaks = c("France", "United States"),
+                     labels = c("France", "United States"), values = c("black", "black"), 
+                     guide = FALSE) +
+  ggsave(file.path(loc_redis, "ls_raw_vs_net.png"), width = scale_graph*5, height = scale_graph*5/2)
+  
+## Color version
+ls_raw_vs_net +
+  scale_color_manual(name = "", breaks = c("France", "United States"),
+                     labels = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)], 
+                     guide = FALSE) +
+  ggsave(file.path(loc_redis, "ls_raw_vs_net_color.png"), width = scale_graph*5, height = scale_graph*5/2)
+  
 ```
 
-```{r Raw vs Net labor share - dev, echo = FALSE}
+```{r dev_ls_raw_vs_net}
 
-redis %>% 
+## Core
+dev_ls_raw_vs_net = redis %>% 
   group_by(Country) %>% 
   mutate(
     net_ls = (wL_net + unemp_ben)/(Y),
@@ -1587,22 +1709,38 @@ redis %>%
   
   ggplot(aes(x = Year, y = value, linetype = variable, color = Country)) +
   geom_line() +
-  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_hline(yintercept = 0, linetype = "dotted") +
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   scale_linetype_manual(name = "Labor share", breaks = c("theta", "net_ls"),
-                          labels = c("Raw", "Net"), values = c("solid", "dashed")) +
-  scale_color_manual(name = "", values = brewer.pal(8,"Set1"),
-                     guide = FALSE) +
+                        labels = c("Raw", "Net"), values = c("solid", "dashed"),
+                        guide = FALSE) +
   theme_classic(base_size = 14) +
   labs(x = "", y = "") +
-  theme(legend.position = "bottom")
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(), axis.title.y = element_blank())
+
+## Paper version
+dev_ls_raw_vs_net +
+  scale_color_manual(name = "", breaks = c("France", "United States"),
+                     labels = c("France", "United States"), values = c("black", "black"), 
+                     guide = FALSE) +
+  ggsave(file.path(loc_redis, "dev_ls_raw_vs_net.png"), width = scale_graph*5, height = scale_graph*5/2)
+
+## Color version
+dev_ls_raw_vs_net +
+  scale_color_manual(name = "", breaks = c("France", "United States"),
+                     labels = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)], 
+                     guide = FALSE) +
+  ggsave(file.path(loc_redis, "dev_ls_raw_vs_net_color.png"), width = scale_graph*5, height = scale_graph*5/2)
+
 
 ```
 
-```{r Factor ratio vs Income ratio, echo = FALSE}
+```{r incratio_raw_vs_net}
 
-redis %>% 
+## Core
+incratio_raw_vs_net = redis %>% 
   select(Country, Year, inc_y, inc_o, wL, rK, health_spen, eta) %>% 
   mutate(inc_ratio = inc_y/inc_o,
          inc_ratio_with_h = inc_y/(inc_o + health_spen),
@@ -1610,28 +1748,40 @@ redis %>%
   select(Country, Year, lab_to_cap_ratio, inc_ratio, inc_ratio_with_h) %>% 
   melt(id.vars = c("Country", "Year")) %>% 
   
-  ggplot(aes(x = Year, y = value, linetype = variable, color = Country)) +
+  ggplot(aes(x = Year, y = value, linetype = variable)) +
   geom_line() +
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  scale_linetype_manual(name = "", breaks = c("lab_to_cap_ratio", "inc_ratio",
-                                              "inc_ratio_with_h"),
-                          labels = c("Labor-to-capital income ratio",
-                                     "Young-to-old income ratio",
-                                     "Young-to-old income ratio (with health spending)"),
+  scale_linetype_manual(name = "", breaks = c("lab_to_cap_ratio", "inc_ratio", "inc_ratio_with_h"),
+                        labels = c("Labor-to-capital income ratio",
+                                   "Young-to-old income ratio",
+                                   "Young-to-old income ratio (with health spending)"),
                         values = c("solid", "dashed", "dotted")) +
-  scale_color_manual(name = "", values = brewer.pal(8,"Set1"), guide = FALSE) +
   theme_classic(base_size = 14) +
   labs(x = "", y = "") +
-  theme(legend.position = "none") +
-  ggsave(file.path(loc_result, "raw_vs_net_inc_ratio.png"),
-         width = scale_graph*5, height = scale_graph*5/2)
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(), axis.title.y = element_blank())
+
+## Paper version
+incratio_raw_vs_net +
+  scale_color_manual(name = "", breaks = c("France", "United States"),
+                     labels = c("France", "United States"), values = c("black", "black"), 
+                     guide = FALSE) +
+  ggsave(file.path(loc_redis, "incratio_raw_vs_net.png"), width = scale_graph*5, height = scale_graph*5/2)
+  
+## Color version
+incratio_raw_vs_net +
+  scale_color_manual(name = "", breaks = c("France", "United States"),
+                     labels = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)], 
+                     guide = FALSE) +
+  ggsave(file.path(loc_redis, "incratio_raw_vs_net_color.png"), width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
-```{r Factor ratio vs Income ratio - dev, echo = FALSE}
+```{r dev_incratio_raw_vs_net}
 
-redis %>% 
+## Core
+dev_incratio_raw_vs_net = redis %>% 
   select(Country, Year, inc_y, inc_o, wL, rK, health_spen, eta) %>% 
   group_by(Country) %>% 
   mutate(inc_ratio = inc_y/inc_o,
@@ -1654,23 +1804,34 @@ redis %>%
                           labels = c("Labor-to-capital income ratio",
                                      "Young-to-old income ratio"),
                         values = c("solid", "dashed", "dotted")) +
-  scale_color_manual(name = "", values = brewer.pal(8,"Set1"), guide = FALSE) +
   theme_classic(base_size = 14) +
   labs(x = "", y = "") +
-  theme(legend.position = "none",
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank()) +
-    ggsave(file.path(loc_result, "raw_vs_net_inc_ratio_dev.png"),
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(), axis.title.y = element_blank())
+
+## Paper version
+dev_incratio_raw_vs_net +
+  scale_color_manual(name = "", breaks = c("France", "United States"),
+                     labels = c("France", "United States"), values = c("black", "black"), 
+                     guide = FALSE) +
+  ggsave(file.path(loc_redis, "dev_incratio_raw_vs_net.png"),
+         width = scale_graph*5, height = scale_graph*5/2)
+  
+## Color version
+dev_incratio_raw_vs_net +
+  scale_color_manual(name = "", breaks = c("France", "United States"),
+                     labels = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)], 
+                     guide = FALSE) +
+  ggsave(file.path(loc_redis, "dev_incratio_raw_vs_net_color.png"),
          width = scale_graph*5, height = scale_graph*5/2)
 
 ```
 
 ### Counterfactual and Decomposition
 
-
 #### Simulation
 
-```{r Aging effect decomposition - 1970 break_year, include = FALSE}
+```{r decomp_sim}
 
 # Re initialize result data frame
 result = result[0,]
@@ -1760,7 +1921,7 @@ write.csv(final, file.path(loc_sim, paste0("final_", "counter", ".csv")), row.na
 
 ##### Counterfactual
 
-```{r Graph CModel - Prepare Data, include = FALSE}
+```{r counter_data_prep}
 
 # Reshape dataframe
 decomp = final %>% 
@@ -1780,43 +1941,7 @@ decomp = final %>%
 
 ```
 
-```{r Graph CModel - Demography, echo = FALSE}
-
-final %>% 
-  select(Country, Specification, Year, n, p, eta) %>%
-  filter(complete.cases(.)) %>% 
-  mutate(PG = ifelse(grepl("TPG", Specification), "TPG", "FPG"),
-         SR = ifelse(grepl("TSR", Specification), "TSR", "FSR"),
-         DE = ifelse(grepl("TDE", Specification), "TDE", "FDE"),
-         IE = ifelse(grepl("TIE", Specification), "TIE", "FIE"),
-         break_year = as.numeric(gsub("[^0-9]", "\\1", Specification))) %>% 
-  select(Specification, break_year, PG, SR, DE, IE, everything()) %>% 
-  subset(DE %in% c("TDE", NA) & IE %in% c("TIE", NA)) %>%
-  subset(break_year == break_year) %>% 
-  mutate(PGSR = as.character(interaction(PG, SR)),
-         PGSR = as.factor(PGSR)) %>% 
-  select(PGSR, Country, Year, everything(), - PG, - SR, - DE, - IE, - break_year, -Specification) %>% 
-  melt(id.vars = c("Country", "PGSR", "Year")) %>% 
-  
-  ggplot(aes(x = Year, y = value, color = PGSR)) +
-  geom_line(linetype = "solid") +
-  facet_grid(Country ~ variable, scale = "free") +
-  scale_color_manual(name = "",
-                     breaks = c("TPG.TSR", "TPG.FSR", "FPG.TSR", "FPG.FSR"),
-                     labels = c("Benchmark", expression(p[1970]),
-                                expression(n[1970]), expression(p[1970]*", "*n[1970])),
-                     values = c(brewer.pal(8, "Set1")[c(1:4)]) %>% 
-                       setNames(c("TPG.TSR", "TPG.FSR", "FPG.TSR", "FPG.FSR"))) +
-  theme_classic(base_size = 14) +
-  theme(legend.position = "none",
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank()) +
-  labs(x = "", y = "")
-
-```
-
-
-```{r Graph CModel - PGSR Counterfactual - Global Picture, echo = FALSE}
+```{r counter_pgsr}
 
 decomp %>% 
   subset(DE %in% c("TDE", NA) & IE %in% c("TIE", NA)) %>%
@@ -1839,15 +1964,14 @@ decomp %>%
                                 "FPG.TSR", "FPG.FSR"),
                         labels = c("Data", "Benchmark", expression(p[1970]),
                                 expression(n[1970]), expression(p[1970]*", "*n[1970])),
-                        values = c(rep("dashed", 4), "solid") %>% 
+                        values = c("solid", "dashed", "twodash", "dotted", "solid") %>% 
                        setNames(c("TPG.TSR", "TPG.FSR", "FPG.TSR", "FPG.FSR", "data"))) +
-  scale_color_manual(name = "",
-                     breaks = c("data","TPG.TSR", "TPG.FSR",
-                                "FPG.TSR", "FPG.FSR"),
-                     labels = c("Data", "Benchmark", expression(p[1970]),
-                                expression(n[1970]), expression(p[1970]*", "*n[1970])),
-                     values = c(brewer.pal(8, "Set1")[c(1:4)],"black") %>% 
-                       setNames(c("TPG.TSR", "TPG.FSR", "FPG.TSR", "FPG.FSR", "data"))) +
+  scale_color_grey(name = "",
+                   breaks = c("data","TPG.TSR", "TPG.FSR",
+                              "FPG.TSR", "FPG.FSR"),
+                    labels = c("Data", "Benchmark", expression(p[1970]),
+                               expression(n[1970]), expression(p[1970]*", "*n[1970])),
+                   start = 0, end = 0.8) +
   theme_classic(base_size = 14) +
   theme(legend.position = c(0.99, 0.99),
         legend.justification = c("right", "top"),
@@ -1861,7 +1985,7 @@ decomp %>%
 
 ```
 
-```{r Graph CModel - PGSR Counterfactual - Global Picture, echo = FALSE}
+```{r counter_deie}
 
 decomp %>% 
   subset(PG %in% c("TPG", NA) & SR %in% c("TSR", NA)) %>%
@@ -1880,16 +2004,15 @@ decomp %>%
                                 expression(p[1970]*", "*n[1970]),
                                 expression(eta[1970]),
                                 expression(p[1970]*", "*n[1970]*", "*eta[1970])),
-                        values = c(rep("dashed", 4), "solid") %>% 
+                     values = c("solid", "dashed", "twodash", "dotted", "solid") %>% 
                        setNames(c("TDE.TIE", "TDE.FIE", "FDE.TIE", "FDE.FIE", "data"))) +
-  scale_color_manual(name = "",
+  scale_color_grey(name = "",
                      breaks = c("data","TDE.TIE", "FDE.TIE", "TDE.FIE", "FDE.FIE"),
                      labels = c("Data", "Benchmark", 
                                 expression(p[1970]*", "*n[1970]),
                                 expression(eta[1970]),
-                                expression(p[1970]*", "*n[1970]*", "*eta[1970])),
-                     values = c(brewer.pal(8, "Set1")[c(1,5,8,4)],"black") %>% 
-                       setNames(c("TDE.TIE", "TDE.FIE", "FDE.TIE", "FDE.FIE", "data"))) +
+                                expression(p[1970]*", "*n[1970]*", "*eta[1970])), 
+                     start = 0, end = 0.8) +
   theme_classic(base_size = 14) +
   theme(legend.position = c(0.99, 0.99),
         legend.justification = c("right", "top"),
@@ -1900,13 +2023,12 @@ decomp %>%
   ggsave(file.path(loc_result, "counter_DEIE.png"),
          width = scale_graph*5, height = scale_graph*5/2)
 
-
 ```
 
 #### Decomposition
 
 
-```{r Computation CModel - Decomposition, echo = FALSE}
+```{r decomp_data_prep}
 
 decomp2 = final %>% 
   select(Country, Specification, Year, theta) %>% 
@@ -1948,25 +2070,24 @@ decomp2 = final %>%
 ```
 
 
-```{r Graph CModel - PGSR Decomposition, echo = FALSE}
+```{r decomp_pgsr}
 
 decomp2 %>% 
   subset(break_year == break_year) %>% 
   subset(variable %in% c("FPG.TSR", "TPG.FSR", "FPG.FSR")) %>% 
   
   ggplot(aes(x = Year)) +
-  geom_col(aes(y = value, fill = variable), color = "black", alpha = .5) +
-  geom_hline(yintercept = 0) +
-  geom_line(aes(y = position_PGSR), color = brewer.pal(8, "Set1")[1]) +
+  geom_col(aes(y = value, fill = variable), alpha = .5) +
+  geom_hline(yintercept = 0, alpha = .5, linetype = "dotted") +
+  geom_line(aes(y = position_PGSR), color = "black") +
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   # scale_y_continuous(limits = c(-4,6)) +
-  scale_fill_manual(name = "",
+  scale_fill_grey(name = "",
                     breaks = c("TPG.FSR", "FPG.TSR", "FPG.FSR"),
                     labels = c("Survival rate effect", "Population growth effect",
                                "Interaction effect"),
-                    values = brewer.pal(8, "Set1")[c(2,3,4)] %>% 
-                      setNames(c("TPG.FSR","FPG.TSR", "FPG.FSR"))) +
+                  start = 0.2, end = 0.8) +
   theme_classic(base_size = 14) +
   theme(legend.direction = "horizontal", legend.box = "horizontal",
         legend.position = "bottom",
@@ -1985,18 +2106,17 @@ decomp2 %>%
   subset(break_year == break_year) %>% 
   
   ggplot(aes(x = Year)) +
-  geom_col(aes(y = value, fill = variable), color = "black", alpha = .5) +
-  geom_hline(yintercept = 0) +
-  geom_line(aes(y = position_DEIE), color = brewer.pal(8, "Set1")[1]) +
+  geom_col(aes(y = value, fill = variable), alpha = .5) +
+  geom_hline(yintercept = 0, alpha = .5, linetype = "dotted") +
+  geom_line(aes(y = position_DEIE), color = "black") +
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   # scale_y_continuous(limits = c(-4,6)) +
-  scale_fill_manual(name = "",
+  scale_fill_grey(name = "",
                     breaks = c("FDE.TIE", "TDE.FIE", "FDE.FIE"),
                     labels = c("Direct cohort effect", "Indirect cohort effect",
                                "Interaction effect"),
-                    values = brewer.pal(8, "Set1")[c(8,5,4)] %>% 
-                      setNames(c("FDE.TIE", "TDE.FIE", "FDE.FIE"))) +
+                  start = 0.2, end = 0.8) +
   theme_classic(base_size = 14) +
   theme(legend.direction = "horizontal", legend.box = "horizontal",
         legend.position = "bottom",
