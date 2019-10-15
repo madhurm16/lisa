@@ -27,9 +27,10 @@ Files are organized as follows :
 
 Directories are organized as follows :
 
-- appendix_A_files/figure-gfm : figures in the notebook appendix_A.md
-- appendix_BC_files/figure-gfm : figures in the notebook appendix_BC.md
-- main_files/figure-gfm : figures in the notebook main.md
+- appendix_A_files/**figure-gfm** : figures in the notebook appendix_A.md
+- appendix_BC_files/**figure-gfm** : figures in the notebook appendix_BC.md
+- gamma_files/**figure-gfm** : figures in the notebook gamma.md
+- main_files/**figure-gfm** : figures in the notebook main.md
 
 - **data** : all the data (raw, in .csv format and final datasets).
 - **function** : all the functions.
