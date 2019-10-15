@@ -3,7 +3,7 @@ title: "Labor Share & Aging Population"
 author: "Fabien Petit"
 output:	
   html_document:	
-    # pandoc_args: --webtex
+    pandoc_args: --webtex
 ---
 
 ## Data
