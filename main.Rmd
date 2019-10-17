@@ -41,6 +41,11 @@ sim = seq(1970, 2080, 10)
 # Estimation sample
 est_sample = c(1970:2010)
 
+# Graphic parameters
+breaks_10_years = seq(1970, 2080, 10)
+labs_20_years = as.vector(rbind(seq(1970, 2080, 20), rep("", length(breaks_10_years)/2)))
+scale_graph = 1920/1080
+
 ```
 
 ```{r load_data, include = FALSE}
@@ -141,6 +146,41 @@ data = data_base %>%
 
 ```
 
+```{r graph_demo}
+
+## Core
+graph_demo = data %>% 
+  mutate("dep" = p/n) %>%
+  select("Country", "Year", 
+         "Population~growth~(n)" = n,
+         "Survival~rate~(p)" = p,
+         "Old~age~dependency~ratio (p/n)" = dep) %>% 
+  melt(id.vars = c("Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, color = Country)) +
+  geom_line() +
+  facet_wrap(variable ~ ., scales = "free", nrow = 1, labeller = label_parsed) +
+  scale_x_continuous(breaks = breaks_10_years,
+                       labels = c(1970, "", "", 2000, "", "", 2030, "", "", 2060, "", "")) +
+  theme_classic(base_size = 14) +
+  theme(legend.position = "none", panel.spacing.x = unit(1.5, "lines"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  labs(x = "", y = "")
+
+## Paper version
+graph_demo +
+  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
+  ggsave(file.path(loc_result, "demo_npdep.png"), 
+         width = scale_graph*5, height = scale_graph*5/3)
+
+## Color version
+graph_demo +
+  scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
+  ggsave(file.path(loc_result, "demo_npdep_color.png"), 
+         width = scale_graph*5, height = scale_graph*5/3)
+
+```
 
 ## Parameter calibration
 
@@ -297,14 +337,6 @@ param = param_base
 ```
 
 ## Simulation
-
-```{r graph_param}
-
-breaks_10_years = seq(1970, 2080, 10)
-labs_20_years = as.vector(rbind(seq(1970, 2080, 20), rep("", length(breaks_10_years)/2)))
-scale_graph = 1920/1080
-
-```
 
 ### Demography : break years
 

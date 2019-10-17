@@ -1,7 +1,7 @@
 Appendix A
 ================
 Fabien Petit
-09/10/2019
+17/10/2019
 
 This notebook refers to the Appendix A **“Uniqueness of the
 equilibrium”**. All the graphs used in the appendix are generated in
@@ -52,106 +52,146 @@ df = df %>%
 ```
 
 ``` r
-df %>%
+## Core
+g_function_graph_a = df %>%
   subset(variable == "g1") %>% 
   
   ggplot(aes(x = inter, y = value)) +
   geom_hline(yintercept = 0) +
-  geom_line(color = red) +
-  # Dashed lines (specific values)
-  geom_vline(xintercept = 1, color = red, linetype = "dashed", alpha = 0.5) +
-  geom_vline(xintercept = 2, color = red, linetype = "dashed", alpha = 0.5) +
-  # Axis
   scale_x_continuous(name = "", breaks = c(0, 1, 2), labels = c(0, expression(k[1]), expression(k[2])),
                      limits = c(0,3), expand = c(0,0)) + 
   scale_y_continuous(name = "", breaks = 0, labels = 0,
                       limits = c(-1.5,3.5), expand = c(0,0)) +
-  # Graphic background
   theme_classic(base_size = 14) +
-  theme(axis.line.x = element_blank(),
-        axis.ticks.x = element_blank()) +
-  # Save
+  theme(axis.line.x = element_blank(), axis.ticks.x = element_blank())
+
+## Paper version
+g_function_graph_a +
+  geom_line(color = "black") +
+  geom_vline(xintercept = 1, color = "black", linetype = "dashed", alpha = 0.5) +
+  geom_vline(xintercept = 2, color = "black", linetype = "dashed", alpha = 0.5) +
   ggsave(file.path(loc_appA, "function_g", "graph_a.png"), width = 7, height = 7*2/3)
 ```
 
 ![](appendix_A_files/figure-gfm/g_function_graph_a-1.png)<!-- -->
 
 ``` r
-df %>%
+## Color version
+g_function_graph_a +
+  geom_line(color = red) +
+  geom_vline(xintercept = 1, color = red, linetype = "dashed", alpha = 0.5) +
+  geom_vline(xintercept = 2, color = red, linetype = "dashed", alpha = 0.5) +
+  ggsave(file.path(loc_appA, "function_g", "graph_a_color.png"), width = 7, height = 7*2/3)
+```
+
+![](appendix_A_files/figure-gfm/g_function_graph_a-2.png)<!-- -->
+
+``` r
+## Core
+g_function_graph_b = df %>%
   subset(variable == "g2") %>% 
   
   ggplot(aes(x = inter, y = value)) +
-  geom_line(color = red) +
   geom_hline(yintercept = 0) +
-  # Dashed lines (specific values)
-  geom_vline(xintercept = 1, color = red, linetype = "longdash", alpha = 0.5) +
-  geom_vline(xintercept = 2, color = red, linetype = "longdash", alpha = 0.5) +
-  # Axis
   scale_x_continuous(name = "", breaks = c(0, 1, 2), labels = c(0, expression(k[2]), expression(k[1])),
                      limits = c(0,3), expand = c(0,0)) + 
   scale_y_continuous(name = "", breaks = 0, labels = 0,
                       limits = c(-1.5,3.5), expand = c(0,0)) +
-  # Graphic background
   theme_classic(base_size = 14) +
-  theme(axis.line.x = element_blank(),
-        axis.ticks.x = element_blank()) +
-  # Save
+  theme(axis.line.x = element_blank(), axis.ticks.x = element_blank())
+
+## Paper version
+g_function_graph_b +
+  geom_line(color = "black") +
+  geom_vline(xintercept = 1, color = "black", linetype = "dashed", alpha = 0.5) +
+  geom_vline(xintercept = 2, color = "black", linetype = "dashed", alpha = 0.5) +
   ggsave(file.path(loc_appA, "function_g", "graph_b.png"), width = 7, height = 7*2/3)
 ```
 
 ![](appendix_A_files/figure-gfm/g_function_graph_b-1.png)<!-- -->
 
 ``` r
-df %>%
+## Color version
+g_function_graph_b +
+  geom_line(color = red) +
+  geom_vline(xintercept = 1, color = red, linetype = "dashed", alpha = 0.5) +
+  geom_vline(xintercept = 2, color = red, linetype = "dashed", alpha = 0.5) +
+  ggsave(file.path(loc_appA, "function_g", "graph_b_color.png"), width = 7, height = 7*2/3)
+```
+
+![](appendix_A_files/figure-gfm/g_function_graph_b-2.png)<!-- -->
+
+``` r
+## Core
+g_function_graph_c = df %>%
   subset(variable == "g3") %>% 
   
   ggplot(aes(x = inter, y = value)) +
-  geom_line(color = red) +
   geom_hline(yintercept = 0) +
-  # Dashed lines (specific values)
-  geom_vline(xintercept = 1, color = red, linetype = "longdash", alpha = 0.5) +
-  geom_vline(xintercept = 2, color = red, linetype = "longdash", alpha = 0.5) +
-  # Axis
   scale_x_continuous(name = "", breaks = c(0, 1, 2), labels = c(0, expression(k[1]), expression(k[2])),
                      limits = c(0,7), expand = c(0,0)) + 
   scale_y_continuous(name = "", breaks = 0, labels = 0,
                       limits = c(-2,5), expand = c(0,0)) +
-  # Graphic background
   coord_cartesian() + 
   theme_classic(base_size = 14) +
-  theme(axis.line.x = element_blank(),
-        axis.ticks.x = element_blank()) +
-  # Save
+  theme(axis.line.x = element_blank(), axis.ticks.x = element_blank())
+
+## Paper version
+g_function_graph_c +
+  geom_line(color = "black") +
+  geom_vline(xintercept = 1, color = "black", linetype = "dashed", alpha = 0.5) +
+  geom_vline(xintercept = 2, color = "black", linetype = "dashed", alpha = 0.5) +
   ggsave(file.path(loc_appA, "function_g", "graph_c.png"), width = 7, height = 7*2/3)
 ```
 
 ![](appendix_A_files/figure-gfm/g_function_graph_c-1.png)<!-- -->
 
 ``` r
-df %>%
+## Color version
+g_function_graph_c +
+  geom_line(color = red) +
+  geom_vline(xintercept = 1, color = red, linetype = "dashed", alpha = 0.5) +
+  geom_vline(xintercept = 2, color = red, linetype = "dashed", alpha = 0.5) +
+  ggsave(file.path(loc_appA, "function_g", "graph_c_color.png"), width = 7, height = 7*2/3)
+```
+
+![](appendix_A_files/figure-gfm/g_function_graph_c-2.png)<!-- -->
+
+``` r
+## Core
+g_function_graph_d = df %>%
   subset(variable == "g4") %>% 
   
   ggplot(aes(x = inter, y = value)) +
-  geom_line(color = red) +
   geom_hline(yintercept = 0) +
-  # Dashed lines (specific values)
-  geom_vline(xintercept = 1, color = red, linetype = "longdash", alpha = 0.5) +
-  geom_vline(xintercept = 2, color = red, linetype = "longdash", alpha = 0.5) +
-  # Axis
   scale_x_continuous(name = "", breaks = c(0, 1, 2), labels = c(0, expression(k[2]), expression(k[1])),
                      limits = c(0,7), expand = c(0,0)) + 
   scale_y_continuous(name = "", breaks = 0, labels = 0,
                       limits = c(-2,5), expand = c(0,0)) +
-  # Graphic background
   coord_cartesian() + 
   theme_classic(base_size = 14) +
-  theme(axis.line.x = element_blank(),
-        axis.ticks.x = element_blank()) +
-  # Save
+  theme(axis.line.x = element_blank(), axis.ticks.x = element_blank())
+
+## Paper version
+g_function_graph_d +
+  geom_line(color = "black") +
+  geom_vline(xintercept = 1, color = "black", linetype = "dashed", alpha = 0.5) +
+  geom_vline(xintercept = 2, color = "black", linetype = "dashed", alpha = 0.5) +
   ggsave(file.path(loc_appA, "function_g", "graph_d.png"), width = 7, height = 7*2/3)
 ```
 
 ![](appendix_A_files/figure-gfm/g_function_graph_d-1.png)<!-- -->
+
+``` r
+## Color version
+g_function_graph_d +
+  geom_line(color = red) +
+  geom_vline(xintercept = 1, color = red, linetype = "dashed", alpha = 0.5) +
+  geom_vline(xintercept = 2, color = red, linetype = "dashed", alpha = 0.5) +
+  ggsave(file.path(loc_appA, "function_g", "graph_d_color.png"), width = 7, height = 7*2/3)
+```
+
+![](appendix_A_files/figure-gfm/g_function_graph_d-2.png)<!-- -->
 
 ## Shapes of the h function
 
@@ -182,74 +222,101 @@ for(i in c(1:3)){
 # Value of sigma in this case
 sigma_1 = 0.25
 
-# Generate the graph
-df %>% 
+## Core
+h_function_graph_1 = df %>% 
   subset(sigma == 0.25) %>% 
   
   ggplot(aes(x = inter, y = value)) +
-  geom_line(color = red) +
-  # Dashed line for the horizontal asymptote
-  geom_hline(yintercept = 1/sigma_1, linetype = "dashed", color = red, alpha = 0.5) +
-  # Axis
   scale_x_continuous(name = "", breaks = 0, labels = 0, limits = c(0, 1.5), expand = c(0,0)) +
   scale_y_continuous(name = "", breaks = c(0, 1/sigma_1), labels = c(0, expression(frac(1,sigma))),
                      limits = c(0, 1/sigma_1*1.05), expand = c(0,0)) +
-  # Graphic background
-  theme_classic(base_size = 14) +
-  # Save
+  theme_classic(base_size = 14)
+
+## Paper version
+h_function_graph_1 +
+  geom_line(color = "black") +
+  geom_hline(yintercept = 1/sigma_1, linetype = "dashed", color = "black", alpha = 0.5) +
   ggsave(file.path(loc_appA, "function_h", "graph_1.png"), width = 5, height = 5)
 ```
 
 ![](appendix_A_files/figure-gfm/h_function_graph_1-1.png)<!-- -->
 
 ``` r
+## Color version
+h_function_graph_1 +
+  geom_line(color = red) +
+  geom_hline(yintercept = 1/sigma_1, linetype = "dashed", color = red, alpha = 0.5) +
+  ggsave(file.path(loc_appA, "function_h", "graph_1_color.png"), width = 5, height = 5)
+```
+
+![](appendix_A_files/figure-gfm/h_function_graph_1-2.png)<!-- -->
+
+``` r
 # Value of sigma in this case
 sigma_2 = 0.8
 
-# Generate the graph
-df %>% 
+## Core
+h_function_graph_2 = df %>% 
   subset(sigma == sigma_2) %>% 
   
   ggplot(aes(x = inter, y = value)) +
-  geom_line(color = red) +
-  # Dashed line for the horizontal asymptote
-  geom_hline(yintercept = 1/sigma_2, linetype = "dashed", color = red, alpha = 0.5) +
-  # Axis
   scale_x_continuous(name = "", breaks = 0, labels = 0, limits = c(0, 1.5), expand = c(0,0)) +
   scale_y_continuous(name = "", breaks = c(0, 1/sigma_2), labels = c(0, expression(frac(1,sigma))),
                      limits = c(0, 1/sigma_2*1.05), expand = c(0,0)) +
-  # Graphic background
-  theme_classic(base_size = 14) +
-  # Save
+  theme_classic(base_size = 14)
+
+## Paper version
+h_function_graph_2 +
+  geom_line(color = "black") +
+  geom_hline(yintercept = 1/sigma_2, linetype = "dashed", color = "black", alpha = 0.5) +
   ggsave(file.path(loc_appA, "function_h", "graph_2.png"), width = 5, height = 5)
 ```
 
 ![](appendix_A_files/figure-gfm/h_function_graph_2-1.png)<!-- -->
 
 ``` r
+## Color version
+h_function_graph_2 +
+  geom_line(color = red) +
+  geom_hline(yintercept = 1/sigma_2, linetype = "dashed", color = red, alpha = 0.5) +
+  ggsave(file.path(loc_appA, "function_h", "graph_2_color.png"), width = 5, height = 5)
+```
+
+![](appendix_A_files/figure-gfm/h_function_graph_2-2.png)<!-- -->
+
+``` r
 # Value of sigma in this case
 sigma_3 = 1.2
 
-# Generate the graph
-df %>% 
+## Core
+h_function_graph_3 = df %>% 
   subset(sigma == sigma_3) %>% 
   
   ggplot(aes(x = inter, y = value)) +
-  geom_line(color = red) +
-  # Dashed line for the horizontal asymptote
-  geom_hline(yintercept = 1/sigma_3, linetype = "dashed", color = red, alpha = 0.5) +
-  # Axis
   scale_x_continuous(name = "", breaks = 0, labels = 0, limits = c(0, 1.5), expand = c(0,0)) +
   scale_y_continuous(name = "",
                      breaks = c(0, 1/sigma_3), labels = c(0, expression(frac(1,sigma))),
                      limits = c(0, 1/sigma_3*1.05), expand = c(0,0)) +
-  # Graphic background
-  theme_classic(base_size = 14) +
-  # Save
+  theme_classic(base_size = 14)
+
+## Paper version
+h_function_graph_3 +
+  geom_line(color = "black") +
+  geom_hline(yintercept = 1/sigma_3, linetype = "dashed", color = "black", alpha = 0.5) +
   ggsave(file.path(loc_appA, "function_h", "graph_3.png"), width = 5, height = 5)
 ```
 
 ![](appendix_A_files/figure-gfm/h_function_graph_3-1.png)<!-- -->
+
+``` r
+## Color version
+h_function_graph_3 +
+  geom_line(color = red) +
+  geom_hline(yintercept = 1/sigma_3, linetype = "dashed", color = red, alpha = 0.5) +
+  ggsave(file.path(loc_appA, "function_h", "graph_3_color.png"), width = 5, height = 5)
+```
+
+![](appendix_A_files/figure-gfm/h_function_graph_3-2.png)<!-- -->
 
 ## Uniqueness of the equilibrium in case c)
 
@@ -346,8 +413,8 @@ min_val
 # Pull the minimum value of X for each possible couples (sigma, k2)
 x_bound = min_val %>% pull("min_x")
 
-# Generate
-result_after %>%  
+## Core
+uniqc_graph_1 = result_after %>%  
   
   ggplot(aes(x = inter, y = value)) +
   geom_line(aes(color = sigma)) +
@@ -359,18 +426,29 @@ result_after %>%
   scale_x_continuous(breaks = 0, limits = c(0, 10), expand = c(0,0)) +
   scale_y_continuous(breaks = c(0,1), limits = c(0, 5), expand = c(0,0)) +
   # Graphic parameters
-  scale_color_manual(name = bquote(sigma), values = brewer.pal(8, "Set1")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "right") +
-  labs(x = "", y = "") +
-  # Save
+  labs(x = "", y = "")
+
+## Paper version
+uniqc_graph_1 +
+  scale_color_grey(name = bquote(sigma), start = 0.2, end = 0.8) +
   ggsave(file.path(loc_appA, "uniqueness", "gc_after.png"), width = scale_graph*5, height = scale_graph*5/3)
 ```
 
 ![](appendix_A_files/figure-gfm/uniqc_graph_1-1.png)<!-- -->
 
 ``` r
-result_before %>% 
+## Color version
+uniqc_graph_1 +
+  scale_color_manual(name = bquote(sigma), values = brewer.pal(8, "Set1")) +
+  ggsave(file.path(loc_appA, "uniqueness", "gc_after_color.png"), width = scale_graph*5, height = scale_graph*5/3)
+```
+
+![](appendix_A_files/figure-gfm/uniqc_graph_1-2.png)<!-- -->
+
+``` r
+uniqc_graph_2 = result_before %>% 
   
   ggplot(aes(x = inter, y = value)) +
   geom_line(aes(color = sigma)) +
@@ -382,18 +460,30 @@ result_before %>%
   scale_x_continuous(breaks = c(0,1), limits = c(0, 1), expand = c(0,0)) +
   scale_y_continuous(breaks = c(0,1), limits = c(0, 2), expand = c(0,0)) +
   # Graphic parameters
-  scale_color_manual(name = bquote(sigma), values = brewer.pal(8, "Set1")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "right") +
-  labs(x = "", y = "") +
-  # Save
+  labs(x = "", y = "")
+
+## Paper version
+uniqc_graph_2 +
+  scale_color_grey(name = bquote(sigma), start = 0.2, end  = 0.8) +
   ggsave(file.path(loc_appA, "uniqueness", "gc_before.png"), width = scale_graph*5, height = scale_graph*5/3)
 ```
 
 ![](appendix_A_files/figure-gfm/uniqc_graph_2-1.png)<!-- -->
 
 ``` r
-result_before %>% 
+## Color version
+uniqc_graph_2 +
+  scale_color_manual(name = bquote(sigma), values = brewer.pal(8, "Set1")) +
+  ggsave(file.path(loc_appA, "uniqueness", "gc_before_color.png"), width = scale_graph*5, height = scale_graph*5/3)
+```
+
+![](appendix_A_files/figure-gfm/uniqc_graph_2-2.png)<!-- -->
+
+``` r
+## Core
+uniqc_graph_3 = result_before %>% 
   
   ggplot(aes(x = inter, color = sigma)) +
   # g function
@@ -408,18 +498,30 @@ result_before %>%
   scale_x_continuous(breaks = c(0,1), limits = c(0, 1), expand = c(0,0)) +
   scale_y_continuous(breaks = c(0,1), limits = c(0, 2), expand = c(0,0)) +
   # Graphic parameters
-  scale_color_manual(name = bquote(sigma), values = brewer.pal(8, "Set1")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "right") +
-  labs(x = "", y = "") +
-  # Save
+  labs(x = "", y = "")
+
+## Paper version
+uniqc_graph_3 +
+  scale_color_grey(name = bquote(sigma), start = 0.2, end = 0.8) +
   ggsave(file.path(loc_appA, "uniqueness", "gc_before_all.png"), width = scale_graph*5, height = scale_graph*5/3)
 ```
 
 ![](appendix_A_files/figure-gfm/uniqc_graph_3-1.png)<!-- -->
 
 ``` r
-result %>% 
+## Color version
+uniqc_graph_3 +
+  scale_color_manual(name = bquote(sigma), values = brewer.pal(8, "Set1")) +
+  ggsave(file.path(loc_appA, "uniqueness", "gc_before_all_color.png"), width = scale_graph*5, height = scale_graph*5/3)
+```
+
+![](appendix_A_files/figure-gfm/uniqc_graph_3-2.png)<!-- -->
+
+``` r
+## Core
+uniqc_graph_4 = result %>% 
   
   ggplot(aes(x = inter, color = sigma)) +
   # g function
@@ -434,15 +536,26 @@ result %>%
   scale_x_continuous(breaks = 0, limits = c(0, 10), expand = c(0,0)) +
   scale_y_continuous(breaks = c(0,1), limits = c(0, 5), expand = c(0,0)) +
   # Graphic parameters
-  scale_color_manual(name = bquote(sigma), values = brewer.pal(8, "Set1")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "right") +
-  labs(x = "", y = "") +
-  # Save
+  labs(x = "", y = "")
+
+## Paper version
+uniqc_graph_4 +
+  scale_color_grey(name = bquote(sigma), start = 0.2, end = 0.8) +
   ggsave(file.path(loc_appA, "uniqueness", "gc_all.png"), width = scale_graph*5, height = scale_graph*5/3)
 ```
 
 ![](appendix_A_files/figure-gfm/uniqc_graph_4-1.png)<!-- -->
+
+``` r
+## Core version
+uniqc_graph_4 +
+  scale_color_manual(name = bquote(sigma), values = brewer.pal(8, "Set1")) +
+  ggsave(file.path(loc_appA, "uniqueness", "gc_all_color.png"), width = scale_graph*5, height = scale_graph*5/3)
+```
+
+![](appendix_A_files/figure-gfm/uniqc_graph_4-2.png)<!-- -->
 
 ## Uniqueness of the equilibrium in case d)
 
@@ -539,7 +652,8 @@ x_bound = min_val %>% pull("min_x")
 ```
 
 ``` r
-result %>% 
+## Core
+uniqd_graph = result %>% 
   
   ggplot(aes(x = inter, color = sigma)) +
   # g function
@@ -554,12 +668,23 @@ result %>%
   scale_x_continuous(breaks = 0, limits = c(0, 10), expand = c(0,0)) +
   scale_y_continuous(breaks = c(0,1), limits = c(0, 5), expand = c(0,0)) +
   # Graphic parameters
-  scale_color_manual(name = bquote(sigma), values = brewer.pal(8, "Set1")) +
   theme_classic(base_size = 14) +
   theme(legend.position = "right") +
-  labs(x = "", y = "") +
-  # Save
+  labs(x = "", y = "")
+
+## Paper version
+uniqd_graph +
+  scale_color_grey(name = bquote(sigma), start = 0.2, end  = 0.8) +
   ggsave(file.path(loc_appA, "uniqueness", "gd_all.png"), width = scale_graph*5, height = scale_graph*5/3)
 ```
 
 ![](appendix_A_files/figure-gfm/uniqd_graph-1.png)<!-- -->
+
+``` r
+## Color version
+uniqd_graph +
+  scale_color_manual(name = bquote(sigma), values = brewer.pal(8, "Set1")) +
+  ggsave(file.path(loc_appA, "uniqueness", "gd_all_color.png"), width = scale_graph*5, height = scale_graph*5/3)
+```
+
+![](appendix_A_files/figure-gfm/uniqd_graph-2.png)<!-- -->
