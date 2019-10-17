@@ -21,8 +21,6 @@ Files are organized as follows :
 - **main.md** : Main notebook.
 - main.Rmd : Main notebook (R code).
 
-- **paper.pdf** : Current version of the paper.
-
 ---
 
 Directories are organized as follows :
@@ -34,5 +32,6 @@ Directories are organized as follows :
 
 - **data** : all the data (raw, in .csv format and final datasets).
 - **function** : all the functions.
+- **paper** : all the tex files and the last paper version.
 - **result** : all the results (mainly graphs).
 - **script** : all the scripts.
