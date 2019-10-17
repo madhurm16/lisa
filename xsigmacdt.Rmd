@@ -7,7 +7,7 @@ output:
     pandoc_args: --webtex
 ---
 
-```{r Init, include = FALSE}	
+```{r init}	
 
 # Load packages
 packages <- c("dplyr", "ggplot2", "ggrepel", "RColorBrewer", "reshape2", "extrafont", "latex2exp")
@@ -16,6 +16,7 @@ rm(packages)
 
 # Define paths
 loc_final = file.path("data", "final")
+loc_result = file.path("result")
 
 # Define country set
 # country_set = c("Australia", "Canada", "France", "Italy", "Japan", "United States")
@@ -38,7 +39,7 @@ The right hand side of this inequality corresponds to the unemployment replaceme
 
 Let plot the function $f(\sigma) = e^{-\frac{1}{\sigma}}$ for likely values of $\sigma$, so an interval between 0 and 3 :
 
-```{r f Plot, echo = FALSE}
+```{r sigma_bar_plot}
 
 # Define function
 sigma = function(urep){
@@ -62,7 +63,7 @@ xsigma %>%
 
 ```
 
-```{r f Plot and Country - Computation, echo = FALSE}
+```{r unemp_rep_rate}
 # Load CWED data
 cwed = read.csv(file.path(loc_final, "cwed.csv"), header = TRUE)
 
@@ -82,7 +83,7 @@ cwed
 ```
 
 
-```{r x_min, echo = FALSE}
+```{r x_min}
 # Country set
 country_set = c("France", "United States")
 
@@ -97,12 +98,13 @@ min_x
 ```
 
 
-```{r f Plot and Country, echo = FALSE}
+```{r xsigmacdt_plot}
 
 ### Plot
 
 ## Add latex
 xsigma %>% 
+  
   ggplot(aes(x = interval, y = sigma_values)) +
   geom_line() +
   # geom_label_repel(data = min_x,
@@ -114,14 +116,14 @@ xsigma %>%
                      subset(Country == "France") %>% pull("sigma_values"),
                    yend = min_x %>% 
                      subset(Country == "France") %>% pull("sigma_values")),
-               col = brewer.pal(8, "Set1")[1], linetype = "solid") +
+               linetype = "solid") +
   # Horizontal line
   geom_segment(aes(x = 0, xend = 0.8,
                    y = min_x %>% 
                      subset(Country == "United States") %>% pull("sigma_values"),
                    yend = min_x %>% 
                      subset(Country == "United States") %>% pull("sigma_values")),
-               col = brewer.pal(8, "Set1")[2], linetype = "solid") +
+               linetype = "solid") +
   # Vertical line
   geom_segment(aes(x = min_x %>% 
                      subset(Country == "France") %>% pull("interval"),
@@ -130,7 +132,7 @@ xsigma %>%
                    y = 0,
                    yend = min_x %>% 
                      subset(Country == "France") %>% pull("sigma_values")),
-               col = brewer.pal(8, "Set1")[1], linetype = "longdash") +
+               linetype = "longdash") +
   # Vertical line
   geom_segment(aes(x = min_x %>% 
                      subset(Country == "United States") %>% pull("interval"),
@@ -139,16 +141,15 @@ xsigma %>%
                    y = 0,
                    yend = min_x %>% 
                      subset(Country == "United States") %>% pull("sigma_values")),
-               col = brewer.pal(8, "Set1")[2], linetype = "longdash") + 
+               linetype = "longdash") + 
   annotate("text", x = 0.2, y = 0.3 + min_x %>% subset(Country == "France") %>% pull("sigma_values"),
            label = TeX(paste0('$\\bar{\\sigma}_{FR} = ',
            min_x %>% subset(Country == "France") %>% pull("sigma_values") %>% round(3), '$')),
-           size = 5, col = brewer.pal(8, "Set1")[1]) +
+           size = 5) +
   annotate("text", x = 0.2, y = -0.3 + min_x %>% subset(Country == "United States") %>% pull("sigma_values"),
            label = TeX(paste0('$\\bar{\\sigma}_{US} = ',
            min_x %>% subset(Country == "United States") %>% pull("sigma_values") %>% round(3), '$')),
-           size = 5, col = brewer.pal(8, "Set1")[2]) +
-  scale_color_manual(values = brewer.pal(8, "Set1")[c(1,2)]) +
+           size = 5) +
   scale_x_continuous(expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0)) +
   theme_classic(base_size = 14) +

@@ -1,0 +1,44 @@
+The CES production function with biased technical change as defined by \cite{David1965} is:
+\begin{equation*}
+	Y_t = A\left[\left(E_t^K K_t\right)^\frac{\sigma-1}{\sigma} + \left(E_t^L L_t\right)^\frac{\sigma-1}{\sigma}\right]^\frac{\sigma}{\sigma-1}
+\end{equation*}
+where $E_t^K$ and $E^L_t$ represent the efficiency levels of both input factors. I assume linear growth rates of efficiency levels, so $E_t^i = E_0^i e^{a_i(t-t_0)}$ where $a_i$ denotes growth in technical progress associated with factor $i \in \lbrace K,L \rbrace$ and represents a linear time trend. To normalize the production function, I follow the specification of \cite{Klump2007},
+\begin{equation*}
+	E_0^K = \frac{Y_0}{K_0}\left(\frac{1}{\phi_0}\right)^\frac{\sigma}{1-\sigma} ~~\text{and}~~
+	E_0^L = \frac{Y_0}{L_0}\left(\frac{1}{1-\phi_0}\right)^\frac{\sigma}{1-\sigma}
+\end{equation*}
+Normalization of the CES production function requires that factor shares are not biased by the growth of factor efficiencies at the fixed point. At time $t = t_0$, $e^{a_i(t-t_0)} = 1$.  Thus, they are just equal to the initial distribution parameters $\phi_0$ and $1-\phi_0$. Assuming that the firm is on its labor demand curve, as in the model, the labor share at time $t$ is :
+\begin{equation*}
+	\theta_t \equiv \frac{w_t L_t}{Y_t} = \left[1 + \left(\frac{E_t^K}{E_t^L}\frac{K_t}{L_t}\right)^\frac{\sigma-1}{\sigma}\right]^{-1}
+\end{equation*}
+Substituting with both efficiency levels, the labor share becomes:
+\begin{equation*}
+	\theta_t = \left[1 + \frac{\phi_0}{1-\phi_0}\left(\frac{K_t}{K_0}\frac{L_0}{L_t} e^{(a_K-a_L)(t-t_0)} \right)^\frac{\sigma-1}{\sigma}\right]^{-1}
+\end{equation*}
+Let $k_t \equiv K_t/L_t$ the capital-to-labor ratio. Thus, the labor-to-capital income ratio is:
+\begin{equation*}
+	\Theta_t \equiv \frac{\theta_t}{1-\theta_t} = \frac{1-\phi_0}{\phi_0}\left(\frac{k_t}{k_0} e^{(a_K - a_L)(t-t_0)}\right)^{\frac{1-\sigma}{\sigma}}
+\end{equation*}
+Rewritting the above equation and taking logs,
+\begin{equation} \label{eq:est_sigma}
+	\ln \Theta_t = \alpha + \frac{1-\sigma}{\sigma} \ln \tilde{k}_t + \frac{1-\sigma}{\sigma}(a_K-a_L)\left(t-t_0\right)
+\end{equation}
+where $\tilde{k}_t$ is the normalized capital-to-labor ratio and $\alpha$ is constant.
+
+With this form, it is not possible to identify each technical change growth rate (i.e. $a_K$ and $a_L$). However, it captures the overall bias in technical change (i.e. $a_K - a_L$). I estimate equation \eqref{eq:est_sigma} using OLS for France and United States over the period 1970-2010.\footnote{This is a single-equation estimation from the two first-order conditions of the profit maximization. As \cite{Klump2007} discussed, single-equation or two-equations estimations can be biased due to endogeneity. They recommend to use supply-side system estimation. However, the aim of this estimation is only to obtain a value to simulate the model. Therefore, the elasticity of substitution I obtain is the one within the model specification.} I use data and variables specifications as described in section \ref{subsec:calibration}. I consider four specifications. The first one is the RAW estimation, without biased technical change nor hours worked correction. Then, I only control for the average hours worked in the HWC estimation and for the biased technical change in the BTC estimation. Finally, both are used as control in the HWC-BTC estimation. Standard errors are relatively high due to the lack of observations. Equations are estimated by country with 41 observations for each one. When the coefficient associated to the line $\frac{1-\sigma}{\sigma}$ is not significant it means that the estimated elasticity is not statistically different from 1, i.e. the Cobb-Douglas case. Tables \ref{tab:sigma_est_fr} and \ref{tab:sigma_est_us} summarize the results for France and the United States, respectively.
+% Sigma estimation for France
+\input{Tables/sigma_est_fr.tex}
+For France, worked hours seems to play a role in the estimation of the elasticity when I compare RAW to HWC. Not considering the hours worked correction may bias the elasticity of substitution toward relatively high values (2.593 against 1.887). I compare RAW to BTC and conclude that biased technical change has also to be taken into account. Even though the $\sigma$ associated coefficient is not significant, the biased technical change's coefficient is significant. Finally, controlling for both in HWC-BTC leads to an elasticity about 1.279. But it is only significant at a 90 \% confidence level. This is the result of a break in the regime as explained in \hyperref[appendix:regime]{appendix D}. The biased technical change coefficient is also significant as in BTC. It indicates that biased technical change has to be jointly considered with the hours worked for France.
+
+For the United States, hours worked correction does matter by comparing RAW to HWC. Once I control for it, the elasticity of substitution is about 1.234. However, the technical change does not seem to be biased since both associated coefficients in BTC and HWC-BTC are not significant. The coefficient associated to the elasticity are below unity but not statistically significant. Thus, controlling for biased technical change is not necessary for the United States. I only have to control for average worked hours.
+% Sigma estimation for US
+\input{Tables/sigma_est_us.tex}
+Therefore, I consider a capital-labor elasticity of substitution about 1.279 for France and 1.234 for the United States. These $\sigma$ values are used to compute the deduced parameter values (i.e. $\omega$ and $\beta$) in section \ref{subsec:calibration}.
+
+
+
+
+
+
+
+

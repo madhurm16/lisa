@@ -1,7 +1,7 @@
 Appendix CD
 ================
 Fabien Petit
-09/10/2019
+17/10/2019
 
 This notebook refers to the Appendix C **“Estimation of σ”** and the
 Appendix D **“Two σ regimes in France”**. All the graphs used in these
@@ -572,25 +572,41 @@ df.fr$THETA1_log_detrend = df.fr %>%
   residuals()
 
 # Plot detrended variables
-df.fr %>% 
+
+## Core
+break_year_detrend = df.fr %>% 
   select(Year, k.avh_log_detrend, THETA1_log_detrend) %>% 
   melt(id.vars = "Year") %>% 
   
-  ggplot(aes(x = Year, y = value, color = variable)) +
+  ggplot(aes(x = Year, y = value, color = variable, linetype = variable)) +
   geom_line() +
-  geom_vline(xintercept = 1982, linetype = "dashed") +
-  geom_vline(xintercept = 1985, linetype = "dashed") +
-  geom_vline(xintercept = 1989, linetype = "dashed") +
-  scale_color_manual(values = brewer.pal(8, "Set1")) +
+  geom_vline(xintercept = 1982, linetype = "dotted", color = "grey") +
+  geom_vline(xintercept = 1985, linetype = "dotted", color = "grey") +
+  geom_vline(xintercept = 1989, linetype = "dotted", color = "grey") +
   scale_x_continuous(breaks = c(1970, 1980, 1982, 1985, 1989, 1990, 2000, 2010),
                      labels = c(1970, "", 1982, 1985, 1989, "", 2000, 2010)) +
   theme_classic(base_size = 14) +
   labs(x = "", y = "") +
-  theme(legend.position = "none") +
+  theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
+
+## Paper version
+break_year_detrend +
+  scale_color_grey(start = 0, end = 0) +
+  scale_linetype_manual(values = c("solid", "dashed")) +
   ggsave(file.path(loc_appCD, "k_Theta_log_detrend.png"), width = scale_graph*5, height = scale_graph*5/2)
 ```
 
 ![](appendix_CD_files/figure-gfm/break_year_detrend-1.png)<!-- -->
+
+``` r
+## Color version
+break_year_detrend +
+  scale_color_manual(values = brewer.pal(8, "Set1")) +
+  scale_linetype_manual(values = c("solid", "solid")) +
+  ggsave(file.path(loc_appCD, "k_Theta_log_detrend_color.png"), width = scale_graph*5, height = scale_graph*5/2)
+```
+
+![](appendix_CD_files/figure-gfm/break_year_detrend-2.png)<!-- -->
 
 This is an example of the regressions when I break the sample in 1985.
 It seems that there are two regimes. There are three main potential
@@ -620,23 +636,39 @@ which year optimize the split. To do so, I use a grid-search approach
 between 1980 and 1990.
 
 ``` r
-df.fr %>% 
+## Core
+
+break_year_graph_2regimes = df.fr %>% 
   select(Year, k.avh_log_detrend, THETA1_log_detrend) %>% 
   mutate(before_break = as.factor(ifelse(Year <= 1985, "1970-1985", "1986-2010"))) %>% 
   
-  ggplot(aes(x = k.avh_log_detrend, y = THETA1_log_detrend, color = before_break)) +
-  geom_point() +
+  ggplot(aes(x = k.avh_log_detrend, y = THETA1_log_detrend, color = before_break, shape = before_break)) +
+  geom_point(size = 2) +
   stat_smooth(method = "lm", alpha = 0.2) +
   # stat_smooth(method = "lm", color = "black") +
-  scale_color_manual(name = "", values = brewer.pal(8, "Set1")[c(3,4)]) +
   theme_classic(base_size = 14) +
   labs(x = "", y = "") +
   theme(legend.direction = "vertical", legend.box = "horizontal", 
-          legend.position = c(0.02,1), legend.justification = c(0,1)) +
+          legend.position = c(0.02,1), legend.justification = c(0,1))
+
+## Paper version
+break_year_graph_2regimes +
+  scale_color_grey(name = "", start = 0.1, end = 0.5) +
+  scale_shape_manual(name = "", values = c(16,15)) +
   ggsave(file.path(loc_appCD, "k_Theta_log_reg85.png"), width = scale_graph*5, height = scale_graph*5/2)
 ```
 
 ![](appendix_CD_files/figure-gfm/break_year_graph_2regimes-1.png)<!-- -->
+
+``` r
+## Color version
+break_year_graph_2regimes +
+  scale_color_manual(name = "", values = brewer.pal(8, "Set1")[c(3,4)]) +
+  scale_shape_manual(name = "", values = c(16,15)) +
+  ggsave(file.path(loc_appCD, "k_Theta_log_reg85_color.png"), width = scale_graph*5, height = scale_graph*5/2)
+```
+
+![](appendix_CD_files/figure-gfm/break_year_graph_2regimes-2.png)<!-- -->
 
 ``` r
 split.coef = data.frame(matrix(nrow = 0, ncol = 6))

@@ -1,0 +1,45 @@
+I derive the partial derivative of both functions $g$ and $h$ that determine the equilibrium.
+
+\subsection*{B.1 The $g$ function's derivatives}
+
+\begin{equation*}
+	g(L_t, K_t, \eta_t, N_t^y; \phi, \sigma) = 
+	\ln\left[ \frac{ \frac{N_t^y}{L_t} - 1 } { \frac{\phi}{1-\phi} \left(\frac{K_t}{L_t}\right)^{\frac{\sigma-1}{\sigma}} \eta_t - 1 }\right]
+\end{equation*}
+The partial derivative of the $g$ function with respect to $\eta_t$ is:
+\begin{equation*}
+	g_\eta = - \frac{\frac{\phi}{1-\phi}k_t^{\frac{\sigma-1}{\sigma}}}{\frac{\phi}{1-\phi}k_t^{\frac{\sigma-1}{\sigma}}\eta_t - 1} = - \left(\eta_t - \Theta_t\right)^{-1} < 0
+\end{equation*}
+where $\eta_t/\Theta_t - 1$ corresponds to the denominator within the logarithm of the $g$ function. At the equilibrium with unemployment, the denominator must be positive. Therefore $\eta_t - \Theta_t >0 \implies g_\eta < 0$. The partial derivative of the $g$ function with respect to $N_t^y$ is:
+\begin{equation*}
+	g_{N^y} = \left(N_t^y-L_t\right)^{-1} > 0
+\end{equation*}
+At the equilibrium with unemployment, the young population size exceeds the number of workers. Thus, $N_t^y-L_t > 0 \implies g_{N^y} > 0$. The partial derivative of the $g$ function with respect to $K_t$ is:
+\begin{align*}
+	g_K &= -\frac{1}{K_t}\frac{\sigma - 1}{\sigma}\frac{\frac{\phi}{1-\phi}k_t^{\frac{\sigma-1}{\sigma}}\eta_t}{\frac{\phi}{1-\phi}k_t^{\frac{\sigma-1}{\sigma}}\eta_t - 1} \\
+	g_K &= -\frac{1}{K_t}\frac{\sigma - 1}{\sigma}\left(1-\Theta_t/\eta_t\right)^{-1} \lessgtr 0,~\forall \sigma \gtrless 1
+\end{align*}
+The sign of the derivative depends on the value of the elasticity of substitution between capital and labor with respect to 1. Finally, the partial derivative of the $g$ function with respect to $L_t$, after some simplifications, is:
+\begin{align*}
+	g_L &= -\frac{1}{N_t^y-L_t} - \frac{1}{\sigma L_t} \left(\frac{\phi}{1-\phi}k_t^{\frac{\sigma-1}{\sigma}}\eta_t - \sigma\right) \\
+	g_L &= -\frac{1}{N_t^y-L_t} - \frac{1}{\sigma L_t} \left(\eta_t/\Theta_t - \sigma\right)
+\end{align*}
+At the equilibrium with unemployment, $\eta_t/\Theta_t > 1$. $\eta_t/\Theta_t -\sigma$ is always positive for $\sigma < 1$, thus $g_L < 0~\forall \sigma < 1$. However, the sign cannot be deduced without additional assumptions for $\sigma > 1$. A more restrictive condition is required, i.e. $\eta_t/\Theta_t > \sigma$. In such a case, the partial derivative is unambiguously negative. If this condition is not met, $g_L$ can still be negative provided that the unemployment rate is lower than a threshold $\bar{u}_t = \left(1 - \frac{\eta_t}{\Theta_t \sigma}\right)^{-1}$. Otherwise, $g_L$ is positive.
+
+\subsection*{B.2 The $h$ function's derivatives}
+
+\begin{equation*}
+	h(L_t, K_t; \sigma, \phi, \gamma) = \left[ \sigma + \frac{1-\phi}{\phi} \frac{1-\gamma(1-\sigma)}{\gamma} \left(\frac{K_t}{L_t}\right)^{\frac{1-\sigma}{\sigma}} \right]^{-1}
+\end{equation*}
+The partial derivative of the $h$ function with respect to $K_t$ is:
+\begin{equation*}
+	h_K = \frac{1}{K_t}\frac{\sigma-1}{\sigma}\frac{\frac{1-\phi}{\phi}\frac{1-\gamma(1-\sigma)}{\gamma}k_t^{\frac{1-\sigma}{\sigma}}}{\left(\sigma + \frac{1-\phi}{\phi}\frac{1-\gamma(1-\sigma)}{\gamma}k_t^{\frac{1-\sigma}{\sigma}}\right)^2} \gtrless 0,~\forall \sigma \gtrless 1
+\end{equation*}
+The partial derivative of the $h$ function with respect to $L_t$ is:
+\begin{equation*}
+	h_L = -\frac{1}{L_t}\frac{\sigma-1}{\sigma}\frac{\frac{1-\phi}{\phi}\frac{1-\gamma(1-\sigma)}{\gamma}k_t^{\frac{1-\sigma}{\sigma}}}{\left(\sigma + \frac{1-\phi}{\phi}\frac{1-\gamma(1-\sigma)}{\gamma}k_t^{\frac{1-\sigma}{\sigma}}\right)^2} \lessgtr 0,~\forall \sigma \gtrless 1
+\end{equation*}
+
+
+
+

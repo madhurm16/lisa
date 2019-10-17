@@ -1202,7 +1202,6 @@ dev_unemp1080 = baseline %>%
   geom_line() +
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
   scale_x_continuous(breaks = seq(2010,2080,10), 
                      labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
   theme_classic(base_size = 14) +

@@ -138,8 +138,7 @@ data = data_base %>%
 
 The discount factor *alpha* is set to 0.669. The relative bargaining
 power of the union *gamma* is set to 0.5. *For more details, please
-consult “gamma.md”
-file.*
+consult “gamma.md” file.*
 
 ``` r
 param_base = data.frame("Country" = rep(c("France", "United States"), each = length(sim)),
@@ -1327,7 +1326,6 @@ dev_unemp1080 = baseline %>%
   geom_line() +
   facet_wrap(variable ~ ., scales = "fixed", nrow = 1, labeller = label_parsed) +
   scale_linetype_manual(breaks = c("baseline", "fillgap"), values = c("solid", "dashed")) +
-  scale_color_grey(breaks = c("France", "United States"), start = 0.2, end = 0.8) +
   scale_x_continuous(breaks = seq(2010,2080,10), 
                      labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
   theme_classic(base_size = 14) +
@@ -1342,9 +1340,6 @@ dev_unemp1080 +
   ggsave(file.path(loc_dev, "dev_unemp1080.png"), width = scale_graph*5, height = scale_graph*5/3)
 ```
 
-    ## Scale for 'colour' is already present. Adding another scale for
-    ## 'colour', which will replace the existing scale.
-
 ![](main_files/figure-gfm/dev_unemp1080-1.png)<!-- -->
 
 ``` r
@@ -1353,9 +1348,6 @@ dev_unemp1080 +
   scale_color_manual(breaks = c("France", "United States"), values = brewer.pal(8, "Set1")[c(1,2)]) +
   ggsave(file.path(loc_dev, "dev_unemp1080_color.png"), width = scale_graph*5, height = scale_graph*5/3)
 ```
-
-    ## Scale for 'colour' is already present. Adding another scale for
-    ## 'colour', which will replace the existing scale.
 
 ![](main_files/figure-gfm/dev_unemp1080-2.png)<!-- -->
 

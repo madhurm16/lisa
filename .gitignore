@@ -4,5 +4,14 @@
 .RData
 .Ruserdata
 lisa.Rproj
-appendix_A_files
-appendix_CD_files
+
+# Tex files
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.synctex.gz
+paper/*.toc
+paper/*.nav
+paper/*.snm
