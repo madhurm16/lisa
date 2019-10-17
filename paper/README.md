@@ -9,6 +9,8 @@ Files are organized as follows :
 - **main.pdf** : last version of the paper.
 - main.tex : last version of the paper (TeX code).
 
+- **my_collec.bib** : bibliography.
+
 - **prez.pdf** : last version of the presentation.
 - main.tex : last version of the presentation (TeX code).
 
