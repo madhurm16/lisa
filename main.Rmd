@@ -154,7 +154,7 @@ graph_demo = data %>%
   select("Country", "Year", 
          "Population~growth~(n)" = n,
          "Survival~rate~(p)" = p,
-         "Old~age~dependency~ratio (p/n)" = dep) %>% 
+         "Old~age~dependency~ratio~(p/n)" = dep) %>% 
   melt(id.vars = c("Country", "Year")) %>% 
   
   ggplot(aes(x = Year, y = value, color = Country)) +
@@ -1412,7 +1412,7 @@ redis_step1 = redis %>%
   geom_line(aes(y = wL_bis), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  theme_classic() +
+  theme_classic(base_size = 14) +
   theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(), axis.title.y = element_blank()) +
   labs(x = "", y = "")
@@ -1446,7 +1446,7 @@ redis_step1_stacked = redis %>%
   geom_line(aes(y = theta), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  theme_classic() +
+  theme_classic(base_size = 14) +
   theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank()) +
   labs(x = "", y = "Share of GDP")
@@ -1479,7 +1479,7 @@ redis_step2 = redis %>%
   geom_line(aes(y = wL), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  theme_classic() +
+  theme_classic(base_size = 14) +
   theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(), axis.title.y = element_blank()) +
   labs(x = "", y = "")
@@ -1516,7 +1516,7 @@ redis_step2_stacked = redis %>%
   geom_line(aes(y = theta), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  theme_classic() +
+  theme_classic(base_size = 14) +
   theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank()) +
   labs(x = "", y = "Share of GDP")
@@ -1551,7 +1551,7 @@ redis_step3 = redis %>%
   geom_line(aes(y = wL), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  theme_classic() +
+  theme_classic(base_size = 14) +
   theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(), axis.title.y = element_blank()) +
   labs(x = "", y = "")
@@ -1591,7 +1591,7 @@ redis_step3_stacked = redis %>%
   geom_line(aes(y = theta), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  theme_classic() +
+  theme_classic(base_size = 14) +
   theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank()) +
   labs(x = "", y = "Share of GDP")
@@ -1627,7 +1627,7 @@ redis_step3 = redis %>%
   geom_line(aes(y = wL), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  theme_classic() +
+  theme_classic(base_size = 14) +
   theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank(), axis.title.y = element_blank()) +
   labs(x = "", y = "")
@@ -1666,7 +1666,7 @@ redis_step4_stacked = redis %>%
   geom_line(aes(y = theta), linetype = "dashed", color = "black") +
   facet_wrap(Country ~ .) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  theme_classic() +
+  theme_classic(base_size = 14) +
   theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines"),
         axis.title.x = element_blank()) +
   labs(x = "", y = "Share of GDP")
