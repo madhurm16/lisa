@@ -2,21 +2,21 @@
 
 % Summary // Introduction of the model
 
-I develop a two-period OLG model in which there are two types of households: young and old. Young households are workers and old households are capitalists. The economy is closed and capital fully depreciates between two periods.
-% Old version : I develop a two-period OLG model that link age structure to labor share dynamics. I consider two types of households: young and old. The former are workers and the latter own the capital in the economy. This economy is closed and capital fully depreciates between two periods. 
-Households determine the public policy through probabilistic voting. The public policy and more specifically labor market institutions impact the wage bargaining between the representative firm and the representative union. The wage bargaining also affects the desired public policy. Both jointly determine the state of the economy and therefore the labor share.
-
-Households determine the public policy through a voting system maximizing their expected utility. While at the same time, the representative labor union bargains over wages with the representative firm. Both processes are independent and simultaneous. Thus, I assume that there is no coordination between households and the labor union. Indeed, the outcome of the voting process is determined by an aggregation of the individual households preferences. They cannot synchronize their vote with the representative union, neither the opposite. Therefore, the agents who operate within the wage bargaining take the voting outcome as given and vice versa.
+I consider a two-period OLG model in which there are two types of individuals: young and old. The economy is closed and capital fully depreciates between two periods.
+Agents vote to establish the public policy through probabilistic voting. Public policy, and more specifically labor market institutions, impact wage bargaining between the representative firm and the representative union.
+While at the same time, the representative union bargains over wages with the representative firm. The outcome of the bargaining, i.e. the wage rate, determines the level of employment and thus the tax base to fund public policy.
+Both processes are independent and simultaneous, hence they jointly determine the equilibrium of the economy and therefore the labor share.
+Thus, I assume that there is no coordination between households and the labor union. Households cannot synchronize their vote with the action of the representative union, neither the opposite. Therefore, the agents who operate within the wage bargaining take the voting outcome as given and vice versa. % Put argument
 
 \subsection{Households}\label{subsec:households}
 
 The demographic dynamic of young households is $N^y_t = n_t N^y_{t-1}$ with $n_t > 0$ the gross young population growth. While the demographic dynamic of old households is $N^o_t = p_t N^y_{t-1}$ with $p_t \in \left(0,1\right]$ the survival rate.\footnote{The survival rate $p_t$ is an increasing function of the life expectancy and a decreasing function of the retirement age. In the model, agents are considered as old once they retire. If the life expectancy and the retirement age grow at the same rate, then the survival rate remains constant. For more details on the measurement of population aging, see \cite{Sanderson2007}; \cite{Sanderson2013}; \cite{DAlbis2013}.} Both demographic parameters follow deterministic processes. Thus, the old-age dependency ratio is $N^o_t/N^y_t = p_t/n_t$. The whole population is therefore $N_t = N^y_t + N^o_t$.
 
-Each cohort consists of a continuum of homogeneous agents. Young households in period $t$ supply labor inelastically, earn a net income, consume and save for retirement. They face an idiosyncratic longevity risk: with probability $p_{t+1}$ they survive to become old households in period $t+1$. Once old, they pay taxes on their saving returns, consume and derive utility from government health spending. Finally, old households die at the end of the period. Savings of young agents who die before reaching old age are distributed among their surviving peers, reflecting a perfect annuities market.
+Each cohort consists of a continuum of agents with identical preferences. Young households in period $t$ supply labor inelastically, earn a net income, consume and save for retirement. They face an idiosyncratic longevity risk: with probability $p_{t+1}$ they survive to become old households in period $t+1$. Once old, they pay taxes on their saving returns, consume and derive utility from government health spending. Finally, old households die at the end of the period. Savings of young agents who die before reaching old age are distributed among their surviving peers, reflecting a perfect annuities market.
 
 Households derive utility from consumption when young $c_{1,t}$ and old $c_{2,t+1}$. Once old, they also value government health expenditure $h_{t+1}$. Agents discount the future at factor $\alpha \in \left(0,1\right)$. Due to risk of death, the effective discount factor of young households equals $\alpha p_{t+1}$.\footnote{Since the expected survival rate $p_{t+1}$ is an increasing function of the expected life expectancy. The longer an agent expects to live, the less they discounts future.} I assume that period utility functions are logarithmic. In first period, they earn a net income $y_t$ to allocate between consumption and savings $s_t$. In second period, they consume the net return of their savings $(1-\tau_{t+1}) s_t \hat{R}_{t+1}$, where $\tau_{t+1}$ is the tax rate and $\hat{R}_{t+1}$ the gross return on savings of a young household that survives to old age\footnote{Due to perfect annuity market $\hat{R}_t = R_t/p_t$ where $R_t$ is the gross return on physical capital.}. Maximizing expected utility, a household in period $t$ solves the following maximization problem:
 	\begin{align*}
-		\max_{\lbrace c_{1,t}, c_{2,t+1} \rbrace \geq 0} &\ln(c_{1,t}) + \alpha p_{t+1}\left\lbrace \ln(c_{2,t+1}) + \beta \ln(h_{t+1}) \right\rbrace\\
+		\max_{c_{1,t},~c_{2,t+1}} &\ln c_{1,t} + \alpha p_{t+1}\left( \ln c_{2,t+1} + \beta \ln h_{t+1} \right)\\
 		\text{s.t.} ~~ & \begin{cases}
 		c_{1,t} + s_t = y_t \\
 		c_{2,t+1} = (1-\tau_{t+1}) s_t \hat{R}_{t+1}
@@ -28,26 +28,29 @@ where $\beta>0$ characterizes the preference for health expenditure. Solving the
 		c^i_{2,t+1} &= \frac{\alpha p_{t+1}}{1+\alpha p_{t+1}}(1-\tau_{t+1})\hat{R}_{t+1}y^i_{t} \\
 		s^i_t &= \frac{\alpha p_{t+1}}{1+\alpha p_{t+1}} y^i_t
 	\end{align*}
+where $e$ corresponds to employed young agents and $u$ to the unemployed ones.
 Since the utility function is logarithmic, this is a standard result where the saving is a constant proportion of the income.
 Each household faces an idiosyncratic unemployment risk with probability $u_t \in \left[0,1\right)$. The income of an employed young agent is $y^e_t = (1-\tau_t)w_t$, while an unemployed young agent earns $y^u_t = b_t$, where $w_t$ is the wage and $b_t$ the unemployment benefits per capita. The aggregate saving in the economy is $S_t = (1-u_t) N_t^y s^e_t + u_t N_t^y s^u_t$. Thus,
 	\begin{equation}\label{eq:agg_saving}
 		S_t = \frac{\alpha p_{t+1}}{1+\alpha p_{t+1}}\left[ (1-u_t)(1-\tau_t)w_t + u_t b_t \right] N_t^y
 	\end{equation}
-The indirect utility of an old household at time $t$ depends on its income in $t-1$. Hence,
-	\begin{equation}\label{eq:utility_old}
-		U_t^{o,i} = \ln\left(\frac{\alpha p_t}{1+\alpha p_t}(1-\tau_t)y_{t-1}^i\hat{R}_t\right) + \beta \ln(h_t) ~~ \forall i = \lbrace e,u \rbrace
-	\end{equation}
-The indirect utility of a young household at time $t$ is:
-	\begin{equation*}\label{eq:utility_young}
+	
+At the beginning of each period, a voting takes place to determine the public policy. Agents maximize their indirect utility function to determine the tax rate $\tau_t$, the unemployment benefits per capita $b_t$ and the government health spending per capita $h_t$. 
+The indirect utility of a young agent at time $t$ is:
+	\begin{equation}\label{eq:utility_young}
 		U_t^{y,i} = \ln\left(\frac{1}{1+\alpha p_{t+1}}y_t^i\right)+ \alpha p_{t+1} U_{t+1}^{o,i} ~~ \forall i = \lbrace e,u \rbrace
-	\end{equation*}
-Computing the gap between employed and unemployed people in utility terms, I have:
+	\end{equation}
+While the indirect utility of an old agent at time $t$ depends on its income in $t-1$. Hence,
+	\begin{equation}\label{eq:utility_old}
+		U_t^{o,i} = \ln\left(\frac{\alpha p_t}{1+\alpha p_t}(1-\tau_t)y_{t-1}^i\hat{R}_t\right) + \beta \ln h_t ~~ \forall i = \lbrace e,u \rbrace
+	\end{equation}
+Using equation \ref{eq:utility_young}, I compute the gap between employed and unemployed people in utility terms and obtain:
 	\begin{equation}\label{eq:utility_young_gap}
 		U_t^{y,e} - U_t^{y,u} = (1+\alpha p_{t+1})\ln\left[\frac{(1-\tau_t)w_t}{b_t}\right]
 	\end{equation}
-Moreover, the expected income of each young household is a weighted average of both incomes (labor income and unemployment benefits). Thus, $\mathbb{E}(y_t) = (1-u_t)(1-\tau_t)w_t + u_tb_t$, where $\mathbb{E}$ is the expectation operator. Computing the expected utility of a young household at time $t$, I obtain:
+Young individuals are not aware of their employment status before to vote. Hence, they have to maximize their indirect utility with expectations on their income. The expected income of each young individual is a weighted average of both incomes (labor income and unemployment benefits). Thus, $\mathbb{E}(y_t) = (1-u_t)(1-\tau_t)w_t + u_tb_t$, where $\mathbb{E}$ is the expectation operator. Computing the expected utility of a young household at time $t$, I obtain:
 	\begin{equation}\label{eq:expected_utility_young}
-		\mathbb{E}({U}_t^y) = \ln\left(\frac{\mathbb{E}\left(y_t\right)}{1+\alpha p_{t+1}}\right) + \alpha p_{t+1}\left\lbrace \ln\left(\frac{\alpha p_{t+1}}{1+\alpha p_{t+1}}(1-\tau_{t+1})\mathbb{E}(y_t)\hat{R}_{t+1}\right) + \beta \ln(h_{t+1}) \right\rbrace
+		\mathbb{E}({U}_t^y) = \ln\left(\frac{\mathbb{E}\left(y_t\right)}{1+\alpha p_{t+1}}\right) + \alpha p_{t+1}\left\lbrace \ln\left(\frac{\alpha p_{t+1}}{1+\alpha p_{t+1}}(1-\tau_{t+1})\mathbb{E}(y_t)\hat{R}_{t+1}\right) + \beta \ln h_{t+1} \right\rbrace
 	\end{equation}
 
 \subsection{Production}\label{subsec:production}
@@ -94,33 +97,35 @@ In order to have a negative relationship between the capital-to-labor ratio and 
 
 \subsection{Public policy preferences}\label{subsec:public_policy_preferences}
 
-The government taxes the labor income of young households and the savings return of old households in period $t$ at rate $\tau_t$. The government revenue is shared between unemployment benefits and health expenditure. Thus, the government budget constraint is the following: $\tau_t\left( w_t(1-u_t)N^y_t + R_t S_{t-1} \right) = b_t u_t N^y_t + h_t N^o_t$. Capital fully depreciates between two periods, thus  $R_t = r_t$ and $K_t = S_{t-1}$, where $r_t$ is the rental price of capital. Therefore, the government budget constraint can be written as follows:
-	\begin{equation} \label{eq:government_bc}
-		\tau_t Y_t = b_t u_t N^y_t + h_t N^o_t
-	\end{equation}
-Young and old agents have different objectives. Young households desire more unemployment benefits since they cover the risk to be unemployed. While the elderly desire more health spending because they derive utility from it. \textit{Everything else equal}, both desire less taxes as it reduces their disposable income. I modelize the age-related conflict in public policy with this trade-off but it could be extended to other public policy instruments. The central point is to oppose young and old households with different returns in utility terms of policy instruments.
+The government taxes the labor income of young households and the savings return of old households in period $t$ at rate $\tau_t$. Government revenue is spent in unemployment benefits and health expenditure, so that the government budget constraint is given by $\tau_t\left( w_t(1-u_t)N^y_t + R_t S_{t-1} \right) = b_t u_t N^y_t + h_t N^o_t$. Capital fully depreciates between two periods, thus  $R_t = r_t$ and $K_t = S_{t-1}$, where $r_t$ is the rental price of capital, and hence the government budget constraint can be written as $\tau_t Y_t = b_t u_t N^y_t + h_t N^o_t$.
 
-\cite{Sorensen2013} analyzes cross-section survey data for 22 countries and shows that agents change their public spending preferences over their life-cycle. Thus, he provides evidence for an age-related selfishness in public spending preferences. However, this effect tends to be small and heterogeneous across countries. He argues that a gerontocracy is not very likely. In line with these results, I consider a probabilistic voting setup in contrast to the median voter setup. This latter setup would create two extreme regimes with one of them being a gerontocracy. It would also generate large changes in public policy if the median-voter switches from young to old or vice versa. Under probabilistic voting, the equilibrium policy platform is a continuous function of the old-age dependency ratio. This setup smooths public policy changes in line with the literature of recent politico-economic models.
+Young and old agents vote at the beginning of each period. The youth desire more unemployment benefits since they cover the risk to be unemployed. While the elderly desire more health spending because they derive utility from it. \textit{Everything else equal}, both desire less taxes as it reduces their disposable income. Therefore, young and old agents have different objectives on public policy preferences. I model the inter-generational conflict over public budget allocation with this trade-off but it could be extended to other public policy instruments. The central point is to oppose young and old individuals with different returns in utility terms of policy instruments.
 
-With probabilistic voting, all agents vote for a policy platform $g_t = (\tau_t, b_t, h_t)$ represented by opportunistic candidates (or parties). Candidates try to maximize their probability to win the election. They differ in their popularity and there is an idiosyncratic bias among voters for one candidate or the others. Candidates know about these biases. At the equilibrium, all candidates choose the same policy platform $g_t^\star$ that maximize the political objective function $W_t(g_t)$.\footnote{See \cite{Lindbeck1987} for more details on the probabilistic-voting setup.}
+\cite{Sorensen2013} analyzes cross-section survey data for 22 countries and shows that agents change their public spending preferences over their life-cycle. Thus, he provides evidence for an age-related selfishness in public spending preferences. In line with these results, I consider a probabilistic voting setup in contrast to the median voter setup.\footnote{The median voter setup would create two extreme regimes with one of them being a gerontocracy. It would also generate large changes in public policy if the median-voter switches from young to old or vice versa. Under probabilistic voting, the equilibrium policy platform is a continuous function of the old-age dependency ratio. This setup smooths public policy changes in line with the literature of recent politico-economic models.}
 
-This function depends on population share of each voter groups and their respective sensitivity of voting behavior to policy changes $\omega^i$. There are three groups of voter: young households; and old households who are divided in two subgroups according to their employment situation during the previous period because they did not earn the same income when they were young. Henceforth, they do not have the same saving returns and differ in their indirect utility (i.e. $U_t^{o,u}$ and $U_t^{o,e}$ given by \eqref{eq:utility_old}). However, I assume that all the elderly have the same sensitivity $\omega^o = \omega^{o,u} = \omega^{o,e}$. Thus, the equilibrium public policy solves the following maximization program:
-	\begin{align*}
-		\max_{g_t} ~ W_t(g_t) &= \frac{N_t^y}{N_t} \omega^y \mathbb{E}\left[U_t^y(g_t)\right] + \frac{N_t^o}{N_t} \omega^o \Big\{ u_{t-1} U_t^{o,u}(g_t) + (1-u_{t-1}) U_t^{o,e}(g_t) \Big\} \\
-		\text{s.t.} ~~ & \eqref{eq:utility_old}, \eqref{eq:expected_utility_young}, \eqref{eq:government_bc}
-	\end{align*}
-I assume that households only care about direct effects of public policy on their utility. They do not consider indirect effects of public policy on their utility that would pass through economic variables.\footnote{An interpretation of this assumption is that agents are not able to predict what will be the response of the labor market to changes in public policy. Otherwise stated, the investment of effort to be perfectly informed and able to calculate indirect effects of different public policies is too costly for an individual (or at least a representative share of the electorate). Thus, the rationality is limited to direct effects on the utility function. This is related to political science literature and the concept of \textit{synoptic rationality}. See \cite{Meier1980} for more details.} Let $\tilde{U}^i_t$ be the part of the utility which is directly affected by the public policy platform. From \eqref{eq:utility_old}, it is straightforward that $\tilde{U}_t^o = \tilde{U}_t^{o,u} = \tilde{U}_t^{o,e}$. Therefore, the political objective function can be rewritten as:
+With probabilistic voting, all agents vote for a policy platform $g_t = (\tau_t, b_t, h_t)$ represented by opportunistic candidates (or parties). Candidates try to maximize their probability of winning the election. They differ in their popularity and there is an idiosyncratic bias among voters for one candidate or the other. Candidates know about these biases. At equilibrium, all candidates choose the same policy platform $g_t^\star$ that maximizes the political objective function $W_t(g_t)$.\footnote{See \cite{Lindbeck1987} for more details on the probabilistic-voting setup.}
+
+This function depends on the population share of voter group and their respective sensitivity to policy changes $\omega^j$ with $j \in \left(y,o\right)$.\footnote{$\omega^j$ denotes the density parameter of the uniform distribution function that characterizes the ideology of the $j$ group. The greater $\omega^j$, the more spread are the ideologies withing the $j$ group. Hence, opportunistic candidates prefer targeting less ideological groups, i.e. large $\omega^j$, because they are easier to convince.} There are three groups of voters: young households; and old households who are divided in two subgroups according to their employment situation when young. I assume that all the elderly have the same sensitivity $\omega^o = \omega^{o,u} = \omega^{o,e}$. Thus, the equilibrium public policy $g_t^\star$ maximizes the following function:
 	\begin{equation*}
-		W_t(g_t) = \frac{N_t^o}{N_t} \omega^o \tilde{U}_t^o(g_t) + \frac{N_t^y}{N_t} \omega^y \tilde{U}_t^y(g_t) + \dots
+		W_t(g_t) = \frac{N_t^y}{N_t} \omega^y \mathbb{E}\left[U_t^y(g_t)\right] + \frac{N_t^o}{N_t} \omega^o \Big\{ u_{t-1} U_t^{o,u}(g_t) + (1-u_{t-1}) U_t^{o,e}(g_t) \Big\}
 	\end{equation*}
-where $\dots$ denotes all the terms that are not directly affected by the public policy. Let $\omega$ be the \textit{relative ideological spread-out} of the elderly with respect to the youth. This relative ideological spread-out is characterized by the ratio of the sensitivities of voting behavior to policy changes for each group. Thus, $\omega \equiv \omega^o/\omega^y$. I assume that this spread-out is constant over time.\footnote{Two interpretation are plausible for this assumption: either both relative ideological spread-outs are time invariant; or they vary in same proportions. An interesting point would be to endogenize these spread-outs or to make them cohort-specific. Nevertheless, this goes beyond the scope of this paper.} Using equations \eqref{eq:utility_old} and \eqref{eq:expected_utility_young}, I rewrite the maximization program that characterize the public policy equilibrium as:
+Subject to the indirect utilities implied by the equations \eqref{eq:utility_old} and \eqref{eq:expected_utility_young}; and to the government budget constraint.
+I assume that individuals only care about direct effects of public policy on their utility. They do not consider the indirect effects operating through unemployment, wages and the accumulation of capital.\footnote{An interpretation of this assumption is that agents are not able to predict what will be the response of the labor market to changes in public policy. Otherwise stated, the investment of effort to be perfectly informed and able to calculate the indirect effects of different public policies is too costly for an individual (or at least a representative share of the electorate). Thus, rationality is limited to the direct effects on the utility function. This is related to political science literature and the concept of \textit{synoptic rationality}. See \cite{Meier1980} for more details.} Let $\tilde{U}^i_t$ be the part of the utility which is directly affected by the public policy platform. From \eqref{eq:utility_old}, it is straightforward that $\tilde{U}_t^o = \tilde{U}_t^{o,u} = \tilde{U}_t^{o,e}$. Therefore, the political objective function can be rewritten as:
+	\begin{equation*}
+		W_t(g_t) = \frac{N_t^o}{N_t} \omega^o \tilde{U}_t^o(g_t) + \frac{N_t^y}{N_t} \omega^y \tilde{U}_t^y(g_t) + \text{\textit{other~terms}}
+	\end{equation*}
+where $\text{\textit{other~terms}}$ encompasses all the terms that are not directly affected by the public policy. Let $\omega$ be the \textit{relative ideological spread-out} of the elderly with respect to the youth. This relative ideological spread-out is characterized by the ratio of the sensitivities of voting behavior to policy changes for each group. Thus, $\omega \equiv \omega^o/\omega^y$. I assume that this spread-out is constant over time.\footnote{Two interpretation for this assumption are plausible: either both relative ideological spread-outs are time invariant; or they vary in same proportions. An interesting point would be to endogenize these spread-outs or to make them cohort-specific. Nevertheless, this goes beyond the scope of this paper.} Using equations \eqref{eq:utility_old} and \eqref{eq:expected_utility_young}, I rewrite the maximization program that characterize the public policy equilibrium as:
 	\begin{align*}
-		\max_{\lbrace\tau_t, b_t, h_t\rbrace\geq 0} W_t(\tau_t, b_t, h_t) &= \ln(1-\tau_t) +\beta \ln(h_t) + \eta_t \ln\left[(1-u_t)(1-\tau_t)w_t + u_t b_t\right] + \dots \\
+		\max_{\tau_t, b_t, h_t} W_t(\tau_t, b_t, h_t) &= \ln(1-\tau_t) +\beta \ln(h_t) + \eta_t \ln\left[(1-u_t)(1-\tau_t)w_t + u_t b_t\right] + \text{\textit{other~terms}} \\
 		\text{s.t.} ~~ &\tau_t Y_t = b_t u_t N^y_t + h_t N^o_t
 	\end{align*}
-where $\eta_t = \frac{n_t}{p_t}\frac{1+\alpha p_{t+1}}{\omega}$ is the youth political weight. This variable is the channel through which the age structure affects the public policy. It depends negatively on the old-age dependency ratio $p_t/n_t$, the older the population the lower the political weight of the youth within the policy determination. It also depends negatively on the relative ideological spread-out $\omega$. The less ideological is the youth, the higher will be its political weight. If young people are less ideologically tenacious, then they are easier to convince with an appropriated public policy. As a consequence, candidates pay more attention to them.\footnote{Otherwise stated, the less spread-out is the ideology distribution within a group, the more numerous to swing are the voters after changes in public policy platform.} $\eta_t$ is increasing in $\alpha p_{t+1}$ corresponding to the fact that young voters are more likely to swing in favor of a pro-labor-income policy platform. Because the longer they expect to live, the more they will have to save in order to smooth their consumption. Therefore, they require a relatively greater income which can only be a labor one.
+where 
+\begin{equation}\label{eq:eta}
+	\eta_t = \frac{n_t}{p_t}\frac{1+\alpha p_{t+1}}{\omega}
+\end{equation}
+is political weight of the youth. This variable is the channel through which the age structure affects the public policy. It depends negatively on the old-age dependency ratio $p_t/n_t$, the older the population the lower the political weight of the youth within the policy determination. It also depends negatively on the relative ideological spread-out $\omega$. The less ideological is the youth, the higher will be its political weight. If young people are less ideologically tenacious, then it is easier for the opportunistic candidates to get their votes with an appropriated public policy. As a consequence, candidates pay more attention to them.\footnote{Otherwise stated, the less spread-out is the ideology distribution within a group, the more numerous are the voters that swing after changes in public policy platform.} $\eta_t$ is increasing in $\alpha p_{t+1}$, corresponding to the fact that young voters are more likely to swing in favor of a pro-labor-income policy platform. The longer they expect to live, the more they will have to save in order to smooth their consumption, therefore, they require a relatively greater first-period income.
 
-Focusing on the interior solution, first order conditions lead to the following public policy preferences:
+Focusing on the interior solution, the first order conditions lead to the following public policy preferences:
 %The first-order conditions with respect to $\tau_t$, $b_t$ and $h_t$, are respectively:
 %\begin{align*}
 %	\frac{1}{1-\tau_t} + \frac{\eta_t(1-u_t)w_t}{(1-u_t)(1-\tau_t)w_t + u_t b_t} &= \lambda \frac{Y_t}{N_t^y} + \mu_\tau\\
@@ -129,70 +134,74 @@ Focusing on the interior solution, first order conditions lead to the following 
 %\end{align*}
 %where $\lambda$ is the Lagrangian multiplier and $\mu_j ~~\forall j = \lbrace \tau, b, h\rbrace$ denotes the multiplier associated with the non-negativity constraint on the policy instrument $j$. Focusing on the interior solution (i.e. $\mu_\tau = \mu_b = \mu_h = 0$) and manipulating the previous first-order conditions, I obtain the public policy preferences :
 	\begin{align}
-		\frac{b_t}{(1-\tau_t)w_t} &= \frac{1-u_t}{u_t} \left(\eta_t\frac{1-\theta_t}{\theta_t}- 1\right)
+		\frac{b_t}{(1-\tau_t)w_t} &= \frac{1-u_t}{u_t} \left(\eta_t\frac{1-\theta_t}{\theta_t}- 1\right),
 		\label{eq:inverse_replacement_rate}\\
-		\tau_t &= 1 - \left[\left(1-\theta_t\right)\left(1+\beta+\eta_t\right)\right]^{-1}
+		\tau_t &= 1 - \left[\left(1-\theta_t\right)\left(1+\beta+\eta_t\right)\right]^{-1},
 		\label{eq:tax_rate} \\
-		h_t N^o_t &= \frac{\beta}{1+\beta+\eta_t}Y_t
+		h_t N^o_t &= \frac{\beta}{1+\beta+\eta_t}Y_t,
 		\label{eq:health_expenditure}
 	\end{align}
 %% Comparative statics of public policy %%
-Where the first equation is the unemployment replacement rate, the second the tax rate and the third the government health expenditure. Some comparative statics about previous results are straightforward,
+where the first equation is the unemployment replacement rate, the second the tax rate and the third health expenditure. The comparative statics are straightforward,
 	\begin{equation*}
-		\left\lbrace \frac{\partial \frac{b_t}{(1-\tau_t)w_t}}{\partial \eta_t} > 0, ~ \frac{\partial \tau_t}{\partial \eta_t} > 0, ~\frac{\partial h_t}{\partial \eta_t} < 0\right\rbrace
+		\left\lbrace \frac{\partial \frac{b_t}{(1-\tau_t)w_t}}{\partial \eta_t} > 0, ~ \frac{\partial \tau_t}{\partial \eta_t} > 0, ~\frac{\partial h_t}{\partial \eta_t} < 0\right\rbrace.
 	\end{equation*}
 Young generations desire more redistribution and a higher unemployment replacement rate because they face an unemployment risk. Such a public policy allows them to increase their expected income. However, they vote to reduce the government health spending because they do not derive utility from it yet.\footnote{I do not consider any form of explicit altruism. However, the parameter $\beta$ which is the preference for government health spending captures a form of altruism from young to their elders. The greater the parameter, the more individuals care about government health spending once old. Finally, a form of explicit altruism from young to old generations would smooth the results and soften the age-related conflict.}
 
-The aggregated income of young households is $Y_t^y = \left[(1-u_t)(1-\tau_t)w_t+b_tu_t\right]N_t^y$. Using equation \eqref{eq:inverse_replacement_rate} and \eqref{eq:tax_rate}, it can be written as a share of the total income $Y_t$ such that:
+The aggregate income of young households is $Y_t^y = \left[(1-u_t)(1-\tau_t)w_t+b_tu_t\right]N_t^y$. Using equation \eqref{eq:inverse_replacement_rate} and \eqref{eq:tax_rate}, it can be written as a share of the total income $Y_t$ such that
 	\begin{equation*}
-	Y_t^y = \frac{\eta_t}{1+\beta+\eta_t} Y_t
+		\frac{Y_t^y}{Y_t} = \frac{\eta_t}{1+\beta+\eta_t}.
 	\end{equation*}
 %Young households decide to save a share of their income in order to smooth their consumption for the second period, this share depends on their life expectancy. The remaining income is consumed. From section \ref{subsec:households}, these shares are:
 %\begin{align*}
 %S_t = \frac{\alpha p_{t+1}}{1+\alpha p_{t+1}} Y_t^y \\
 %C_{1t} = \frac{1}{1+\alpha p_{t+1}} Y_t^y
 %\end{align*}
-The government health spending for old households is given by equation \eqref{eq:health_expenditure}. The total income is split between incomes of both groups and the government health spending. Thus, $Y_t = Y_t^y + Y_t^o + h_tN_t^o$. Hence, the remaining part of the total income is the aggregated income of the elderly:
+Note that total income is split between the incomes of both groups and health spending. Thus, $Y_t = Y_t^y + Y_t^o + h_tN_t^o$. Hence, using equation \eqref{eq:health_expenditure}, the elderly income share is given by
 	\begin{equation*}
-	Y_t^o = \frac{1}{1+\beta+\eta_t} Y_t
+	\frac{Y_t^o}{Y_t} = \frac{1}{1+\beta+\eta_t}.
 	\end{equation*}
-For a given level of total income $Y_t$, the comparative statics are unambiguous. When the youth political weight raises ($\eta_t \nearrow$), young households increase their aggregated income with more redistribution (i.e. $\frac{\partial Y_t^y}{\partial \eta_t}>0$). Conversely, the aggregated income of the elderly decreases (i.e. $\frac{\partial Y_t^o}{\partial \eta_t}<0$) and so does the government health spending (i.e. $\frac{\partial(h_tN_t^o)}{\partial \eta_t}<0$). Such a raise may be due to two reasons: either a decrease of the old-age dependency ratio ($p_t/n_t \searrow$) or an increase of the survival rate of the current young generation ($p_{t+1} \nearrow$). The first reason is directly related to the old-age related conflict within the public policy. However, the second reason open onto an important point of the aging population. $p_{t+1}$ can be interpreted as the expected life expectancy. Expecting to live longer, agents save more in order to smooth their consumption for the second period.\footnote{See, for example, \cite{Bloom2003}; \cite{Zhang2005}.} From equation \eqref{eq:agg_saving}, the saving share of the aggregated income of young households is increasing in life expectancy. Therefore, a longer expected life expectancy leads to more savings and thus more available capital for the next period. Furthermore, it is possible to express the after-tax income ratio between young and old households as:
+For a given level of total income $Y_t$, the comparative statics are unambiguous. When the youth's political weight raises, young individuals increase their income share with more redistribution, i.e. $\partial(Y_t^y/Y_t)/\partial\eta_t>0$. Conversely, the elderly income share decreases and so does the government health spending, i.e. $\partial (Y_t^o/Y_t)/\partial\eta_t<0$ and $\partial(h_tN_t^o/Y_t)/\partial\eta_t<0$. A higher $eta_t$ can be due to two changes: either a decrease of the old-age dependency ratio ($p_t/n_t \searrow$) or an increase of the survival rate of the current young generation ($p_{t+1} \nearrow$).
+%%%% To be MOVED %%%%
+%The first reason is directly related to the age-related conflict in public policy. However, the second reason open onto an important point of the aging population. $p_{t+1}$ can be interpreted as the expected life expectancy. Expecting to live longer, agents save more in order to smooth their consumption for the second period.\footnote{See, for example, \cite{Bloom2003}; \cite{Zhang2005}.} From equation \eqref{eq:agg_saving}, the saving share of the aggregated income of young households is increasing in life expectancy. Therefore, a longer expected life expectancy leads to more savings and thus more available capital for the next period.
+%%%%%%%%%%%%%%%%%%%%%%
+Furthermore, it is possible to express the after-tax income ratio between young and old households as:
 	\begin{equation} \label{eq:after_tax_income_ratio}
 		\frac{Y_t^y}{Y_t^o} = \eta_t
 	\end{equation}
-As expected, the greater is the political weight of the youth, the greater is the redistribution and so is the gap between both incomes.
-% Transition
-These public policy instruments interact with the outcome of the wage bargaining to determine the state of the economy.
+As expected, the greater is the political weight of the young, the greater redistribution and the gap between both incomes are.
 
 \subsection{Wage bargaining}\label{subsec:wage_bargaining}
 
-There is a single union that represents the workers. In order to modeling the wage bargaining, I consider a ``Right-to-manage'' model \textit{à la} \cite{Nickell1983}. The union bargains only over wages with the employer retaining the prerogative to hire and fire.\footnote{Another possibility would have been to consider an ``Efficient contract'' model \textit{à la} \cite{McDonald1981} where the union bargains over wages and employment. However, this specification does not correspond to the data as \cite{Bentolila2003} showed. Moreover, it would add a lot of complexity to the model without a substantial gain in the analysis.} Consequently, the firm is always on its labor demand curve and equation \eqref{eq:labor_demand} holds. The union wants to maximize the workers' utility compared to the unemployed people's one (i.e. $U^{y,e}_t - U^{y,u}_t$) as described by \eqref{eq:utility_young_gap}. The representative firm maximizes its outside option which is $Y_t-w_tL_t$ corresponding to $r_t K_t$. Thus, the outcome of the bargaining process is determined by the maximization program as follows:
+These public policy instruments interact with the outcome of the wage bargaining to determine the equilibrium of the economy.
+There is a single union that represents the workers. In order to model wage bargaining, I consider a ``Right-to-manage'' model \textit{à la} \cite{Nickell1983}. The union bargains only over wages with the employer retaining the prerogative to hire and fire.\footnote{Another possibility would have been to consider an ``Efficient contract'' model \textit{à la} \cite{McDonald1981} where the union bargains over wages and employment. However, this specification does not fit well the data as \cite{Bentolila2003} showed. Moreover, it would add a lot of complexity to the model without a substantial gain in the analysis.} Consequently, the firm is always on its labor demand curve and equation \eqref{eq:labor_demand} holds. The union wants to maximize the workers' utility compared to the unemployed, i.e. $L_t\left(U^{y,e}_t - U^{y,u}_t\right)$. The representative firm maximizes its outside option which is $Y_t-w_tL_t$ corresponding to $r_t K_t$. Thus, the outcome of the bargaining process is determined by the maximization program following
 	\begin{align*}
 	\max_{w_t>0} ~~ &\lbrace \left(L_t[U^{y,e}_t - U^{y,u}_t]\right)^\gamma \left(Y_t-w_tL_t\right)^{1-\gamma}\rbrace\\
-	\text{s.t.} ~~ &U_t^{y,e} - U_t^{y,u} = (1+\alpha p_{t+1})\ln\left[\frac{(1-\tau_t)w_t}{b_t}\right]
+	\text{s.t.} ~~ &U_t^{y,e} - U_t^{y,u} = (1+\alpha p_{t+1})\ln\left[\frac{(1-\tau_t)w_t}{b_t}\right],
 	\end{align*}
-where $\gamma\in(0,1)$ is the relative bargaining power of the union. The first-order condition can be expressed as:
+where $\gamma\in(0,1)$ is the relative bargaining power of the union. The first-order condition can be expressed as
 	\begin{equation*}\label{eq:foc_wage_bargaining}
-	\frac{\gamma}{1-\gamma}\left\lbrace\mathcal{E}^{L,w}_t\ln\left[\frac{(1-\tau_t)w_t}{b_t}\right]+1\right\rbrace = \ln\left[\frac{(1-\tau_t)w_t}{b_t}\right] \frac{w_tL_t}{Y_t-w_tL_t}
+	\frac{\gamma}{1-\gamma}\left\lbrace\mathcal{E}^{L,w}_t\ln\left[\frac{(1-\tau_t)w_t}{b_t}\right]+1\right\rbrace = \ln\left[\frac{(1-\tau_t)w_t}{b_t}\right] \frac{w_tL_t}{Y_t-w_tL_t},
 	\end{equation*}
-where $\mathcal{E}^{L,w}_t$ is the labor demand elasticity. Using the equations \eqref{eq:labor_elasticity} and \eqref{eq:theta} within the first-order condition of the wage bargaining, I can express the capital-per-worker as a function of the unemployment replacement rate:
+where $\mathcal{E}^{L,w}_t$ is the labor demand elasticity. Using equations \eqref{eq:labor_elasticity} and \eqref{eq:theta}, I can express the optimal capital-per-worker as a function of the unemployment replacement rate:
 	\begin{equation}\label{eq:k(x)}
 	k_t(X_t) = \left[\frac{1-\phi}{\phi}\frac{1-\gamma(1-\sigma)}{\gamma}\frac{X_t}{1-\sigma X_t}\right]^{\frac{\sigma}{\sigma-1}}
 	\end{equation}
-where $X_t=\ln\left[\frac{(1-\tau_t)w_t}{b_t}\right]$ is the value-added to be employed in utility terms which only depends on the unemployment replacement rate. Since the capital-per-worker has to be positive, it implies that $1-\sigma X_t > 0$. The maximum capital-labor elasticity of substitution ensuring that this condition is met can be defined as the function $\bar{\sigma}(x) = -\log^{-1}(x)$, where $x$ is the unemployment replacement rate. Figure \ref{fig:xsigma} plots this function for all values of the unemployment replacement rate between 0 and 0.8. The minimum unemployment replacement rates for France and the United-States over the period 1970-2010 correspond, respectively, to 0.592 and 0.567. Hence, the condition is met for all $\sigma$ between zero and $1.907$ for France or $1.762$ for the United-States. For the remaining part of the paper, I assume that $\frac{1}{X_t}>\sigma$ is always satisfied.
+where $X_t=\ln\left[\frac{(1-\tau_t)w_t}{b_t}\right]$ is the value-added of being employed (in utility terms) which only depends on the unemployment replacement rate. Since capital-per-worker has to be positive, it implies that $1-\sigma X_t > 0$. The maximum capital-labor elasticity of substitution ensuring that this condition is met can be defined as the function $\bar{\sigma}(x_t) = -\log^{-1}(x_t)$, where $x_t$ is the unemployment replacement rate. Figure \ref{fig:xsigma} plots this function for all values of the unemployment replacement rate between 0 and 0.8. The lowest unemployment replacement rates for France and the United-States over the period 1970-2010 correspond, respectively, to 0.592 and 0.567. Hence, the condition is met for all $\sigma$ between zero and $1.907$ for France or $1.762$ for the United-States.\footnote{Unemployment replacement rate data are from the \href{http://cwed2.org/}{Comparative Welfare Entitlements Dataset 2 (CWED 2)}. These values correspond to a single-type household. With a family-type household, the lowest replacement rates are 0.593 and 0.584, respectively, for France and the United-States. Thus, the condition is met for all $\sigma$ between 0 and 1.914 for France or 1.859 for the United-States. See \cite{CWED2017} for more details.} In what follows, I assume that $1>\sigma X_t$ is always satisfied.
 	\begin{figure}[tb]
 		\centering
-		\includegraphics[width = 1\linewidth]{../result/xsigma.png}
 		\caption{Maximum capital-labor elasticity of substitution $\bar{\sigma}$}
 		\label{fig:xsigma}
-		\vspace{.5ex}
-		\hrule
-		\vspace{-4ex}
-		\justify\singlespacing\footnotesize Unemployment replacement rate data are from the \href{http://cwed2.org/}{Comparative Welfare Entitlements Dataset 2 (CWED 2)}, see \cite{CWED2017} for more details.
+		\includegraphics[width = 1\linewidth]{../result/xsigma.png}
+%		\vspace{.5ex}
+%		\hrule
+		\vspace{-6ex}
+		\justify\singlespacing\footnotesize The values of $x_{\text{FR}}$ and $x_{\text{US}}$ correspond to the lowest unemployment replacement rate over the period 1970-2010 in France and the United-States for a single-type household specification. Unemployment replacement rate data are from the \href{http://cwed2.org/}{Comparative Welfare Entitlements Dataset 2 (CWED 2)}, see \cite{CWED2017} for more details.
 	\end{figure}
 % The greater is the unemployment replacement rate, the smaller is the value-added to have a job (i.e. $X_t$).
 %All comparative statics are derived in \textbf{Appendix}.
-Comparative statics with respect to $X_t$ are the following:
+
+The comparative statics with respect to $X_t$ are as follows
 	\begin{equation*}
 	\left\lbrace \frac{\partial k_t}{\partial X_t} \gtrless 0 \Rightarrow 
 	\left\lbrace \frac{\partial w_t}{\partial X_t} \gtrless 0,~~
@@ -201,39 +210,46 @@ Comparative statics with respect to $X_t$ are the following:
 	\frac{\partial \theta_t}{\partial X_t} < 0
 	\right\rbrace, ~~ \sigma \gtrless 1
 	\end{equation*}
-When the unemployment replacement rate increases ($\frac{b_t}{(1-\tau_t)w_t} \nearrow$), it decreases the value-added to have a job ($X_t \searrow$). Hence, the labor share increases ($\theta_t \nearrow$). As an interpretation, when the unemployment replacement rate increases it allows the union to bargain a higher wage and so to grab a relatively larger share of the income. This mechanism holds whatever the value of the capital-labor elasticity of substitution (i.e. $\sigma$). This is an interesting result in the sense that usually CES production functions give rise to results with a threshold on the value of $\sigma$ with respect to unity. However, intermediate partial derivatives are just transitional and consider only the partial effect of a change in the unemployment replacement rate. Due to the endogeneity of $w_t$, I save the mechanisms analysis for later. 
+When the unemployment replacement rate $\frac{b_t}{(1-\tau_t)w_t}$ increases, the value-added of having a job $X_t$ falls. Hence, the labor share $\theta_t$ increases. The intuition is that when the unemployment replacement rate increases it allows the union to bargain a higher wage and so to grab a relatively larger share of income. This mechanism holds whatever the value of the capital-labor elasticity of substitution $\sigma$. 
+% This is an interesting result in the sense that usually CES production functions give rise to results with a threshold on the value of $\sigma$ with respect to unity. 
+However, intermediate partial derivatives are just transitional and consider only the partial effect of a change in the unemployment replacement rate.
+% Due to the endogeneity of $w_t$, I save the mechanisms analysis for later. 
 
 % Let us focus on the case where capital and labor are gross substitute (i.e. $\sigma>1$). The higher is the unemployment replacement rate, the stronger is the outside option of the representative union which increases the bargained wage with the firm. When the capital and labor are gross substitute (i.e. $\sigma>1$), the firm will compensate the increase in wage by using more capital than labor. Since the representative firm is always on its labor demand curve, \textit{other things equal}, it reduces the labor demand and therefore labor input. Reducing the labor input does shrink the production level of the representative firm. As a result, the labor income share decreases.
 
 \subsection{Equilibrium}\label{equilibrium}
 
-Voting and wage bargaining take place simultaneously and there is no-coordination between both of them. As a consequence, both processes take the outcome of the other as given. The interaction determines the state of the economy. Expressing equations \eqref{eq:inverse_replacement_rate} and \eqref{eq:k(x)} in the value of being employed $X_t$ as a function of the capital-to-labor ratio. The capital-to-labor ratio $k_t$ at the equilibrium solves:
+Voting and wage bargaining take place simultaneously and there is no-coordination between the two. As a consequence, both processes take the outcome of the other as given. The interaction determines the equilibrium of the economy. Expressing equations \eqref{eq:inverse_replacement_rate} and \eqref{eq:k(x)} as function of the capital-labor ratio. We have that equilibrium is given by the solution to the following system:
 	\begin{align}
 		\label{eq:Xg} 
-		X_t &= \ln\left( \frac{ \frac{N_t^y}{K_t} k_t - 1 } { \frac{\phi}{1-\phi} k_t^{\frac{\sigma-1}{\sigma}} \eta_t - 1 }\right) \\
+		X_t &= \ln\left( \frac{ \frac{N_t^y}{K_t} k_t - 1 } { \frac{\phi}{1-\phi} k_t^{\frac{\sigma-1}{\sigma}} \eta_t - 1 }\right), \\
 		\label{eq:Xh}
-		X_t &= \left( \sigma + \frac{1-\phi}{\phi} \frac{1-\gamma(1-\sigma)}{\gamma} k_t^{\frac{1-\sigma}{\sigma}} \right)^{-1} 
+		X_t &= \left( \sigma + \frac{1-\phi}{\phi} \frac{1-\gamma(1-\sigma)}{\gamma} k_t^{\frac{1-\sigma}{\sigma}} \right)^{-1},
 	\end{align}
-The Cobb-Douglas case (i.e. $\sigma = 1$) can be solved analytically and leads to the following equilibrium:
+which yields the equilibrium capital-labor ratio and employment value-added. Note that at time $t$, the aggregate capital stock $K_t$ is predetermined by the saving decisions at $t-1$, so that $k_t$ is given by $L_t$.
+
+The Cobb-Douglas case, i.e. $\sigma = 1$, can be solved analytically and leads to the following equilibrium:
 	\begin{align*}
 		X_t &= \frac{\gamma}{1-\phi(1-\gamma)} \\
 		k_t &= \left[1 + e^{X_t}\left(\frac{\phi}{1-\phi}\eta_t-1\right)\right]\frac{K_t}{N_t^y}
 	\end{align*}
-The value-added to have a job $X_t$ is constant. The capital-per-worker $k_t$ is still determined by demographic variables and is proportional to the capital-per-young individual. However, this case is not really useful to determine labor share's dynamics. Because the labor share becomes constant over time from equation \eqref{eq:theta}, i.e. $\theta_t = 1-\phi$. Otherwise, there is uniqueness of the equilibrium for any other value of sigma. Proof in \hyperref[appendix:uniqueness]{appendix A}. The equilibrium is characterized by 13 equations:
+The value-added to have a job is constant, while the capital-per-worker is determined by demographic variables and is proportional to the capital-per-young individual. However, this case is not useful to examine the labor share's dynamics as the labor share is constant with a Cobb-Douglas technology ($\theta_t = 1-\phi$).
+
+In \hyperref[appendix:uniqueness]{appendix A}, I show that the equilibrium is unique for any other value of sigma. The equilibrium is characterized by 13 equations
 	\begin{align}
-		\eta_t &= \frac{n_t}{p_t}\frac{1+\alpha p_{t+1}}{\omega} \tag{Pub. $\eta$} \\
-		X_t &= \ln\left( \frac{ \frac{N_t^y}{K_t} k_t - 1 } { \frac{\phi}{1-\phi} k_t^{\frac{\sigma-1}{\sigma}} \eta_t - 1 }\right) \tag{Eq. $g$} \\
-		X_t &= \left( \sigma + \frac{1-\phi}{\phi} \frac{1-\gamma(1-\sigma)}{\gamma} k_t^{\frac{1-\sigma}{\sigma}} \right)^{-1} \tag{Eq. h}\\
-		L_t &= \frac{K_t}{k_t} \tag{Prod. $L$} \\
-		w_t &= A(1-\phi)\left( \phi k_t^\frac{\sigma-1}{\sigma} + 1-\phi \right)^\frac{1}{\sigma-1} \tag{Prod. $w$}\\
-		Y_t &= A \left[ \phi K_t^\frac{\sigma-1}{\sigma} + (1-\phi) L_t^\frac{\sigma-1}{\sigma} \right]^\frac{\sigma}{\sigma-1} \tag{Prod. $Y$}\\
-		u_t &= 1 - \frac{L_t}{N_t^y} \tag{Prod. $u$}\\
-		\theta_t &= \left(1 + \frac{\phi}{1-\phi} k_t^\frac{\sigma-1}{\sigma} \right)^{-1} \tag{Prod. $\theta$} \\
-		\tau_t &= 1 - \left[ (1-\theta_t)(1+\beta+\eta_t) \right]^{-1} \tag{Pub. $\tau$}\\
-		b_t &= (1-\tau_t) w_t e^{-X_t} \tag{Pub. $b$}\\
-		h_t &= \frac{\tau_t Y_t - b_t u_t N_t^y}{N_t^o} \tag{Pub. $h$}\\
-		S_t &= \frac{\alpha p_{t+1}}{1 + \alpha p_{t+1}} \left[ (1-\tau_t)w_t(1-u_t) + b_tu_t \right] N_t^y \tag{HH. $S$}  \\
-		K_{t+1} &= S_t	\tag{HH. $K$}
+		\eta_t &= \frac{n_t}{p_t}\frac{1+\alpha p_{t+1}}{\omega}, \tag{Pub. $\eta$} \\
+		X_t &= \ln\left( \frac{ \frac{N_t^y}{K_t} k_t - 1 } { \frac{\phi}{1-\phi} k_t^{\frac{\sigma-1}{\sigma}} \eta_t - 1 }\right), \tag{Eq. $g$} \\
+		X_t &= \left( \sigma + \frac{1-\phi}{\phi} \frac{1-\gamma(1-\sigma)}{\gamma} k_t^{\frac{1-\sigma}{\sigma}} \right)^{-1}, \tag{Eq. h}\\
+		L_t &= \frac{K_t}{k_t}, \tag{Prod. $L$} \\
+		w_t &= A(1-\phi)\left( \phi k_t^\frac{\sigma-1}{\sigma} + 1-\phi \right)^\frac{1}{\sigma-1}, \tag{Prod. $w$}\\
+		Y_t &= A \left[ \phi K_t^\frac{\sigma-1}{\sigma} + (1-\phi) L_t^\frac{\sigma-1}{\sigma} \right]^\frac{\sigma}{\sigma-1}, \tag{Prod. $Y$}\\
+		u_t &= 1 - \frac{L_t}{N_t^y}, \tag{Prod. $u$}\\
+		\theta_t &= \left(1 + \frac{\phi}{1-\phi} k_t^\frac{\sigma-1}{\sigma} \right)^{-1}, \tag{Prod. $\theta$} \\
+		\tau_t &= 1 - \left[ (1-\theta_t)(1+\beta+\eta_t) \right]^{-1}, \tag{Pub. $\tau$}\\
+		b_t &= (1-\tau_t) w_t e^{-X_t}, \tag{Pub. $b$}\\
+		h_t &= \frac{\tau_t Y_t - b_t u_t N_t^y}{N_t^o}, \tag{Pub. $h$}\\
+		S_t &= \frac{\alpha p_{t+1}}{1 + \alpha p_{t+1}} \left[ (1-\tau_t)w_t(1-u_t) + b_tu_t \right] N_t^y, \tag{HH. $S$}  \\
+		K_{t+1} &= S_t.	\tag{HH. $K$}
 	\end{align}
 Let define, respectively, equations \eqref{eq:Xg} and \eqref{eq:Xh} with the functions $g(L_t, K_t, \eta_t, N_t^y; \phi, \sigma)$ and $h(L_t, K_t; \sigma, \phi, \gamma)$, such as:
 	\begin{align*}

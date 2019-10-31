@@ -111,19 +111,23 @@ xsigma %>%
   #                  aes(label = round(sigma_values,3), color = Country),
   #                  segment.color = "transparent") +
   # Horizontal line
-  geom_segment(aes(x = 0, xend = 0.8,
+  geom_segment(aes(x = 0, 
+                   xend = min_x %>% 
+                     subset(Country == "France") %>% pull("interval"),
                    y = min_x %>% 
                      subset(Country == "France") %>% pull("sigma_values"),
                    yend = min_x %>% 
                      subset(Country == "France") %>% pull("sigma_values")),
-               linetype = "solid") +
+               linetype = "dashed") +
   # Horizontal line
-  geom_segment(aes(x = 0, xend = 0.8,
+  geom_segment(aes(x = 0,
+                   xend = min_x %>% 
+                     subset(Country == "United States") %>% pull("interval"),
                    y = min_x %>% 
                      subset(Country == "United States") %>% pull("sigma_values"),
                    yend = min_x %>% 
                      subset(Country == "United States") %>% pull("sigma_values")),
-               linetype = "solid") +
+               linetype = "dashed") +
   # Vertical line
   geom_segment(aes(x = min_x %>% 
                      subset(Country == "France") %>% pull("interval"),
@@ -132,7 +136,7 @@ xsigma %>%
                    y = 0,
                    yend = min_x %>% 
                      subset(Country == "France") %>% pull("sigma_values")),
-               linetype = "longdash") +
+               linetype = "dashed") +
   # Vertical line
   geom_segment(aes(x = min_x %>% 
                      subset(Country == "United States") %>% pull("interval"),
@@ -141,7 +145,7 @@ xsigma %>%
                    y = 0,
                    yend = min_x %>% 
                      subset(Country == "United States") %>% pull("sigma_values")),
-               linetype = "longdash") + 
+               linetype = "dashed") + 
   annotate("text", x = 0.2, y = 0.3 + min_x %>% subset(Country == "France") %>% pull("sigma_values"),
            label = TeX(paste0('$\\bar{\\sigma}_{FR} = ',
            min_x %>% subset(Country == "France") %>% pull("sigma_values") %>% round(3), '$')),
@@ -150,7 +154,14 @@ xsigma %>%
            label = TeX(paste0('$\\bar{\\sigma}_{US} = ',
            min_x %>% subset(Country == "United States") %>% pull("sigma_values") %>% round(3), '$')),
            size = 5) +
-  scale_x_continuous(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0),
+                     breaks = c(0, 0.2, 0.4, min_x %>% 
+                     subset(Country == "United States") %>% 
+                       pull("interval"), min_x %>% 
+                     subset(Country == "France") %>% 
+                       pull("interval"), 0.6, 0.8),
+                     labels = c("0.0", "0.2", "0.4", TeX("x_{US}"), TeX("x_{FR}"), "", "0.8")
+                     )+
   scale_y_continuous(expand = c(0,0)) +
   theme_classic(base_size = 14) +
   theme(legend.position = "none") +
