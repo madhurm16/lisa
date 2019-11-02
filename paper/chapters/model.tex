@@ -235,11 +235,11 @@ The Cobb-Douglas case, i.e. $\sigma = 1$, can be solved analytically and leads t
 	\end{align*}
 The value-added to have a job is constant, while the capital-per-worker is determined by demographic variables and is proportional to the capital-per-young individual. However, this case is not useful to examine the labor share's dynamics as the labor share is constant with a Cobb-Douglas technology ($\theta_t = 1-\phi$).
 
-In \hyperref[appendix:uniqueness]{appendix A}, I show that the equilibrium is unique for any other value of sigma. The equilibrium is characterized by 13 equations
+In \hyperref[appendix:uniqueness]{appendix A}, I show that the equilibrium is unique for any other value of sigma. The equilibrium is characterized by 13 equations,
 	\begin{align}
 		\eta_t &= \frac{n_t}{p_t}\frac{1+\alpha p_{t+1}}{\omega}, \tag{Pub. $\eta$} \\
-		X_t &= \ln\left( \frac{ \frac{N_t^y}{K_t} k_t - 1 } { \frac{\phi}{1-\phi} k_t^{\frac{\sigma-1}{\sigma}} \eta_t - 1 }\right), \tag{Eq. $g$} \\
-		X_t &= \left( \sigma + \frac{1-\phi}{\phi} \frac{1-\gamma(1-\sigma)}{\gamma} k_t^{\frac{1-\sigma}{\sigma}} \right)^{-1}, \tag{Eq. h}\\
+		X_t &= \ln\left( \frac{ \frac{N_t^y}{K_t} k_t - 1 } { \frac{\phi}{1-\phi} k_t^{\frac{\sigma-1}{\sigma}} \eta_t - 1 }\right), \label{eq:g}\tag{Eq. $g$} \\
+		X_t &= \left( \sigma + \frac{1-\phi}{\phi} \frac{1-\gamma(1-\sigma)}{\gamma} k_t^{\frac{1-\sigma}{\sigma}} \right)^{-1}, \label{eq:h}\tag{Eq. $h$}\\
 		L_t &= \frac{K_t}{k_t}, \tag{Prod. $L$} \\
 		w_t &= A(1-\phi)\left( \phi k_t^\frac{\sigma-1}{\sigma} + 1-\phi \right)^\frac{1}{\sigma-1}, \tag{Prod. $w$}\\
 		Y_t &= A \left[ \phi K_t^\frac{\sigma-1}{\sigma} + (1-\phi) L_t^\frac{\sigma-1}{\sigma} \right]^\frac{\sigma}{\sigma-1}, \tag{Prod. $Y$}\\
@@ -251,7 +251,7 @@ In \hyperref[appendix:uniqueness]{appendix A}, I show that the equilibrium is un
 		S_t &= \frac{\alpha p_{t+1}}{1 + \alpha p_{t+1}} \left[ (1-\tau_t)w_t(1-u_t) + b_tu_t \right] N_t^y, \tag{HH. $S$}  \\
 		K_{t+1} &= S_t.	\tag{HH. $K$}
 	\end{align}
-Let define, respectively, equations \eqref{eq:Xg} and \eqref{eq:Xh} with the functions $g(L_t, K_t, \eta_t, N_t^y; \phi, \sigma)$ and $h(L_t, K_t; \sigma, \phi, \gamma)$, such as:
+Let define, respectively, equations \eqref{eq:g} and \eqref{eq:h} with the functions $g(L_t, K_t, \eta_t, N_t^y; \phi, \sigma)$ and $h(L_t, K_t; \sigma, \phi, \gamma)$, such that:
 	\begin{align*}
 		X_t &= g(L_t, K_t, \eta_t, N_t^y; \phi, \sigma) 
 		%&= \ln\left[ \frac{ \frac{N_t^y}{L_t} - 1 } { \frac{\phi}{1-\phi} \left(\frac{K_t}{L_t}\right)^{\frac{\sigma-1}{\sigma}} \eta_t - 1 }\right]
@@ -259,13 +259,13 @@ Let define, respectively, equations \eqref{eq:Xg} and \eqref{eq:Xh} with the fun
 		X_t &= h(L_t, K_t; \sigma, \phi, \gamma) 
 		%&= \left[ \sigma + \frac{1-\phi}{\phi} \frac{1-\gamma(1-\sigma)}{\gamma} \left(\frac{K_t}{L_t}\right)^{\frac{1-\sigma}{\sigma}} \right]^{-1}
 	\end{align*}
-Differentiating this system,
+Differentiating this system, I find that
 	\begin{align*}
-		dX_t &= g_L dL_t + g_K dK_t + g_\eta d\eta_t + g_{N^y} dN_t^y \\
-		dX_t &= h_L dL_t + h_K dK_t
+		dX_t &= g_L dL_t + g_K dK_t + g_\eta d\eta_t + g_{N^y} dN_t^y, \\
+		dX_t &= h_L dL_t + h_K dK_t,
 	\end{align*}
-where $f_x$ is the partial derivative of the $f$ function with respect to the variable $x$, e.g. $g_L = \frac{\partial g}{\partial L_t}$. Solving the system,
+where $f_x$ is the partial derivative of $f$ with respect to $x$. Solving the system, I have
 	\begin{equation*}
 		dL_t = \frac{1}{h_L-g_L}\left[(g_K-h_K) dK_t + g_\eta d\eta_t + g_{N^y} dN_t^y \right]
 	\end{equation*}
-The variables $\eta_t$ and $N_t^y$ are given by demographic dynamics. The capital stock $K_t$ is given by the savings of the previous period. Thus, the variable that determines the equilibrium is the level of employment $L_t$. Partial derivatives are derived in \hyperref[appendix:derivatives]{appendix B}. $g_\eta$ is negative because the greater is the youth political power, the greater are the unemployment benefits and so the smaller is the value-added to have a job in utility terms. $g_{N^y}$ is positive because the more numerous are the young individuals, the more these unemployment benefits are divided among them and so the smaller is the value-added to have a job in utility terms. $g_K-h_K$ depends on the value of $\sigma$ with respect to unity, i.e. $g_K-h_K \lessgtr 0, ~ \forall \sigma \gtrless 1$. This is directly related to the fact that both input factors are either gross substitute or gross complement. When labor and capital are gross substitute, more available capital stock requires less labor for a given of level of output. Otherwise, when both are complement, the representative firm has to jointly increase labor with capital stock in order to maintain the same production level. Finally, the sign of $h_L-g_L$ is ambiguous regardless of the value of $\sigma$. When $\sigma < 1$, then $g_L$ and $h_L$ are both positive. Thus, $g_L-h_L$ is ambiguous. When $\sigma > 1$, $h_L$ is unambiguously negative. But the sign of $g_L$ cannot be determined without additional assumptions. If $\frac{\eta_t}{\Theta_t} > \sigma$, then $g_L$ is negative. Otherwise, $g_L$ is negative if the unemployment rate is lower than a certain threshold, i.e $u_t < \bar{u}_t$ where $\bar{u}_t = \left(2 - \frac{\eta_t}{\Theta_t\sigma}\right)^{-1}$. Thus, when the unemployment rate is high enough such that $u_t > \bar{u_t}$, $g_L$ is unambiguously positive and so is $g_L-h_L$. This is the only case where it is possible to determine unambiguously the impact of variables on $L_t$. In such a case, $\frac{dL_t}{dK_t}\Bigr|{\substack{d\eta_t = 0\\dN_t^y = 0}} < 0$, $\frac{dL_t}{dN^y_t}\Bigr|{\substack{dK_t = 0\\d\eta_t = 0}} > 0$ and $\frac{dL_t}{d\eta_t}\Bigr|{\substack{dK_t = 0\\dN_t^y = 0}} < 0$. Therefore, except in this special case, $g_L-h_L$ is ambiguous. Due to the indeterminacy of $g_L$, I perform a quantitative analysis in section \ref{sec:quantitative_analysis}.
+The variables $\eta_t$ and $N_t^y$ are given by the demographic dynamics while the capital stock $K_t$ is given by savings of the previous period. Thus, the variable that determines the equilibrium is the level of employment $L_t$. Partial derivatives are derived in \hyperref[appendix:derivatives]{appendix B}. $g_\eta$ is negative because the greater is the youth's political power, the greater is the unemployment benefit and the smaller is the value-added to have a job. $g_{N^y}$ is positive because the more numerous the young are, the more these unemployment benefits are divided among them and so the smaller is the value-added to have a job. The sign of $g_K-h_K$ depends on the value of $\sigma$ with $g_K-h_K \lessgtr 0, ~ \forall \sigma \gtrless 1$. This is directly related to the fact that both factors are either gross substitutes or gross complements. When labor and capital are gross substitutes, more capital requires less labor for a given of level of output, while when they are complements, the representative firm has to jointly increase labor and capital stock in order to maintain the same production level. Lastly, the sign of $h_L-g_L$ is ambiguous. When $\sigma < 1$, then $g_L$ and $h_L$ are both positive, thus, $g_L-h_L$ is ambiguous. When $\sigma > 1$, $h_L$ is unambiguously negative. The sign of $g_L$ cannot be determined without additional assumptions. If $\eta_t/\Theta_t > \sigma$, then $g_L$ is negative. Otherwise, $g_L$ is negative if the unemployment rate is lower than a certain threshold, i.e $u_t < \bar{u}_t$ where $\bar{u}_t = \left(2 - \frac{\eta_t}{\Theta_t\sigma}\right)^{-1}$. Thus, when the unemployment rate is high enough such that $u_t > \bar{u_t}$, $g_L$ is unambiguously positive and so is $g_L-h_L$. This is the only case where it is possible to determine unambiguously the impact of variables on $L_t$. In such a case, $\frac{dL_t}{dK_t}\Bigr|{\substack{d\eta_t = 0\\dN_t^y = 0}} < 0$, $\frac{dL_t}{dN^y_t}\Bigr|{\substack{dK_t = 0\\d\eta_t = 0}} > 0$ and $\frac{dL_t}{d\eta_t}\Bigr|{\substack{dK_t = 0\\dN_t^y = 0}} < 0$. Therefore, except in this special case, $g_L-h_L$ is ambiguous. Due to the ambiguity of $g_L$, I perform a quantitative analysis in section \ref{sec:quantitative_analysis}.
