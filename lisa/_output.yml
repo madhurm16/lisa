@@ -1,0 +1,21 @@
+bookdown::gitbook:
+  css: style.css
+  table_css: false
+  split_bib: no
+  sharing:
+    facebook: yes
+    github: yes
+    twitter: yes
+    linkedin: no
+    instapaper: no
+    all: ['facebook', 'twitter', 'github', 'linkedin', 'instapaper']
+  config:
+    toc:
+      before: |
+        <li><a href="./">Intergenerational conflict and the declining labor share</a></li>
+      after: |
+        <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+    toolbar:
+      position: fixed
+    download: ["pdf"]
+    info: yes

@@ -1,0 +1,17 @@
+```{r, include = FALSE}
+# Load init script
+source("_script/init.R")
+# knitr options
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+options(kableExtra.html.bsTable = T)
+```
+
+`r if(knitr::is_html_output())
+'# References {-}'
+`
+
+`r if(knitr::is_latex_output())
+'\\singlespacing'
+`
+
+<div id="refs"></div>

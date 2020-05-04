@@ -1,0 +1,1 @@
+Intergenerational conflict and the declining labor share

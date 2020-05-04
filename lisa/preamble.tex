@@ -1,0 +1,42 @@
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{threeparttable}
+\usepackage{setspace}
+\usepackage[tableposition=top]{caption}
+\usepackage{ragged2e}
+\usepackage{dcolumn}
+\usepackage{floatrow}
+\floatsetup[figure]{capposition=top}
+\usepackage[fontsize=12pt]{scrextend}
+\interfootnotelinepenalty=10000
+
+\onehalfspacing
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{conjecture}{Conjecture}
+\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+
+% Vertical spacing in table
+\renewcommand{\arraystretch}{1} % Default value: 1
+
+\newcommand{\red}[1]{{\color{red} #1}}
+\newcommand{\blue}[1]{{\color{blue} #1}}
+
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\arraybackslash\hspace{0pt}}m{#1}}
+
+\geometry{left = 1.0in, right = 1.0in, top = 1.0in , bottom = 1.0in}
+\setlength\parindent{24pt}
+
+\hypersetup{
+	colorlinks = true,
+	linkcolor = blue,
+	anchorcolor = blue,
+	citecolor = blue,
+	filecolor = blue,
+	urlcolor = blue
+}
