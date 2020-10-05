@@ -125,8 +125,8 @@ df %>% select("Country", "Year", "k", "k.avh") %>%
   labs(x = "Year", y = "Normalized capital-to-labor ratio") +
   theme_classic(base_size = 14) +
   theme(legend.direction = "horizontal", legend.position = "bottom")
-  
-```	
+
+```
 
 ```{r computation}
 
