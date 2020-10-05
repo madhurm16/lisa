@@ -83,10 +83,3 @@ cwed[, c("Country", "Year", "UC1000.cst_inter")] = cwed[, c("Country", "Year", "
 
 # SAVE DATA
 write.csv(cwed, file.path(loc_final, "cwed.csv"), row.names = FALSE)
-
-
-
-
-
-
-

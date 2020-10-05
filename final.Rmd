@@ -20,6 +20,92 @@ flooring_digit = function(x, level=1) round(x - 5*10^(-level-1), level)
 CountrySet = c("France", "United States")
 ```
 
+# Empirics
+
+## Data
+
+```{r data-load}
+# Penn World Table
+pwt = read.csv(file.path(loc_data, "pwt.csv"))
+
+# OECD data
+oecd = read.csv(file.path(loc_data, "oecd.csv"))
+
+# Demographic data
+demo = read.csv(file.path(loc_data, "demo.csv"))
+
+# Load CWED data
+cwed = read.csv(file.path(loc_data, "cwed.csv"))
+
+## Merge
+df = merge(pwt, oecd, all = TRUE) %>% merge(demo, all = TRUE) %>% merge(cwed, all = TRUE) %>% 
+  subset(Year >= 1970)
+```
+
+```{r}
+df %>% 
+subset(Year %in% c(1970:2010)) %>% 
+  select(Country, Year, lab_sh1, i_lab_sh1, dep) %>% 
+  subset(Country %in% c("Australia", "Belgium", "Canada", "Denmark", "France", "Germany", 
+                        "Japan", "United States", "Netherlands", "United Kingdom")) %>%
+  subset(i_lab_sh1 == 1) %>% 
+  mutate(lab_sh1 = lab_sh1*100) %>% 
+  
+  ggplot(aes(x = dep, y = lab_sh1)) +
+  geom_point(aes(color = Country)) +
+  geom_smooth(method = "lm", formula = y ~ x) +
+  labs(x = "Old-age dependency ratio", y = element_blank(), title = "Labor share (in %)") +
+  theme_bw()
+```
+
+```{r}
+df %>% 
+  subset(Year %in% c(1970:2010)) %>% 
+  select(Country, Year, rnna, avh, emp, dep) %>% 
+  subset(Country %in% c("Australia", "Belgium", "Canada", "Denmark", "France", "Germany", 
+                        "Japan", "United States", "Netherlands", "United Kingdom")) %>%
+  mutate(k = log(rnna/avh/emp)) %>% 
+  
+  ggplot(aes(x = dep, y = k)) +
+  geom_point(aes(color = Country)) +
+  geom_smooth(method = "lm", formula = y ~ x) +
+  labs(x = "Old-age dependency ratio", y = element_blank(), title = "Capital-per-worker (in %)") +
+  theme_bw()
+```
+
+```{r}
+df %>% 
+  subset(Year %in% c(1970:2010)) %>% 
+  select(Country, Year, ls = labsh1, US100, UC1000, US100.lin_inter, UC1000.lin_inter, dep) %>% 
+  subset(Country %in% c("France", "United States")) %>%
+  mutate(urep = UC1000*100) %>% 
+  
+  ggplot(aes(x = dep, y = urep, color = Country)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x) +
+  labs(x = "Old-age dependency ratio", y = element_blank(), title = "Unemployment replacement rate (in %)") +
+  theme_bw()
+```
+
+
+## Demo and LS
+
+```{r}
+df %>% 
+  subset(Year %in% c(1970:2010)) %>% 
+  select(Country, Year, tax_rev_PC_GDP, dep) %>% 
+  subset(Country %in% c("Australia", "Belgium", "Canada", "Denmark", "France", "Germany", 
+                        "Japan", "United States", "Netherlands", "United Kingdom")) %>%
+  mutate(tau = tax_rev_PC_GDP) %>% 
+  
+  ggplot(aes(x = dep, y = tau, color = Country)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x) +
+  labs(x = "Old-age dependency ratio", y = element_blank(), title = "Government share of GDP (in %)") +
+  theme_bw()
+```
+
+
 # Theoretical framework
 
 ## Max. capital-labor elasticity of substitution
@@ -36,8 +122,6 @@ xSigma = data.frame("Function", interval, sigma(interval)) %>%
   setNames(c("Country", "interval", "sigma_values"))
 
 ## CWED Data
-# Load CWED data
-cwed = file.path(loc_data, "cwed.csv") %>% read.csv
 # Find minimum
 cwed2 = cwed %>% 
   select(Country, Year, US100) %>% 
@@ -99,26 +183,26 @@ scale_graph = 1920/1080
 
 ## Data
 
-```{r data-load}
+```{r data-merge}
 # Penn World Table
-pwt = file.path(loc_data, "pwt.csv") %>% read.csv %>%
+pwt0 = pwt %>%
   select("Country", "Year", "emp", "avh", "rgdpna", "rnna", "lab_sh1", "lab_sh2") %>% 
   subset(Country %in% CountrySet & Year >= 1970)
 
 # OECD data
-oecd = file.path(loc_data, "oecd.csv") %>% read.csv %>% 
+oecd0 = oecd %>% 
   select("Country", "Year", tax_rate = "tax_rev_PC_GDP",
          union_density = "union_density.lin_inter",
          union_coverage = "union_coverage.lin_inter") %>% 
   subset(Country %in% CountrySet & Year >= 1970)
 
 # Demographic data
-demo = file.path(loc_data, "demo.csv") %>% read.csv %>% 
+demo0 = demo %>% 
   select("Country", "Year", "young", "young_1564", "old", "dep", "n", "p") %>% 
   subset(Country %in% CountrySet)
 
 ## Merge
-df0 = merge(pwt, oecd, all = TRUE) %>% merge(demo, all = TRUE) %>% 
+df0 = merge(pwt0, oecd0, all = TRUE) %>% merge(demo0, all = TRUE) %>% 
   subset(Year >= 1970)
 ```
 
