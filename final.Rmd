@@ -76,9 +76,9 @@ df %>%
 ```{r}
 df %>% 
   subset(Year %in% c(1970:2010)) %>% 
-  select(Country, Year, ls = labsh1, US100, UC1000, US100.lin_inter, UC1000.lin_inter, dep) %>% 
+  select(Country, Year, ls = lab_sh1, US100, UC1000, US100.lin_inter, UC1000.lin_inter, dep) %>% 
   subset(Country %in% c("France", "United States")) %>%
-  mutate(urep = UC1000*100) %>% 
+  mutate(urep = US100*100) %>% 
   
   ggplot(aes(x = dep, y = urep, color = Country)) +
   geom_point() +
@@ -93,15 +93,15 @@ df %>%
 ```{r}
 df %>% 
   subset(Year %in% c(1970:2010)) %>% 
-  select(Country, Year, tax_rev_PC_GDP, dep) %>% 
+  select(Country, Year, tax_rev_PC_GDP, rnna, avh, ls = lab_sh1, dep) %>% 
   subset(Country %in% c("Australia", "Belgium", "Canada", "Denmark", "France", "Germany", 
                         "Japan", "United States", "Netherlands", "United Kingdom")) %>%
-  mutate(tau = tax_rev_PC_GDP) %>% 
+  mutate(tau = tax_rev_PC_GDP, net_rate = 1-tau, k = log(rnna/avh), ks = 1-ls) %>% 
   
-  ggplot(aes(x = dep, y = tau, color = Country)) +
+  ggplot(aes(x = ks, y = net_rate, color = Country)) +
   geom_point() +
   geom_smooth(method = "lm", formula = y ~ x) +
-  labs(x = "Old-age dependency ratio", y = element_blank(), title = "Government share of GDP (in %)") +
+  # labs(x = "Old-age dependency ratio", y = element_blank(), title = "Net rate (in %)") +
   theme_bw()
 ```
 
