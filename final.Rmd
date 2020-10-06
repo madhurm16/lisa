@@ -10,6 +10,9 @@ source("_script/init.R")
 knitr::opts_chunk$set(warning = FALSE) # echo = FALSE
 # options(kableExtra.html.bsTable = T)
 
+# Function
+source(file.path(loc_script, "function", "demo_changer.R"))
+source(file.path(loc_script, "function", "model.R"))
 # Function to round in solver
 ceiling_digit = function(x, level=1) round(x+ 5*10^(-level-1), level)
 flooring_digit = function(x, level=1) round(x - 5*10^(-level-1), level)
@@ -40,6 +43,76 @@ cwed = read.csv(file.path(loc_data, "cwed.csv"))
 ## Merge
 df = merge(pwt, oecd, all = TRUE) %>% merge(demo, all = TRUE) %>% merge(cwed, all = TRUE) %>% 
   subset(Year >= 1970)
+```
+
+## Stylized facts
+
+### Labor share
+
+```{r}
+df %>% 
+  subset(Year %in% c(1970:2017)) %>% 
+  select(Country, Year, lab_sh1, i_lab_sh1) %>% 
+  subset(Country %in% c("Australia", "Belgium", "Canada", "Denmark", 
+                        "France", "Germany", "Japan", "United States",
+                        "Netherlands", "United Kingdom")) %>%
+  mutate(lab_sh1 = ifelse(i_lab_sh1 == 1, lab_sh1, NA)) %>% 
+  select(-i_lab_sh1) %>% 
+  
+  ggplot(aes(x = Year, y = lab_sh1)) +
+  # geom_point() +
+  geom_line(aes(color = Country)) +
+  # geom_smooth(method = "lm") +
+  labs(x = "Year", y = element_blank(), title = "Labor share") +
+  theme_bw() +
+  ggsave(file.path(loc_graphic, "emp-ls-color.png"), width = 7, height = 7/1.5)
+```
+
+### Dep ratio
+
+```{r}
+df %>% 
+  subset(Year %in% c(1970:2080)) %>% 
+  select(Country, Year, dep) %>% 
+  subset(Country %in% c("Australia", "Belgium", "Canada", "Denmark", 
+                        "France", "Germany", "Japan", "United States",
+                        "Netherlands", "United Kingdom")) %>% 
+  
+  ggplot(aes(x = Year, y = dep, color = Country)) +
+  # geom_point() +
+  geom_line() +
+  scale_x_continuous(breaks = seq(1970, 2080, 20)) +
+  labs(x = "Year", y = element_blank(), title = "Old-age dependency ratio") +
+  theme_bw() +
+  ggsave(file.path(loc_graphic, "emp-dep-color.png"), width = 7, height = 7/1.5)
+```
+
+### Both
+
+
+```{r}
+df %>% 
+  subset(Year %in% c(1970:2010)) %>% 
+  select(Country, Year, lab_sh1, i_lab_sh1, dep) %>% 
+  subset(Country %in% c("Australia", "Belgium", "Canada", "Denmark", 
+                        "France", "Germany", "Japan", "United States",
+                        "Netherlands", "United Kingdom")) %>%
+  mutate(lab_sh1 = ifelse(i_lab_sh1 == 1, lab_sh1, NA)) %>% 
+  # subset(i_lab_sh1 == 1) %>% 
+  select(-i_lab_sh1) %>% 
+  mutate(lab_sh1 = lab_sh1*100, dep = dep*100) %>% 
+  setDT %>% melt(id.vars = c("Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, color = Country)) +
+  # geom_point() +
+  geom_line() +
+  facet_wrap(variable ~ ., scales = "free",
+             labeller = labeller(variable = c(lab_sh1 = "Labor share (in %)", dep = "Old-age dependency ratio (in %)"))) +
+  labs(x = "Year", y = element_blank()) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  ggsave(file.path(loc_graphic, "emp-lsdep-color.png"), width = 7, 
+         height = 7/1.5)
 ```
 
 ```{r}
@@ -218,8 +291,8 @@ df1 = df0 %>%
          u = 1 - L/young_1564, # Unemployment rate
          p1 = lead(p, 40)) %>% 
   select(Country, Year, Ny = young, No = old, n, p, p1, dep, K, L, Y, theta, tau, u) %>% 
-  # Normalized labor, capital and output
-  mutate_at(vars("L", "K", "Y"), ~ {./first(.)}) %>% 
+  # Normalized labor, capital
+  mutate_at(vars("L", "K"), ~ {./first(.)}) %>% 
   # Normalized capital-labor ratio, young and old population
   mutate(k = K/L, Ny = L/(1-u), No = Ny*dep) %>% 
   ungroup() %>% 
