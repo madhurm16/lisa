@@ -619,7 +619,7 @@ graph_dev7010 = list.sim$baseline %>%
   subset(Year %in% c(1970:2010)) %>% 
   # Variables and names
   select(Country, Year,
-         "Youth~political~power~(eta)" = eta,
+         "Young~political~power~(eta)" = eta,
          # "Outside~option" = outside,
          "Wage~rate~(w)" = w, 
          "Labor~(L)" = L, 
@@ -702,7 +702,7 @@ graph_dev1080 = list.sim$baseline %>%
   subset(Year %in% c(2010: 2080)) %>% 
   # Variables and names
   select(Country, Year,
-         "Youth~political~power~(eta)" = eta,
+         "Young~political~power~(eta)" = eta,
          # "Outside~option" = outside,
          "Wage~rate~(w)" = w, 
          "Labor~(L)" = L, 
@@ -751,7 +751,7 @@ tab_demo_1970 = list.sim$baseline %>%
               "$\\frac{p_{1970}}{n_{1970}}$", "$\\eta_{1970}$"),
     "Variable" = c("Survival rate in 1970", "Population growth in 1970",
                         "Expected survival rate in 2010", "Old-age-dependency ratio in 1970",
-                        "Youth political power in 1970")) %>% 
+                        "Young political power in 1970")) %>% 
   mutate_if(is.numeric, ~ round(., 3)) %>% 
   select(var, Variable, everything())
 
@@ -909,6 +909,7 @@ pgsr_labels = c("Data", "Benchmark", expression(n[1970]), expression(p[1970]),
 
 ## Counterfactual PGSR
 graph_pgsr_counter = decomp %>% 
+  # subset(Year >= 2000) %>% 
   subset(DE %in% c("TDE", NA) & IE %in% c("TIE", NA)) %>%
   mutate(PGSR = interaction(PG, SR) %>% as.character %>%
            ifelse(is.na(.), "data", .)) %>% 
@@ -918,7 +919,6 @@ graph_pgsr_counter = decomp %>%
   ggplot(aes(x = Year, y = theta, color = PGSR, linetype = PGSR)) +
   facet_wrap(Country ~ .) +
   geom_line() +
-  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_bw() +
   theme(legend.position = "bottom",) +
   labs(x = element_blank(), y = element_blank(), title = "Labor share",
@@ -986,6 +986,7 @@ deie_labels = c("Data", "Benchmark", expression(p[1970]*", "*n[1970]), expressio
 
 ## Counterfactual PGSR
 graph_deie_counter = decomp %>% 
+  # subset(Year >= 2000) %>% 
   subset(PG %in% c("TPG", NA) & SR %in% c("TSR", NA)) %>%
   mutate(DEIE = interaction(DE, IE) %>% as.character %>%
            ifelse(is.na(.), "data", .)) %>% 
@@ -1261,6 +1262,26 @@ graph_step3_stacked +
          width = 7, height = 7/2)
 
 ```
+
+```{r}
+# Utility level per generation
+utility = list.sim$baseline %>%
+  group_by(Country, Sequence) %>% 
+  # Compute GDP split
+  mutate(
+    y = (1-u)*(1-tau)*w+u*b,
+    c1 = log(y/(1+alpha*p1)),
+    c2 = alpha*p1/(1+alpha*p1)*(1-lead(tau,1))*y*r/p,
+    util = log(c1) + alpha*p1*(log(c2) + beta*log(lead(h,1)))
+    ) %>% 
+  ungroup()
+
+View(utility)
+
+# Always increasing because of the increase in survival rate
+
+```
+
 
 ## Retirement age
 
