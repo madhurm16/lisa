@@ -1,7 +1,8 @@
+require(reshape2)
 require(dplyr)
 require(zoo)
 
-interpol_group <- function(df, method_use = 'linear'){
+interpol_group <- function(df, method_use='linear'){
    for (i in 3:ncol(df)){
       varnames = names(df)
       names(df)[i] = 'var'
