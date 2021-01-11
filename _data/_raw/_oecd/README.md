@@ -6,6 +6,11 @@ Data downloaded from : https://data.oecd.org/ and https://stats.oecd.org/
 
 Collective bargaining coverage rate corresponds to the ratio of employees covered by collective agreements, divided by all wage earners with right to bargaining.
 
+- **labor_share.csv** : https://stats.oecd.org/Index.aspx?queryname=345 downloaded on the 19th October 2020.
+
+Unit labour costs measure the average cost of labour per unit of output. They are calculated as the ratio of total labour costs to real output, or equivalently, as the ratio of average labour costs per hour to labour productivity (output per hour). As such, a unit labour cost represents a link between productivity and the cost of labour in producing output. The data presented in this dataset are an output of the OECD System of Unit Labour Cost and Related Indicators which produces annual and quarterly unit labour cost measures according to a specific methodology to ensure data are comparable across OECD countries. Annual time series are presented in this dataset and detailed metadata are provided for each variable and country in regards to the methodology and data sources used. For more information on the OECD System of Unit Labour Cost and Related Indicators, see http://stats.oecd.org/mei/.
+
+
 - **trade_union_density.csv** : https://stats.oecd.org/Index.aspx?DataSetCode=TUD downloaded on the 2nd November 2018.
 
 The OECD/ICTWSS database contains information from administrative and survey data on the number of employees that are members of a trade union, the number of employees and union density defined as the ratio of union members divided by the total number of employees. For more information on sources and methods, see **UnionDensity_Sourcesandmethods.pdf**.

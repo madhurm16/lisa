@@ -1,6 +1,6 @@
 # Data storage
 
-- **csv** : raw data transformed as .csv file.
-- **final** : treated and merged data.
-- **raw** : raw data downloaded from external sources.
+- **_csv** : raw data transformed as .csv file (when necessary).
+- **_final** : treated and merged data.
+- **_raw** : raw data downloaded from external sources.
 - **iso.csv** : country dataset from the [International Organization for Standardization (ISO)](https://www.iso.org/home.html).
