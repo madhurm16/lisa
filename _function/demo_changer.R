@@ -19,7 +19,7 @@ demo_changer = function(data = data, break_year = 1970,
     
     if(AFinder == TRUE){
       # Compute eta
-      data = data %>% mutate(eta = n / p * (1 + alpha*p1) / omega)
+      data = data %>% mutate(eta = n / p * (1 + alpha*p1) * omega)
     }
     
   } else {
@@ -54,7 +54,7 @@ demo_changer = function(data = data, break_year = 1970,
   }
    
   # Compute eta
-  data = data %>% mutate(eta = n / p * (1 + alpha*p1) / omega)
+  data = data %>% mutate(eta = n / p * (1 + alpha*p1) * omega)
   
   ## Constant population structure
   if(DE == "FDE"){

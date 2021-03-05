@@ -434,8 +434,7 @@ list.sigma = list(
 
 # Add production function parameters (sigma for all)
 param_base = param_base %>%
-  merge(df1 %>% subset(Year == 1970) %>% mutate(phi = 1-theta) %>% 
-          select(Country, phi)) %>% 
+  merge(df1 %>% subset(Year == 1970) %>% mutate(phi = 1-theta) %>% select(Country, phi)) %>% 
   merge(data.frame(Country = c("France", "United States"),
                    sigma = c(list.sigma$France$all, 
                              list.sigma$`United States`$all))) %>% 
@@ -447,9 +446,9 @@ param_base = param_base %>%
 # Compute omega and beta
 param_base = param_base %>%
   merge(., df1) %>% 
-  mutate(X = (sigma + (1-phi)/phi*(1-gamma*(1-sigma))/gamma*k^((1-sigma)/sigma))^(-1),
-         eta = (1-phi)/phi*k^((1-sigma)/sigma) * ((Ny/K*k-1)*exp(-X) + 1),
-         omega = n/p*(1+alpha*p1)/eta,
+  mutate(X = exp(-(sigma + (1-phi)/phi*(1-gamma*(1-sigma))/gamma*k^((1-sigma)/sigma))^(-1)),
+         eta = (1-phi)/phi*k^((1-sigma)/sigma) * ((Ny/K*k-1)*X + 1),
+         omega = p/n/(1+alpha*p1)*eta,
          beta = 1/(1 - tau)/(1-theta) - 1 - eta) %>% 
   group_by(Country) %>% 
   mutate(omega = first(omega), beta = first(beta)) %>% 
@@ -545,7 +544,7 @@ breakers = demo %>%
   arrange(Country) %>% 
   merge(., param_base %>% select(Country, alpha, omega) %>% unique()) %>% 
   group_by(Country, Sequence) %>% 
-  mutate(eta = n/p*(1+alpha*p1)/omega,
+  mutate(eta = n/p*(1+alpha*p1)*omega,
          Ny = ifelse(Period == 2, lag(Ny,1)*n, Ny),
          No = ifelse(Period == 2, lag(Ny,1)*p, No),
          Ny = ifelse(Period == 3, lag(Ny,1)*n, Ny),
@@ -626,8 +625,7 @@ graph_baseline7010_LS +
 # Color version
 graph_baseline7010_LS +
     scale_color_brewer(palette = "Set1") +
-  ggsave(file.path(loc_graphic, "quant-base7010-color.png"), 
-         width = 7, height = 7/1.5)
+  ggsave(file.path(loc_graphic, "quant-base7010-color.png"), width = 7, height = 7/1.5)
 
 ```
 
@@ -646,7 +644,7 @@ graph_dev7010 = list.sim$baseline %>%
          "Wage~rate~(w)" = w, 
          "Labor~(L)" = L, 
          "Unemployment~rate~(u)" = u,
-         # "Capital~(K)" = K,
+         "Capital~(K)" = K,
          "Output~(Y)" = Y
          # "Labor~share~(theta)" = theta
          ) %>% 
@@ -666,15 +664,15 @@ graph_dev7010 = list.sim$baseline %>%
 
 # Paper version
 graph_dev7010 +
-  scale_color_grey(start = 0, end = .5) +
-  ggsave(file.path(loc_graphic, "quant-dev7010.png"), width = 7, height = 7/1.5)
+  scale_color_grey(start = 0, end = .5) #+
+  # ggsave(file.path(loc_graphic, "quant-dev7010.png"), width = 7, height = 7/1.5)
 
 
 # Color version
 graph_dev7010 +
   scale_color_brewer(palette = "Set1") +
-  labs(title = "Deviation from the 1970's value of determinant variables (in %)") +
-  ggsave(file.path(loc_graphic, "quant-dev7010-color.png"), width = 7, height = 7/1.5)
+  labs(title = "Deviation from the 1970's value of determinant variables (in %)") #+
+  # ggsave(file.path(loc_graphic, "quant-dev7010-color.png"), width = 7, height = 7/1.5)
 ```
 
 ```{r}
@@ -700,19 +698,16 @@ graph_baseline1080_LS = list.sim$baseline %>%
   
 # Paper version
 graph_baseline1080_LS +
-  scale_color_grey(start = 0, end = .5) +
-  ggsave(file.path(loc_graphic, "quant-base1080.png"), width = 7, height = 7/1.5)
+  scale_color_grey(start = 0, end = .5) #+
+  # ggsave(file.path(loc_graphic, "quant-base1080.png"), width = 7, height = 7/1.5)
 
 # Color version
 graph_baseline1080_LS +
   scale_color_brewer(palette = "Set1") +
-  annotate("text", x = 2000, y = .71, 
-           label = "France", color = brewer.pal(8, "Set1")[1]) +
-  annotate("text", x = 2000, y = .61, 
-           label = "United-States", color = brewer.pal(8, "Set1")[2]) +
-  guides(color = "none") +
-  ggsave(file.path(loc_graphic, "quant-base1080-color.png"), 
-         width = 7, height = 7/1.5)
+  annotate("text", x = 2000, y = .71, label = "France", color = brewer.pal(8, "Set1")[1]) +
+  annotate("text", x = 2000, y = .61, label = "United-States", color = brewer.pal(8, "Set1")[2]) +
+  guides(color = "none") #+
+  # ggsave(file.path(loc_graphic, "quant-base1080-color.png"),  width = 7, height = 7/1.5)
 ```
 
 ```{r}
@@ -729,7 +724,7 @@ graph_dev1080 = list.sim$baseline %>%
          "Wage~rate~(w)" = w, 
          "Labor~(L)" = L, 
          "Unemployment~rate~(u)" = u,
-         # "Capital~(K)" = K,
+         "Capital~(K)" = K,
          "Output~(Y)" = Y) %>% 
   setDT %>% melt(id.vars = c("Country", "Year")) %>% 
   
@@ -742,20 +737,19 @@ graph_dev1080 = list.sim$baseline %>%
                      labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
   labs(x = element_blank(), y = element_blank(), color = element_blank()) +
   theme_bw() +
-  theme(legend.position = c(0.95, 0.4), legend.justification = c(1,1),
-        panel.spacing.x = unit(1, "lines"))
+  theme(legend.position = c(0.95, 0.4), legend.justification = c(1,1), panel.spacing.x = unit(1, "lines"))
 
 # Paper version
 graph_dev1080 + 
-  scale_color_grey(start = 0, end = .5) +
-  ggsave(file.path(loc_graphic, "quant-dev1080.png"), width = 7, height = 7/1.5)
+  scale_color_grey(start = 0, end = .5) #+
+  # ggsave(file.path(loc_graphic, "quant-dev1080.png"), width = 7, height = 7/1.5)
 
 
 # Color version
 graph_dev1080 +
   scale_color_brewer(palette = "Set1") +
-  labs(title = "Deviation from the 2010's value of determinant variables (in %)") +
-  ggsave(file.path(loc_graphic, "quant-dev1080-color.png"), width = 7, height = 7/1.5)
+  labs(title = "Deviation from the 2010's value of determinant variables (in %)") #+
+  # ggsave(file.path(loc_graphic, "quant-dev1080-color.png"), width = 7, height = 7/1.5)
 
 ```
 
@@ -950,15 +944,15 @@ graph_pgsr_counter = decomp %>%
 graph_pgsr_counter +
   scale_linetype_manual(labels = pgsr_labels, 
                         values = c("solid", "solid", "dashed", "twodash", "dotted")) +
-  scale_color_manual(labels = pgsr_labels, values = c("grey", rep("black", 4))) +
-  ggsave(file.path(loc_graphic, "quant-pgsr-counter.png"), width = 7, height = 7/1.5)
+  scale_color_manual(labels = pgsr_labels, values = c("grey", rep("black", 4))) #+
+  # ggsave(file.path(loc_graphic, "quant-pgsr-counter.png"), width = 7, height = 7/1.5)
 
 # Color version
 graph_pgsr_counter +
   scale_linetype_manual(labels = pgsr_labels, values = c("solid", rep("dashed", 4))) +
   scale_color_manual(labels = pgsr_labels, 
-                     values = c("black", brewer.pal(8, "Set1")[c(1:4)])) +
-  ggsave(file.path(loc_graphic, "quant-pgsr-counter-color.png"), width = 7, height = 7/1.5)
+                     values = c("black", brewer.pal(8, "Set1")[c(1:4)])) #+
+  # ggsave(file.path(loc_graphic, "quant-pgsr-counter-color.png"), width = 7, height = 7/1.5)
  
   
 ```
@@ -988,14 +982,14 @@ graph_pgsr_decomp = decomp2 %>%
 # Paper version
 graph_pgsr_decomp +
   geom_line(aes(y = position_PGSR), color = "black") +
-    scale_fill_grey(labels = pgsr_labels2, start = .1, end = .8) +
-  ggsave(file.path(loc_graphic, "quant-pgsr-decomp.png"), width = 7, height = 7/1.5)
+    scale_fill_grey(labels = pgsr_labels2, start = .1, end = .8) #+
+  # ggsave(file.path(loc_graphic, "quant-pgsr-decomp.png"), width = 7, height = 7/1.5)
 
 # Color version
 graph_pgsr_decomp + 
   geom_line(aes(y = position_PGSR), color = brewer.pal(8, "Set1")[1]) +
-  scale_fill_manual(labels = pgsr_labels2, values = brewer.pal(8, "Set1")[c(2:4)]) +
-  ggsave(file.path(loc_graphic, "quant-pgsr-decomp-color.png"), width = 7, height = 7/1.5)
+  scale_fill_manual(labels = pgsr_labels2, values = brewer.pal(8, "Set1")[c(2:4)]) #+
+  # ggsave(file.path(loc_graphic, "quant-pgsr-decomp-color.png"), width = 7, height = 7/1.5)
 
 ```
 
@@ -1386,7 +1380,7 @@ data = data %>%
     Ny.new = ifelse(Year > max(first_years), lag(Ny.new,1)*n, Ny.new),
     No.new = ifelse(Year > max(first_years), lag(Ny.new,1)*p.new, No.new),
     # Recompute eta
-    eta.new = n.new/p.new*(1+alpha*p1.new)/omega,
+    eta.new = n.new/p.new*(1+alpha*p1.new)*omega,
     # Replace values
     Ny = ifelse(is.na(Ny.new), Ny, Ny.new),
     No = ifelse(is.na(No.new), No, No.new),

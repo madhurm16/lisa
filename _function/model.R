@@ -14,10 +14,10 @@ model <- function(data, time, AFinder = FALSE){
       ## Solver
       # Sigma = 1
       if(data$sigma[t] == 1){
-        # Value-added to get a job in utility terms
-        data$X[t] = (1+(1-data$phi[t])/data$phi[t]/data$gamma[t])^(-1)
+        # Net replacement rate in unemployment
+        data$X[t] = exp(-(1+(1-data$phi[t])/data$phi[t]/data$gamma[t])^(-1))
         # Capital-per-worker
-        data$k[t] = data$K[t]/data$Ny[t]*(1+exp(data$X[t])*(data$phi[t]/(1-data$phi[t])*data$eta[t] - 1))
+        data$k[t] = data$K[t]/data$Ny[t]*(1+((data$X[t])^(-1))*(data$phi[t]/(1-data$phi[t])*data$eta[t] - 1))
         # Labor
         data$L[t] = data$K[t]/data$k[t]
         # Wage under Cobb Douglas
@@ -43,7 +43,7 @@ model <- function(data, time, AFinder = FALSE){
         if(data$sigma[t] < 1){
           if(data$k1[t] < data$k2[t]){
             data$k[t] = round(uniroot(to_solve, interval = c(ceiling_digit(data$k1[t],3), flooring_digit(data$k2[t],3)))$root, 3)
-            data$X[t] = (data$sigma[t] + (1-data$phi[t])/data$phi[t] * (1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t] * (data$AK[t]/data$AL[t]*data$k[t])^((1-data$sigma[t])/data$sigma[t]))^(-1)
+            data$X[t] = exp(-(data$sigma[t] + (1-data$phi[t])/data$phi[t] * (1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t] * (data$AK[t]/data$AL[t]*data$k[t])^((1-data$sigma[t])/data$sigma[t]))^(-1))
           } else {
             data$k[t] = data$k1[t]
             data$X[t] = 0
@@ -56,7 +56,7 @@ model <- function(data, time, AFinder = FALSE){
             data$X[t] = 0
           } else {
             data$k[t] = round(uniroot(to_solve, interval = c(ceiling_digit(data$k1[t],3), (data$k1[t]*10000)))$root, 3)
-            data$X[t] = (data$sigma[t] + (1-data$phi[t])/data$phi[t] * (1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t] * (data$AK[t]/data$AL[t]*data$k[t])^((1-data$sigma[t])/data$sigma[t]))^(-1)
+            data$X[t] = exp(-(data$sigma[t] + (1-data$phi[t])/data$phi[t] * (1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t] * (data$AK[t]/data$AL[t]*data$k[t])^((1-data$sigma[t])/data$sigma[t]))^(-1))
           }
         }
         
@@ -79,7 +79,7 @@ model <- function(data, time, AFinder = FALSE){
       # Tax rate
       data$tau[t] = 1-((1-data$theta[t])*(1+data$beta[t]+data$eta[t]))^(-1)
       # Unemployment benefits per capita
-      data$b[t] = (1-data$tau[t])*data$w[t]*exp(-data$X[t])
+      data$b[t] = (1-data$tau[t])*data$w[t]*data$X[t]
       # Health spending per capita
       data$h[t] = (data$tau[t]*data$Y[t]-data$b[t]*data$u[t]*data$Ny[t])/data$No[t]
       # Savings
