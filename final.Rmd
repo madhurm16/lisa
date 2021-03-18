@@ -1438,7 +1438,7 @@ retage_p %>%
        color = "Survival rate", title = element_blank()) +
   guides(linetype = guide_legend(order = 2), color = guide_legend(order = 1)) +
   ggsave(file.path(loc_graphic, "discuss-retage-p.png"), 
-         width = 7, height = 7/2)
+         width = 7, height = 7/2.5)
 
 # Color version
 retage_p  %>% 
@@ -1458,7 +1458,7 @@ retage_p  %>%
        color = "Scenario", title = element_blank()) +
   guides(linetype = guide_legend(order = 1), color = guide_legend(order = 2)) +
   ggsave(file.path(loc_graphic, "discuss-retage-p-color.png"), 
-         width = 7, height = 7/2)
+         width = 7, height = 7/2.5)
 
 ```
 
