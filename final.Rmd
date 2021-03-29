@@ -689,8 +689,7 @@ graph_baseline1080_LS = list.sim$baseline %>%
   geom_line() +
   scale_x_continuous(breaks = breaks_10_years, labels = breaks_10_years) +
   scale_linetype_discrete(label = c("Data", "Model prediction")) +
-  labs(x = element_blank(), y = element_blank(), 
-       title = "Labor share",
+  labs(x = element_blank(), y = element_blank(), title = "Labor share",
        linetype = element_blank(), color = element_blank()) +
   theme_bw() +
   theme(legend.position = "bottom")
@@ -1218,8 +1217,8 @@ graph_dev_income_ratio_capita = redis %>%
   geom_hline(yintercept = 0, linetype = "dotted") +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_bw() +
-  labs(x = element_blank(), y = "Percentage deviation (1970 = 0)", 
-       title = "Per-capita income ratio",
+  labs(x = element_blank(), y = element_blank(), 
+       title = "Per-capita income ratio in percentage deviation (1970 = 0)",
        linetype = element_blank(), color = element_blank()) +
   theme(legend.position = "right")
 
@@ -1485,8 +1484,8 @@ retage_ls %>%
                      labels = c("2020", "", "2040", "", "2060", "", "2080")) +
   theme_bw() +
   theme(legend.position = "bottom", legend.text.align = 0) +
-  labs(x = element_blank(), y = element_blank(), linetype = "Scenario",
-       color = "Scenario", title = "Labor share") +
+  labs(x = element_blank(), y = "Labor share", linetype = "Scenario",
+       color = "Scenario", title = element_blank()) +
   ggsave(file.path(loc_graphic, "discuss-retage-ls.png"), 
          width = 7, height = 7/1.5)
 
