@@ -6,6 +6,8 @@ output: github_document
 ```{r init, include = FALSE}
 # Load init script
 source("_script/init.R")
+# If summerR repository is not loaded, please download it here https://github.com/SummerTold/summeR
+
 # knitr options
 knitr::opts_chunk$set(warning = FALSE) # echo = FALSE
 # options(kableExtra.html.bsTable = T)
@@ -2447,18 +2449,3 @@ tabular(reg2, coef_map = coef.map2,
         model_map = c("(HWC)", "(HWC-BTC)", "(HWC)", "(HWC-BTC)")) %>% 
   writeLines(., con = "_tabular/regime-estimate.tex")
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
