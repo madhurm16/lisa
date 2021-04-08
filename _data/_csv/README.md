@@ -1,6 +1,6 @@
 # Data in .csv format
 
-Data are identical to *data > raw* folder (except **populstat**, extraction has been done with scraping, not provided in this repository).
+Data are identical to *data > raw* folder (except **populstat**, extraction has been done with web scraping, not provided in this repository).
 
 - **cwed** : data from the [Comparative Welfare Entitlements Dataset](http://cwed2.org/).
 - **oecd** : data from the [OECD database](https://data.oecd.org/).

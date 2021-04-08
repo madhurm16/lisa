@@ -262,8 +262,7 @@ cwed3 %>%
 cwed3 %>% 
   select(Country, Year, "$x_t$" = US100_min, "$\\sigma$" = sigma_max) %>% 
   kable(align = "c") %>% 
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), 
-                full_width = FALSE) %>% 
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE) %>% 
   row_spec(0, bold=TRUE) 
 ```
 
@@ -360,8 +359,6 @@ data = data_base %>%
   demo_changer(init_spe = TRUE)
 ```
 
-## Calibration
-
 ```{r graph-demo}
 graph_demo = data %>% 
   mutate(dep = p/n) %>% # Compute old-age dependency ratio
@@ -389,7 +386,7 @@ graph_demo +
     scale_color_brewer(palette = "Set1")
   ggsave(file.path(loc_graphic, "quant-demo-color.png"), width = 7, height = 7/2.5)
 ```
-
+## Calibration
 
 ```{r calib-alpha-gamma}
 # Set Alpha and Gamma (same for all countries)
@@ -397,7 +394,6 @@ param_base = data.frame(
   "Country" = rep(c("France", "United States"), each = length(sim)),
   "Year" = sim, "alpha" = (0.99)^40, "gamma" = 0.5)
 ```
-
 
 ```{r calib-sigma}
 # Dataframe for estimation of sigma
@@ -441,7 +437,6 @@ param_base = param_base %>%
                              list.sigma$`United States`$all))) %>% 
   mutate(a = NA)
 ```
-
 
 ```{r calib-omega-beta}
 # Compute omega and beta
@@ -554,7 +549,9 @@ breakers = demo %>%
   ungroup()
 ```
 
-## Simulation
+## Baseline
+
+### Simulation
 
 ```{r sim-list}
 # Empty list of simulations
@@ -596,6 +593,8 @@ for(country in CountrySet){
 # Regroup result
 list.sim$baseline = result
 ```
+
+### Graphics
 
 ```{r}
 graph_baseline7010_LS = list.sim$baseline %>% 
@@ -640,7 +639,7 @@ graph_dev7010 = list.sim$baseline %>%
   subset(Year %in% c(1970:2010)) %>% 
   # Variables and names
   select(Country, Year,
-         "Young~political~weight~(eta)" = eta,
+         "Political~weight~of~the~young~(eta)" = eta,
          # "Outside~option" = outside,
          "Wage~rate~(w)" = w, 
          "Labor~(L)" = L, 
@@ -718,7 +717,7 @@ graph_dev1080 = list.sim$baseline %>%
   subset(Year %in% c(2010: 2080)) %>% 
   # Variables and names
   select(Country, Year,
-         "Young~political~weight~(eta)" = eta,
+         "Political~weight~of~the~young~(eta)" = eta,
          # "Outside~option" = outside,
          "Wage~rate~(w)" = w, 
          "Labor~(L)" = L, 
@@ -754,6 +753,8 @@ graph_dev1080 +
 
 ## Counterfactual
 
+### Simulation
+
 ```{r}
 # Print demographic variables in 1970 in the table
 tab_demo_1970 = list.sim$baseline %>% 
@@ -788,7 +789,9 @@ tab_demo_1970 %>%
   row_spec(0, bold=TRUE)
 ```
 
-```{r}
+#### Default
+
+```{r sim-counter}
 # Re initialize result data frame
 result = result[0,]
 # Define break_year
@@ -915,7 +918,138 @@ decomp2 = decomp %>% subset(from == "sim") %>%
 
 ```
 
+#### p1 equals pfix
+
+```{r sim-counterp1}
+# Re initialize result data frame
+result = result[0,]
+# Define break_year
+break_year = 1970
+
+## Aging effect decomposition : Survival rate versus Population growth
+  for(sr in c("TSR", "FSR")){
+    for(pg in c("TPG", "FPG")){
+      
+      # Simulation name
+      spe = paste0("counter_", break_year, "_", pg, ".", sr, ".", "TDE", ".", "TIE")
+      
+      # Prepare data
+      data = data_base %>% 
+      # No biased technical change
+      mutate(AK = 1, AL = 1) %>% 
+      # Add parameters
+      merge(param) %>% 
+      # Demography
+      demo_changer(break_year = break_year, p1_equals_p_fix = TRUE, PG = pg, SR = sr) %>% 
+      # Define specification model
+      mutate(Specification = spe) %>%
+      # Reorder variables
+      select(Specification, everything())
+      
+      # Simulate the model for each country
+      for(country in CountrySet){
+          result = data %>%
+            subset(Country == country) %>% 
+            model(time = 3) %>% 
+            rbind(result, .)
+      }
+    }
+  }
+
+## Aging effect decomposition : Direct effect versus Indirect effect
+  for(de in c("TDE", "FDE")){
+    for(ie in c("TIE", "FIE")){
+      
+      # Simulation name
+      spe = paste0("counter_", break_year, "_", "TPG", ".", "TSR", ".", de, ".", ie)
+      
+      # Prepare data
+      data = data_base %>% 
+      # No biased technical change
+      mutate(AK = 1, AL = 1) %>% 
+      # Add parameters
+      merge(param) %>% 
+      # Demography
+      demo_changer(break_year = break_year, p1_equals_p_fix = TRUE, DE = de, IE = ie) %>% 
+      # Define specification model
+      mutate(Specification = spe) %>%
+      # Reorder variables
+      select(Specification, everything())
+      
+      # Simulate the model for each country
+      for(country in CountrySet){
+          result = data %>%
+            subset(Country == country) %>% 
+            model(time = 3) %>% 
+            rbind(result, .)
+      }
+    }  }
+
+
+# Remove duplicates
+final = distinct(result)
+
+# Model specification details
+final = final %>% mutate(PG = ifelse(grepl("TPG", Specification), "TPG", "FPG"),
+                 SR = ifelse(grepl("TSR", Specification), "TSR", "FSR"),
+                 DE = ifelse(grepl("TDE", Specification), "TDE", "FDE"),
+                 IE = ifelse(grepl("TIE", Specification), "TIE", "FIE"),
+                 break_year = as.numeric(gsub("[^0-9]", "\\1", Specification))) %>% 
+  select(Specification, break_year, PG, SR, DE, IE, everything())
+```
+
+```{r}
+# Dataframe to compare the LS counterfactual
+decompP1 = final %>% 
+  select(Country, Specification, Year, theta) %>% 
+  rbind(., 
+        df1 %>% 
+          mutate(Specification = paste0("data_", break_year)) %>%
+          select(Specification, Country, Year, theta))  %>% 
+  mutate(from = ifelse(!grepl("data", Specification), "sim", "data")) %>%
+  filter(complete.cases(.)) %>% 
+  mutate(PG = ifelse(from == "data", NA, ifelse(grepl("TPG", Specification), "TPG", "FPG")),
+         SR = ifelse(from == "data", NA, ifelse(grepl("TSR", Specification), "TSR", "FSR")),
+         DE = ifelse(from == "data", NA, ifelse(grepl("TDE", Specification), "TDE", "FDE")),
+         IE = ifelse(from == "data", NA, ifelse(grepl("TIE", Specification), "TIE", "FIE")),
+         break_year = as.numeric(gsub("[^0-9]", "\\1", Specification))) %>% 
+  select(Specification, break_year, PG, SR, DE, IE, everything())
+
+```
+
+```{r}
+# Dataframe for decomposition
+decomp2P1 = decompP1 %>% subset(from == "sim") %>% 
+  mutate(Spe_PGSR = interaction(PG, SR), Spe_DEIE = interaction(DE, IE)) %>% 
+  select(Country, Year, break_year, Spe_PGSR, Spe_DEIE, theta) %>% setDT %>% 
+  dcast(Country + Year + break_year ~ Spe_PGSR + Spe_DEIE, value.var = "theta") %>% 
+  setNames(c("Country", "Year", "break_year",
+             "FPG.FSR", "TPG.FSR", "FPG.TSR", "FDE.FIE", "TDE.FIE", "FDE.TIE",
+             "benchmark")) %>% 
+  mutate(FPG.TSR = (benchmark - FPG.TSR)*100,
+         TPG.FSR = (benchmark - TPG.FSR)*100,
+         FPG.FSR = (benchmark - FPG.FSR)*100,
+         FPG.FSR = FPG.FSR - FPG.TSR - TPG.FSR,
+         position_PGSR = (FPG.TSR + TPG.FSR + FPG.FSR),
+         FPG.TSR.share = abs(FPG.TSR)/(abs(FPG.TSR) + abs(TPG.FSR) + abs(FPG.FSR)),
+         TPG.FSR.share = abs(TPG.FSR)/(abs(FPG.TSR) + abs(TPG.FSR) + abs(FPG.FSR)),
+         FPG.FSR.share = abs(FPG.FSR)/(abs(FPG.TSR) + abs(TPG.FSR) + abs(FPG.FSR)),
+         FDE.TIE = (benchmark - FDE.TIE)*100,
+         TDE.FIE = (benchmark - TDE.FIE)*100,
+         FDE.FIE = (benchmark - FDE.FIE)*100,
+         FDE.FIE = FDE.FIE - FDE.TIE - TDE.FIE,
+         position_DEIE = (FDE.TIE + TDE.FIE + FDE.FIE),
+         FDE.TIE.share = abs(FDE.TIE)/(abs(FDE.TIE) + abs(TDE.FIE) + abs(FDE.FIE)),
+         TDE.FIE.share = abs(TDE.FIE)/(abs(FDE.TIE) + abs(TDE.FIE) + abs(FDE.FIE)),
+         FDE.FIE.share = abs(FDE.FIE)/(abs(FDE.TIE) + abs(TDE.FIE) + abs(FDE.FIE))) %>% 
+  setDT %>% 
+  melt(id.vars = c("Country", "Year", "break_year", "position_PGSR", "position_DEIE"))
+
+```
+
 ### Population growth and survival rate effects
+
+#### Default
 
 ```{r}
 # Counterfactual graphic parameters
@@ -994,7 +1128,76 @@ graph_pgsr_decomp +
 
 ```
 
+#### p1 equals pfix
+
+```{r}
+## Counterfactual PGSR
+graph_pgsr_counterP1 = decompP1 %>% 
+  # subset(Year >= 2000) %>% 
+  subset(DE %in% c("TDE", NA) & IE %in% c("TIE", NA)) %>%
+  mutate(PGSR = interaction(PG, SR) %>% as.character %>%
+           ifelse(is.na(.), "data", .)) %>% 
+  mutate(PGSR = factor(PGSR, levels = c("data", "TPG.TSR", "FPG.TSR", "TPG.FSR", "FPG.FSR"))) %>% 
+  
+  ggplot(aes(x = Year, y = theta, color = PGSR, linetype = PGSR)) +
+  facet_wrap(Country ~ .) +
+  geom_line() +
+  theme_bw() +
+  theme(legend.position = "bottom",) +
+  labs(x = element_blank(), y = element_blank(), title = "Labor share",
+       color = element_blank(), linetype = element_blank())
+
+# Paper version
+graph_pgsr_counterP1 +
+  scale_linetype_manual(labels = pgsr_labels, 
+                        values = c("solid", "solid", "dashed", "twodash", "dotted")) +
+  scale_color_manual(labels = pgsr_labels, values = c("grey", rep("black", 4))) +
+  ggsave(file.path(loc_graphic, "quant-pgsr-counterP1.png"), width = 7, height = 7/1.5)
+
+# Color version
+graph_pgsr_counterP1 +
+  scale_linetype_manual(labels = pgsr_labels, values = c("solid", rep("dashed", 4))) +
+  scale_color_manual(labels = pgsr_labels, 
+                     values = c("black", brewer.pal(8, "Set1")[c(1:4)])) +
+  ggsave(file.path(loc_graphic, "quant-pgsr-counterP1-color.png"), width = 7, height = 7/1.5)
+```
+```{r}
+## PGSR Decomposition
+graph_pgsr_decompP1 = decomp2P1 %>%
+  subset(variable %in% c("FPG.TSR", "TPG.FSR", "FPG.FSR")) %>%
+  mutate(variable = factor(variable, levels = c("FPG.TSR", "TPG.FSR", "FPG.FSR"))) %>%
+  
+  ggplot(aes(x = Year)) +
+  geom_col(aes(y = value, fill = variable), alpha = .7, 
+           position = position_stack(reverse = TRUE)) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  facet_wrap(Country ~ .) +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  theme_bw() +
+  theme(legend.direction = "horizontal", legend.box = "horizontal", legend.position = "bottom",
+        axis.title.x = element_blank()) +
+  labs(x = element_blank(), 
+       y = "Difference with the baseline counterfactual (in pp.)", 
+       fill = element_blank(),
+       title = element_blank())
+
+# Paper version
+graph_pgsr_decompP1 +
+  geom_line(aes(y = position_PGSR), color = "black") +
+  scale_fill_grey(labels = pgsr_labels2, start = .1, end = .8) +
+  ggsave(file.path(loc_graphic, "quant-pgsr-decompP1.png"), width = 7, height = 7/1.5)
+
+# Color version
+graph_pgsr_decompP1 + 
+  geom_line(aes(y = position_PGSR), color = brewer.pal(8, "Set1")[1]) +
+  scale_fill_manual(labels = pgsr_labels2, values = brewer.pal(8, "Set1")[c(2:4)]) +
+  ggsave(file.path(loc_graphic, "quant-pgsr-decompP1-color.png"), width = 7, height = 7/1.5)
+```
+
+
 ### Direct and indirect channels
+
+#### Default
 
 ```{r}
 # Counterfactual graphic parameters
@@ -1070,10 +1273,82 @@ graph_deie_decomp +
   ggsave(file.path(loc_graphic, "quant-deie-decomp-color.png"),
          width = 7, height = 7/1.5)
 
+```
+
+#### p1 equals pfix
+
+```{r}
+## Counterfactual PGSR
+graph_deie_counterP1 = decompP1 %>% 
+  # subset(Year >= 2000) %>% 
+  subset(PG %in% c("TPG", NA) & SR %in% c("TSR", NA)) %>%
+  mutate(DEIE = interaction(DE, IE) %>% as.character %>%
+           ifelse(is.na(.), "data", .)) %>% 
+  mutate(DEIE = factor(DEIE,
+                       levels = c("data", "TDE.TIE", "FDE.TIE", "TDE.FIE", "FDE.FIE"))) %>% 
+  
+  ggplot(aes(x = Year, y = theta, color = DEIE, linetype = DEIE)) +
+  facet_wrap(Country ~ .) +
+  geom_line() +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  theme_bw() +
+  theme(legend.position = "bottom",) +
+  labs(x = element_blank(), y = element_blank(), title = "Labor share",
+       color = element_blank(), linetype = element_blank())
+
+# Paper version
+graph_deie_counterP1 +
+    scale_linetype_manual(labels = deie_labels, 
+                        values = c("solid", "solid", "dashed", "twodash", "dotted")) +
+    scale_color_manual(labels = deie_labels, values = c("grey", rep("black", 4))) +
+  ggsave(file.path(loc_graphic, "quant-deie-counterP1.png"), width = 7, height = 7/1.5)
+
+# Color version
+graph_deie_counterP1 +
+    scale_linetype_manual(labels = deie_labels, 
+                          values = c("solid", rep("dashed", 4))) +
+    scale_color_manual(labels = deie_labels, 
+                       values = c("black", brewer.pal(8, "Set1")[c(1,5,8,4)])) +
+  ggsave(file.path(loc_graphic, "quant-deie-counterP1-color.png"), width = 7, height = 7/1.5)
+```
+
+```{r}
+## DEIE Decomposition
+graph_deie_decompP1 = decomp2P1 %>% 
+  subset(variable %in% c("FDE.TIE", "TDE.FIE", "FDE.FIE")) %>% 
+  mutate(variable = factor(variable, levels = c("FDE.TIE", "TDE.FIE", "FDE.FIE"))) %>% 
+  
+  ggplot(aes(x = Year)) +
+  geom_col(aes(y = value, fill = variable), alpha = .7) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  facet_wrap(Country ~ .) +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  theme_bw() +
+  theme(legend.direction = "horizontal", legend.box = "horizontal", legend.position = "bottom") +
+  labs(x = element_blank(), 
+       y = "Difference with the baseline counterfactual (in pp.)", 
+       fill = element_blank(),
+       title = element_blank())
+
+# Paper version
+graph_deie_decompP1 +
+  geom_line(aes(y = position_DEIE), color = "black") +
+    scale_fill_grey(labels = deie_labels2, start = .1, end = .8) +
+  ggsave(file.path(loc_graphic, "quant-deie-decompP1.png"), width = 7, height = 7/1.5)
+
+# Color version
+graph_deie_decompP1 + 
+  geom_line(aes(y = position_DEIE), color = brewer.pal(8, "Set1")[1]) +
+  scale_fill_manual(labels = deie_labels2, values = brewer.pal(8, "Set1")[c(5,8,4)]) +
+  ggsave(file.path(loc_graphic, "quant-deie-decompP1-color.png"),
+         width = 7, height = 7/1.5)
+
 
 ```
 
-## Summary
+### Summary
+
+#### Default
 
 ```{r }
 # Compute the share of each effect/channel for two sub_periods 1980-2010 & 2020-2050
@@ -1125,6 +1400,60 @@ graph_decomp_summary +
   ggsave(file.path(loc_graphic, "quant-sum-decomp-color.png"), 
          width = 7, height = 7/1.5)
 ```
+
+#### p1 equals pfix
+
+```{r }
+# Compute the share of each effect/channel for two sub_periods 1980-2010 & 2020-2050
+decomp_mean.periodP1 = decomp2P1 %>% select(-contains("position")) %>% setDT %>% 
+  dcast(Country + Year + break_year ~ variable) %>% 
+  mutate(Country_break = interaction(break_year, Country, sep = " - "),
+         Period = ifelse(Year %in% c(1970:2010), "P1",
+                         ifelse(Year %in% c(2020:2050), "P2", "P3"))) %>% 
+  subset(Period != "P3") %>% 
+  group_by(Country_break, Period) %>% 
+  select(Country_break, Period, TPG.FSR.share, FPG.TSR.share, FPG.FSR.share,
+         FDE.TIE.share, TDE.FIE.share, FDE.FIE.share) %>% 
+  summarise_at(vars(TPG.FSR.share:FDE.FIE.share), mean, na.rm = TRUE)
+```
+
+```{r}
+# Summary
+graph_decomp_summaryP1 = decomp_mean.periodP1 %>% setDT %>% 
+  melt(id.vars = c("Country_break", "Period")) %>% 
+  mutate(value = value*100) %>% 
+  subset(Country_break %in% c("1970 - France", "1970 - United States")) %>% 
+  mutate(Country = ifelse(Country_break == "1970 - France", "France", "United States"),
+         effect = factor(ifelse(variable %>% grepl(pattern = "PG", .), "first", "second")),
+         Period = ifelse(Period == "P1", "1980 - 2010", "2020 - 2050")) %>% 
+  mutate(variable = factor(variable, 
+    levels = c("FPG.TSR.share", "TPG.FSR.share", "FDE.TIE.share", 
+               "TDE.FIE.share", "FPG.FSR.share", "FDE.FIE.share"),
+    labels = c("Population growth", "Survival rate", "Factor accumulation", 
+               "Policy mechanism", "Interaction", "Interaction"))) %>% 
+  
+  ggplot(aes(x = effect, y = value, fill = variable)) +
+  facet_grid(Country ~ Period) +
+  scale_x_discrete(breaks = c("first", "second"), 
+                   labels = c("Determinants", "Channels")) +
+  theme_bw() +
+  theme(legend.direction = "horizontal", legend.position = "bottom") +
+  labs(x = element_blank(), y = "Share of the effect (in percentage)", fill = element_blank())
+
+# Paper version
+graph_decomp_summaryP1 +
+  geom_bar(stat = "identity", position = position_dodge(), color = "black") +
+  scale_fill_grey(start = 1, end = 0) +
+  ggsave(file.path(loc_graphic, "quant-sum-decompP1.png"), width = 7, height = 7/1.5)
+
+# Color version
+graph_decomp_summaryP1 +
+    geom_bar(stat = "identity", position = position_dodge(), alpha = .7) +
+    scale_fill_manual(values = brewer.pal(8, "Set1")[c(2,3,5,8,4)]) +
+  ggsave(file.path(loc_graphic, "quant-sum-decompP1-color.png"), 
+         width = 7, height = 7/1.5)
+```
+
 
 # Discussion
 

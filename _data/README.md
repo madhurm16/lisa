@@ -1,4 +1,10 @@
-# Data storage
+# Data
+
+This directory contains all the data.
+
+---
+
+Directories are organized as follows:
 
 - **_csv** : raw data transformed as .csv file (when necessary).
 - **_final** : treated and merged data.

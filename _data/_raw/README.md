@@ -1,4 +1,10 @@
-# Raw data : downloaded from external sources
+# Raw Data
+
+This directory contains all the raw data downloaded from external sources.
+
+---
+
+Directories are organized as follows:
 
 - **_cwed** : data from the [Comparative Welfare Entitlements Dataset](http://cwed2.org/).
 - **_oecd** : data from the [OECD database](https://data.oecd.org/).
