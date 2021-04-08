@@ -1,9 +1,13 @@
 # Data in .csv format
 
-Data are identical to *data > raw* folder (except **populstat**, extraction has been done with web scraping, not provided in this repository).
+This repository contains the same data as in the *_data/_raw/* directory, but in .csv format. Except **populstat** data for which extraction has been done directly into .csv format with web scraping, not provided in this repository.
 
-- **cwed** : data from the [Comparative Welfare Entitlements Dataset](http://cwed2.org/).
-- **oecd** : data from the [OECD database](https://data.oecd.org/).
-- **populstat** : data from the [Population Statistics website](http://www.populstat.info/).
-- **pwt** : data from the [Penn World Table 9.1](https://www.rug.nl/ggdc/productivity/pwt/).
-- **un** : data from the [United Nations (World Population Prospect)](https://population.un.org/wpp/).
+---
+
+Directories are organized as follows:
+
+- **_cwed**: data from the [Comparative Welfare Entitlements Dataset](http://cwed2.org/).
+- **_oecd**: data from the [OECD database](https://data.oecd.org/).
+- **_populstat**: data from the [Population Statistics website](http://www.populstat.info/).
+- **_pwt**: data from the [Penn World Table 9.1](https://www.rug.nl/ggdc/productivity/pwt/).
+- **_un**: data from the [United Nations (World Population Prospect 2017)](https://population.un.org/wpp/).

@@ -17,6 +17,7 @@ Directories are organized as follows:
 
 - **_data** : all the data (raw, intermediate and final datasets).
 - **_deprecated**: deprecated notebooks, scripts and files.
+- **_diagram**: diagrams of the model for slides.
 - **_function**: all the functions.
 - **_graphic**: all the graphics.
 - **_paper**: current version of the paper and slides.
