@@ -7,7 +7,6 @@
 Files are organized as follows:
 
 - lisa.Rproj: R Project settings.
-
 - **main.md**: main notebook.
 - main.Rmd: main notebook (R code).
 

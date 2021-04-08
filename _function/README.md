@@ -1,4 +1,4 @@
-# Function
+# Functions
 
 This repository contains all the functions used in this project.
 

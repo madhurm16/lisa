@@ -1,6 +1,6 @@
-# Diagram
+# Diagram of the model
 
-This repository contaisn the diagrams of the model for slides.
+This repository contains the diagrams of the model for slides.
 
 ---
 
