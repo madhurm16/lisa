@@ -3,69 +3,71 @@ title: "Inter-generational conflict and the declining labor share"
 output: github_document
 ---
 
-```{r init, include = FALSE}
+# Initialization
+
+I start loading all the initial script. If the summeR repository is not loaded, please download it [here](https://github.com/SummerTold/summeR). Place the summeR repository in the same directory as this one.
+
+```{r init}
 # Load init script
 source("_script/init.R")
-# If summerR repository is not loaded, please download it here https://github.com/SummerTold/summeR
-
+# Additional packages
+require(ggpmisc)
 # knitr options
-knitr::opts_chunk$set(warning = FALSE) # echo = FALSE
-# options(kableExtra.html.bsTable = T)
-
+knitr::opts_chunk$set(warning = FALSE)
 # Function
 source(file.path(loc_function, "demo_changer.R"))
 source(file.path(loc_function, "model.R"))
 # Function to round in solver
 ceiling_digit = function(x, level=1) round(x+ 5*10^(-level-1), level)
 flooring_digit = function(x, level=1) round(x - 5*10^(-level-1), level)
-
 # Country set
 CountrySet = c("France", "United States")
 ```
 
-# Empirics
-
-## Data
+Then, I load the data. For more details on data, see the README.md file in _data/_raw. For more details on data treatment and the construction of these datasets, see the scripts in _script/_treatment.
 
 ```{r data-load}
-# Penn World Table
+# Penn World Table 9.1
 pwt = read.csv(file.path(loc_data, "_final", "pwt.csv"))
 # OECD data
 oecd = read.csv(file.path(loc_data, "_final", "oecd.csv"))
 # Demographic data
 demo = read.csv(file.path(loc_data, "_final", "demo.csv"))
-# ESA United Nations
-esaun = read.csv(file.path(loc_data, "_final", "esaun.csv"))
-# Load CWED data
+# United Nations: World Population Prospects
+wpp = read.csv(file.path(loc_data, "_final", "wpp.csv"))
+# CWED data
 cwed = read.csv(file.path(loc_data, "_final", "cwed.csv"))
 ## Merge
-df = merge(pwt, oecd, all = TRUE) %>% merge(demo, all = TRUE) %>% 
-  merge(esaun, all = TRUE) %>% merge(cwed, all = TRUE) %>% 
+df = merge(pwt, oecd, all = TRUE) %>% merge(demo, all = TRUE) %>% merge(cwed, all = TRUE) %>% 
+  # merge(wpp, all = TRUE) %>% 
   subset(Year >= 1970)
 ```
 
-## Stylized facts
+# Empirics
 
 ### Labor share
 
-```{r}
+Figure \@ref(fig:emp-ls) displays the labor share since 1970 for Australia, France, Japan and the United States. Self-employed income is considered as mixed income. The labor share has been declining in these countries.
+
+```{r emp-ls, fig.cap="Labor share in OECD countries"}
 df %>% 
   subset(Year %in% c(1970:2017)) %>% 
   select(Country, Year, lab_sh1, i_lab_sh1) %>% 
-  subset(Country %in% c("Australia", # "Canada",  
-                        "France", "Japan", "United States")) %>%
-  mutate(lab_sh1 = ifelse(i_lab_sh1 == 1, lab_sh1, NA)) %>% 
-  select(-i_lab_sh1) %>% 
+  subset(Country %in% c("Australia", "France", "Japan", "United States")) %>%
+  mutate(lab_sh1 = ifelse(i_lab_sh1 == 1, lab_sh1, NA)) %>% # Remove interpolated labor share by the PWT
   
   ggplot(aes(x = Year, y = lab_sh1)) +
   geom_line(aes(color = Country)) +
   scale_color_brewer(palette = "Set1") +
-  labs(x = element_blank(), y = element_blank(), title = "Labor share") +
+  labs(x = element_blank(), y = element_blank(), title = "Labor share", color = element_blank()) +
   theme_bw() +
+  theme(legend.position = "bottom") +
   ggsave(file.path(loc_graphic, "emp-ls-color.png"), width = 7, height = 7/1.5)
 ```
 
-```{r}
+Figure \@ref(fig:emp-lsadj) presents the labor share data on the same sample of countries over the same period with different adjustment methods for self-employed income from the PWT. The labor share from the OECD data is also plotted. Although the magnitude changes according to the adjustment method and the data source, the dynamics remain roughly similar.
+
+```{r emp-lsadj, fig.cap="Labor share in OECD countries with different adjustment methods"}
 ## Penn World Table : all adjustment methods for the labor share
 df %>% 
   subset(Year %in% c(1970:2017)) %>% 
@@ -75,11 +77,10 @@ df %>%
   mutate(lab_sh1 = ifelse(i_lab_sh1 == 1, lab_sh1, NA),
          lab_sh2 = ifelse(i_lab_sh2 == 1, lab_sh2, NA),
          lab_sh3 = ifelse(i_lab_sh3 == 1, lab_sh3, NA),
-         lab_sh4 = ifelse(i_lab_sh4 == 1, lab_sh4, NA),) %>% 
-  select(-i_lab_sh1, -i_lab_sh2, -i_lab_sh3, -i_lab_sh4) %>%
-  setDT %>% 
-  melt(id.vars = c("Country", "Year"), variable.name = "adjustment") %>% 
-  subset(Country == "France") %>% 
+         lab_sh4 = ifelse(i_lab_sh4 == 1, lab_sh4, NA),) %>% # Remove interpolated
+  select(-starts_with("i_lab")) %>% 
+  setDT %>% melt(id.vars = c("Country", "Year"), variable.name = "adjustment") %>% 
+  # subset(Country == "France") %>% 
   mutate(oecd = if_else(adjustment == "labor_share", "OECD", "PWT") %>% 
            factor(levels = c("PWT", "OECD"))) %>% 
   mutate(adjustment = factor(adjustment,
@@ -88,19 +89,21 @@ df %>%
   
   ggplot(aes(x = Year, y = value)) +
   geom_line(aes(color = adjustment, linetype = oecd)) +
+  facet_wrap(Country ~ .) +
   scale_color_manual(values = c(brewer.pal(8, "Set1")[c(1:4)], "black")) +
-  labs(x = element_blank(), y = element_blank(), title = "Labor share",
+  labs(x = element_blank(), y = "Labor share", title = element_blank(),
        color = "Adjustment method", linetype = "Data") +
   theme_bw() +
   theme(legend.position = "right") +
-  ggsave(file.path(loc_graphic, "emp-ls-FR-color.png"), width = 7, height = 7/1.5)
+  ggsave(file.path(loc_graphic, "emp-lsadj-color.png"), width = 7, height = 7/1.5)
 
 ```
 
+### Dependency ratio
 
-### Dep ratio
+Figure \@ref(fig:emp-dep) shows the old-age dependency ratio for the same sample until 2100. The old-age dependency ratio in this figure is the ratio between the population above 65 and the population between 15 and 64. The ratio slightly increases until 2000, when the boomers are young and explodes thereafter, once they retire.
 
-```{r}
+```{r emp-dep, fig.cap="Old-age dependency ratio in OECD countries"}
 df %>% 
   subset(Year %in% c(1970:2080)) %>% 
   select(Country, Year, dep_65) %>% 
@@ -110,172 +113,64 @@ df %>%
   geom_line() +
   scale_color_brewer(palette = "Set1") +
   scale_x_continuous(breaks = seq(1970, 2080, 20)) +
-  labs(x = element_blank(), y = element_blank(), 
-       title = "Old-age-dependency ratio") +
-  theme_bw() +
+  labs(x = element_blank(), y = element_blank(), title = "Old-age-dependency ratio",
+       color = element_blank()) +
+  theme_bw() + theme(legend.position = "bottom") +
   ggsave(file.path(loc_graphic, "emp-dep-color.png"), width = 7, height = 7/1.5)
 ```
 
-### Both
+### Correlations
 
-```{r}
+Figure \@ref(fig:emp-lsdep) plots the labor share and the old age dependency ratio for a larger sample of countries from 1970 to 2010. The labor share adjustment method for the self-employed is mixed income.
+
+
+```{r emp-lsdep, fig.cap="Labor share and old-age dependency ratio in OECD countries"}
 df %>% 
   subset(Year %in% c(1970:2010)) %>% 
   select(Country, Year, lab_sh1, i_lab_sh1, dep) %>% 
-  subset(Country %in% c("Australia", "Belgium", "Canada", "Denmark", 
-                        "France", "Germany", "Japan", "United States",
-                        "Netherlands", "United Kingdom")) %>%
-  mutate(lab_sh1 = ifelse(i_lab_sh1 == 1, lab_sh1, NA)) %>% 
-  # subset(i_lab_sh1 == 1) %>% 
-  select(-i_lab_sh1) %>% 
-  mutate(lab_sh1 = lab_sh1*100, dep = dep*100) %>% 
+  subset(Country %in% c("Australia", "Belgium", "Canada", "Denmark", "France", "Germany", "Japan", "United States", "Netherlands", "United Kingdom")) %>%
+  mutate(lab_sh1 = ifelse(i_lab_sh1 == 1, lab_sh1, NA)) %>% select(-i_lab_sh1) %>% # Remove interpolated
   setDT %>% melt(id.vars = c("Country", "Year")) %>% 
   
   ggplot(aes(x = Year, y = value, color = Country)) +
-  # geom_point() +
   geom_line() +
   facet_wrap(variable ~ ., scales = "free",
-             labeller = labeller(variable = c(lab_sh1 = "Labor share (in %)", dep = "Old-age dependency ratio (in %)"))) +
-  labs(x = "Year", y = element_blank()) +
-  theme_bw() +
-  theme(legend.position = "bottom") +
-  ggsave(file.path(loc_graphic, "emp-lsdep-color.png"), width = 7, 
-         height = 7/1.5)
+             labeller = labeller(variable = c(lab_sh1 = "Labor share", dep = "Old-age dependency ratio"))) +
+  labs(x = "Year", y = element_blank(), color = element_blank()) +
+  theme_bw() + theme(legend.position = "bottom") +
+  ggsave(file.path(loc_graphic, "emp-lsdep-color.png"), width = 7, height = 7/1.5)
 ```
 
-```{r}
+Figure \@ref(fig:emp-lsdepcor) plots the labor share and the old age dependency ratio for a larger sample of countries from 1970 to 2010. The blue line corresponds to the linear regression line and the grey area is the 95% confidence interval.  The labor share adjustment method for the self-employed is mixed income.
+
+```{r emp-lsdepcor, fig.cap="Correlation between the old-age dependency ratio and the labor share in OECD countries"}
 df %>% 
-subset(Year %in% c(1970:2010)) %>% 
+  subset(Year %in% c(1970:2010)) %>% 
   select(Country, Year, lab_sh1, i_lab_sh1, dep) %>% 
   subset(Country %in% c("Australia", "Belgium", "Canada", "Denmark", "France", "Germany", 
                         "Japan", "United States", "Netherlands", "United Kingdom")) %>%
-  subset(i_lab_sh1 == 1) %>% 
-  mutate(lab_sh1 = lab_sh1*100) %>% 
+  subset(i_lab_sh1 == 1) %>% # Remove interpolated
   
   ggplot(aes(x = dep, y = lab_sh1)) +
   geom_point(aes(color = Country)) +
   geom_smooth(method = "lm", formula = y ~ x) +
-  labs(x = "Old-age-dependency ratio", y = element_blank(), title = "Labor share (in %)") +
-  theme_bw()
-```
-
-```{r}
-df %>% 
-  subset(Year %in% c(1970:2010)) %>% 
-  select(Country, Year, rnna, avh, emp, dep) %>% 
-  subset(Country %in% c("Australia", "Belgium", "Canada", "Denmark", "France", "Germany", 
-                        "Japan", "United States", "Netherlands", "United Kingdom")) %>%
-  mutate(k = log(rnna/avh/emp)) %>% 
-  
-  ggplot(aes(x = dep, y = k)) +
-  geom_point(aes(color = Country)) +
-  geom_smooth(method = "lm", formula = y ~ x) +
-  labs(x = "Old-age-dependency ratio", y = element_blank(), 
-       title = "Capital-per-worker (in log)") +
-  theme_bw()
-```
-
-```{r}
-df %>% 
-  subset(Year %in% c(1970:2010)) %>% 
-  select(Country, Year, ls = lab_sh1, US100, UC1000, US100.lin_inter, UC1000.lin_inter, dep) %>% 
-  subset(Country %in% c("France", "United States")) %>%
-  mutate(urep = US100*100) %>% 
-  
-  ggplot(aes(x = dep, y = urep, color = Country)) +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ x) +
-  labs(x = "Old-age dependency ratio", y = element_blank(), title = "Unemployment replacement rate (in %)") +
-  theme_bw()
-```
-
-
-## Demo and LS
-
-```{r}
-df %>% 
-  subset(Year %in% c(1970:2010)) %>% 
-  select(Country, Year, tax_rev_PC_GDP, rnna, avh, ls = lab_sh1, dep) %>% 
-  subset(Country %in% c("Australia", "Belgium", "Canada", "Denmark", "France", "Germany", 
-                        "Japan", "United States", "Netherlands", "United Kingdom")) %>%
-  mutate(tau = tax_rev_PC_GDP, net_rate = 1-tau, k = log(rnna/avh), ks = 1-ls) %>% 
-  
-  ggplot(aes(x = ks, y = net_rate, color = Country)) +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ x) +
-  # labs(x = "Old-age dependency ratio", y = element_blank(), title = "Net rate (in %)") +
-  theme_bw()
-```
-
-
-# Theoretical framework
-
-## Max. capital-labor elasticity of substitution
-
-```{r theory-xsigma}
-## FUNCTION xSigma
-# Define function
-sigma = function(urep){-log(urep)^(-1)}
-# Interval between 0 and 0.8 for feasible values of the unemployment replacement rate
-interval = seq(0.001, 0.8, by = 0.001)
-
-# Compute sigma values
-xSigma = data.frame("Function", interval, sigma(interval)) %>% 
-  setNames(c("Country", "interval", "sigma_values"))
-
-## CWED Data
-# Find minimum
-cwed2 = cwed %>% 
-  select(Country, Year, US100) %>% 
-  group_by(Country) %>% 
-  # Find minimum
-  mutate_at(vars("US100"), list(min = ~ min(., na.rm = TRUE)),) %>% 
-  subset(US100 == min) %>% slice(1) %>% 
-  select(Country, Year, US100_min = min) %>% 
-  mutate(
-    sigma_max = sigma(US100_min) %>% round(3)
-  )
-# CountrySet
-cwed3 = cwed2 %>% subset(Country %in% CountrySet)
-```
-
-```{r graph-xsigma}
-# Plot xSigma
-xSigma %>% 
-  
-  ggplot(aes(x = interval, y = sigma_values)) +
-  geom_line() +
-  theme_bw() +
-  labs(x = "Unemployment replacement rate", 
-       y = "Max. capital-labor elasticity of substitution") +
-  ggsave(file.path(loc_graphic, "theory-xsigma.png"), width = 7, height = 7/2)
-```
-
-
-```{r tab-xsigma}
-# Save table in TeX format
-cwed3 %>% 
-  select(Country, Year, "$x_t$" = US100_min, "$\\sigma$" = sigma_max) %>% 
-  kable(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE) %>% 
-  row_spec(0, bold=TRUE) %>% 
-  writeLines(., con = "_tabular/theory-xsigma.tex")
-
-# Print table in html format
-cwed3 %>% 
-  select(Country, Year, "$x_t$" = US100_min, "$\\sigma$" = sigma_max) %>% 
-  kable(align = "c") %>% 
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE) %>% 
-  row_spec(0, bold=TRUE) 
+  stat_poly_eq(formula = y ~ x, label.x = .9, label.y = .9,
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +         
+  labs(x = "Old-age-dependency ratio", y = "Labor share", color = element_blank()) +
+  theme_bw() + theme(legend.position = "right") +
+  ggsave(file.path(loc_graphic, "emp-lsdepcor-color.png"), width = 7, height = 7/1.5)
 ```
 
 # Quantitative analysis
+
+This section provides the details of the quantitative analysis in the paper. I consider model simulations from 1970 to 2080, every 10 years, for France and the United States; see the paper for more details.
 
 ```{r quant-init}
 # Simulation periods
 sim = seq(1970, 2080, 10)
 # Estimation sample
 est_sample = c(1970:2010)
-
 # Graphic parameters
 breaks_10_years = seq(1970, 2080, 10)
 labs_20_years = as.vector(rbind(seq(1970, 2080, 20), rep("", length(breaks_10_years)/2)))
@@ -284,28 +179,30 @@ scale_graph = 1920/1080
 
 ## Data
 
+I select variables from the different data sources for France and the United States since 1970 and merge them all into one dataset.
+
 ```{r data-merge}
-# Penn World Table
+# Penn World Table 9.1
 pwt0 = pwt %>%
   select("Country", "Year", "emp", "avh", "rgdpna", "rnna", "lab_sh1", "lab_sh2") %>% 
   subset(Country %in% CountrySet & Year >= 1970)
-
 # OECD data
 oecd0 = oecd %>% 
   select("Country", "Year", tax_rate = "tax_rev_PC_GDP",
          union_density = "union_density.lin_inter",
          union_coverage = "union_coverage.lin_inter") %>% 
   subset(Country %in% CountrySet & Year >= 1970)
-
 # Demographic data
 demo0 = demo %>% 
   select("Country", "Year", "young", "young_1564", "old", "dep", "n", "p") %>% 
   subset(Country %in% CountrySet)
-
 ## Merge
 df0 = merge(pwt0, oecd0, all = TRUE) %>% merge(demo0, all = TRUE) %>% 
   subset(Year >= 1970)
 ```
+
+Employment, $emp_t$, from the PWT are expressed in thousand, thus, I multiply $emp_t$ by 1000. I divide capital stock $K_t$ and output $Y_t$ by the average hours worked $avh_t$ to disantangle the effect of changes in hours worked. The labor share $\theta_t$ corresponds to mixed income adjustment method, i.e. self employed income is considered as labor compensation (in line with the theoretical framework). The tax rate $\tau_t$ from OECD database is in percent, thus, I divide it by 100. The unemployment rate $u_t$ is computed using the employment data from the PWT and the number of young individuals from the WPP. Lastly, the expected survival rate $p_{t+1}$ is the survival rate of the next period of the sequence, so 40 years after. $N^y$ and $N^o$ are, respectively, the number of young and old households. $n$ is the gross rate of population growth.
+Then, I normalize labor and capital to their value in 1970. The capital-per-worker is therefore normalized. Population is also normalized to match the unemployment rate computed above.
 
 ```{r data-variables}
 # Variable modifications
@@ -326,12 +223,15 @@ df1 = df0 %>%
   ungroup() %>% 
   # Remove unused countries from Country levels
   mutate(Country = Country %>% as.character %>% factor)
+# Preview
+head(df1)
 ```
+
+I prepare the dataset for simulation. I complete NA values for $p_{t+1}$ in 2070 and 2080 because demographic data ends in 2100. Thus, the expected survival rate in 2070 corresponds to the survival rate in 2110 which is not available. To complete those NA values, I assume the survival rate grows at the same rate as during the last decade.
 
 ```{r data-baseline}
 # Initial Sequence
 init_seq = seq(1970, 2000, 10)
-
 # Baseline data
 data_base = df1 %>% 
   group_by(Country) %>% subset(Year %in% sim) %>% 
@@ -346,26 +246,31 @@ data_base = df1 %>%
     ## Create empty variables
     eta = NA, AK = NA, AL = NA, k1 = NA, k2 = NA, k = NA, X = NA, L = NA, w = NA,
     r = NA, Y = NA, u = NA, theta = NA, tau = NA, b = NA, h = NA, S = NA) 
-
 # Re-order variables
 data_base = data_base %>% 
   select(Country, Year, Sequence, Period, Ny, No, n, p, p1, eta, AK, AL,
          k1, k2, k, X, L, w, r, Y, u, theta, tau, b, h, S, K)
+# Preview
+head(data_base, 10)
 ```
+Compute the young and old population sizes such that $N^y_t = n_t \times N^y_{t-1}$ and $N^o_t = p_t \times N^y_{t-1}$. The young population at previous period corresponds to the young population 40 years before.
 
 ```{r data-demo}
+# Demography
 data = data_base %>% 
   # No biased technical change
   mutate(AK = 1, AL = 1) %>% 
   # Population dynamics
   demo_changer(init_spe = TRUE)
+# Preview
+head(data, 10)
 ```
+Figure \@ref(fig:graph-demo) presents time trends of the demographic variables. This figure corresponds to Figure 1 in the paper.
 
-```{r graph-demo}
-graph_demo = data %>% 
-  mutate(dep = p/n) %>% # Compute old-age dependency ratio
-  select(Country, Year, n, p, dep) %>% setDT %>% 
-  melt(id.vars = c("Country", "Year")) %>% 
+```{r graph-demo, fig.cap="Demographic variables: Time trends"}
+graph_demo = data %>% mutate(dep = p/n) %>% # Compute old-age dependency ratio
+  select(Country, Year, n, p, dep) %>% 
+  setDT %>% melt(id.vars = c("Country", "Year")) %>% 
   
   ggplot(aes(x = Year, y = value, color = Country)) +
   geom_line() +
@@ -374,21 +279,21 @@ graph_demo = data %>%
                                      dep = "Old-age dependency ratio (p/n) "))) +
   scale_x_continuous(breaks = breaks_10_years,
                      labels = c(1970, "", "", 2000, "", "", 2030, "", "", 2060, "", "")) +
-  theme_bw() +
-  labs(x = element_blank(), y = element_blank(), color = element_blank()) +
-  theme(legend.position = "bottom")
+  theme_bw() + theme(legend.position = "bottom") +
+  labs(x = element_blank(), y = element_blank(), color = element_blank())
 
 # Paper version
-graph_demo +
-  scale_color_grey(start = 0, end = .5) +
+graph_demo + scale_color_grey(start = 0, end = .5) +
   ggsave(file.path(loc_graphic, "quant-demo.png"), width = 7, height = 7/2.5)
 
 # Color version
-graph_demo +
-    scale_color_brewer(palette = "Set1")
+graph_demo + scale_color_brewer(palette = "Set1")
   ggsave(file.path(loc_graphic, "quant-demo-color.png"), width = 7, height = 7/2.5)
 ```
+
 ## Calibration
+
+There are 7 parameters in the model. The discount rate $\alpha$ is set at 0.669, i.e. 0.99 on annual basis. I set the relative bargaining power of the union $\gamma$ to 0.5, thus, neither the union nor the firm have an advantage in the bargaining apart from their respective outside options.
 
 ```{r calib-alpha-gamma}
 # Set Alpha and Gamma (same for all countries)
@@ -396,6 +301,8 @@ param_base = data.frame(
   "Country" = rep(c("France", "United States"), each = length(sim)),
   "Year" = sim, "alpha" = (0.99)^40, "gamma" = 0.5)
 ```
+
+I estimate the elasticity of substitution between capital and labor $\sigma$. For more details, see appendix C in the paper. The parameter $\phi$ corresponds to the capital share in 1970, so 1-$\theta_{1970}$.
 
 ```{r calib-sigma}
 # Dataframe for estimation of sigma
@@ -415,13 +322,13 @@ list.sigma = list(
     # One for all
     all = lm(THETA_log ~ k_log + t_diff, data = df1.sigma0, 
              subset = Country == "France") %>% 
-      coef %>% {1/(1+.[2])} %>% unname(),
+      coef %>% {1/(1+.[2])} %>% unname,
     # Before 1985
     before85 = 1,
     # After 1985
     after85 = lm(THETA_log ~ k_log, data = df1.sigma0,
                subset = Country == "France" & Year > 1985) %>% 
-      coef %>% {1/(1+.[2])} %>% unname()
+      coef %>% {1/(1+.[2])} %>% unname
   ),
   # United-States
   `United States` = list(
@@ -440,6 +347,10 @@ param_base = param_base %>%
   mutate(a = NA)
 ```
 
+The parameters $\omega$ and $\beta$ are calibrated to match the data. To calibrate them, I consider the elasticity of substitution $\sigma$ as estimated in appendix C. Thus, for France, there is only one regime yet. 
+To calibrate $\omega$, I compute the net replacement rate in unemployment $X_t$ at the labor market equilibrium in 1970 with $\phi$, $\gamma$, $\sigma$ and $k_t$ (equal to 1 in 1970). Using $X_t$, I compute the the political weight of the young in 1970 at the public policy equilibrium. Thus, $\omega$ is set such that the capital-per-worker is at the equilibrium in 1970.
+Then, $\beta$ is set to match the tax rate $\tau_t$ in 1970.
+
 ```{r calib-omega-beta}
 # Compute omega and beta
 param_base = param_base %>%
@@ -452,7 +363,11 @@ param_base = param_base %>%
   mutate(omega = first(omega), beta = first(beta)) %>% 
   select(Country, Year, alpha, gamma, phi, sigma, a, omega, beta) %>% 
   ungroup()
+# Preview
+param_base[c(1,13),]
 ```
+
+Considering appendix D, there are two regimes in the elasticity of substitution between capital and labor in France. Thus, the elasticity is about 1 before 1985 and about 1.32 thereafter.
 
 ```{r calib-sigma-france}
 # Change sigma for France
@@ -462,8 +377,10 @@ param_base = param_base %>%
                                list.sigma$France$after85), sigma))
 ```
 
+To set the scale parameter of the production function $A$, I match the average labor share between 2008 and 2012.
+
 ```{r calib-A}
-## Grid search for A (Scale parameter)
+## Grid search for A (scale parameter)
 # Set data
 data = data_base %>% 
   # No biased technical change
@@ -479,6 +396,8 @@ param_base$A = data$A
 # Assign values
 param = param_base
 ```
+
+Figure \@ref(tab:tab-param) summarizes the parameters for both countries. This table corresponds to Table 1 in the paper.
 
 ```{r tab-param}
 # Print parameters in the table
