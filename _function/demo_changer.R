@@ -41,7 +41,7 @@ demo_changer = function(data = data, break_year = 1970,
   if(SR == "FSR"){
     data = data %>% mutate(No = ifelse(Year >= break_year, No*p_fix/p, No),
                            # Also changing initial capital stock 
-                           K = ifelse(Year > break_year, K*p_fix/p*(1+alpha*p)/(1+alpha*p_fix), K),
+                           K = ifelse(Year >= break_year, K*p_fix/p*(1+alpha*p)/(1+alpha*p_fix), K),
                            p = ifelse(Year >= break_year, p_fix, p),
                            # Same initial labor income share required : same fixed point
                            p1 = ifelse(Year >= break_year, p1_fix, p1))
@@ -49,7 +49,7 @@ demo_changer = function(data = data, break_year = 1970,
     if(p1_equals_p_fix == TRUE){
       # p1 only has > instead of >= to attribute the difference with counterfactual 
       # to 2010 instead of 1970
-      data = data %>% mutate(p1 = ifelse(Year > break_year, p_fix, p1))
+      data = data %>% mutate(p1 = ifelse(Year >= break_year, p_fix, p1))
     }
   }
    
@@ -68,12 +68,10 @@ demo_changer = function(data = data, break_year = 1970,
                            # to 2010 instead of 1970
                            # Same initial labor income share required : same fixed point
                            p1 = ifelse(Year >= break_year, p1_fix, p1),
-                           # Ny = ifelse(Year >= break_year, Ny_fix, Ny),
-                           # No = ifelse(Year >= break_year, No_fix, No)
                            )
     
     if(p1_equals_p_fix == TRUE){
-      data = data %>% mutate(p1 = ifelse(Year > break_year, p_fix, p1))
+      data = data %>% mutate(p1 = ifelse(Year >= break_year, p_fix, p1))
     }
   }
    
