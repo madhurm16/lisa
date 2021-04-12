@@ -7,11 +7,11 @@ output: github_document
 
 I start loading all the initial script. If the summeR repository is not loaded, please download it [here](https://github.com/SummerTold/summeR). Place the summeR repository in the same directory as this one.
 
-```{r init}
+```{r init, echo = F}
 # Load init script
 source("_script/init.R")
 # Additional packages
-require(ggpmisc)
+# require(ggpmisc)
 # knitr options
 knitr::opts_chunk$set(warning = FALSE)
 # Function
@@ -144,6 +144,7 @@ df %>%
 Figure \@ref(fig:emp-lsdepcor) plots the labor share and the old age dependency ratio for a larger sample of countries from 1970 to 2010. The blue line corresponds to the linear regression line and the grey area is the 95% confidence interval.  The labor share adjustment method for the self-employed is mixed income.
 
 ```{r emp-lsdepcor, fig.cap="Correlation between the old-age dependency ratio and the labor share in OECD countries"}
+require(ggpmisc)
 df %>% 
   subset(Year %in% c(1970:2010)) %>% 
   select(Country, Year, lab_sh1, i_lab_sh1, dep) %>% 
@@ -236,13 +237,13 @@ init_seq = seq(1970, 2000, 10)
 data_base = df1 %>% 
   group_by(Country) %>% subset(Year %in% sim) %>% 
   select(Country, Year, Ny, No, n, p, p1, K) %>% 
-  mutate(Sequence = ((sim - 1970)/10) %% 4 + 1, Period = (sim - init_seq) / 40 + 1) %>% 
-  mutate_at(vars("Ny", "No", "K"), ~ ifelse(Year == 2010, NA, .)) %>% 
+  mutate(Sequence = ((sim - 1970)/10) %% 4 + 1, Period = (sim - init_seq) / 40 + 1) %>%
+  mutate_at(vars("Ny", "No", "K"), ~ ifelse(Year >= 2010, NA, .)) %>% 
   # Complete NA values for p1 in 2070 and 2080
   mutate(
-    p1 = ifelse(Year >= 2070, 
-                p1[Year == 2060] + (Year - 2060)/10 * mean(p1/lag(p1)-1, na.rm = T), 
-                p1), 
+    p1 = ifelse(Year >= 2070,
+                p1[Year == 2060] + (Year - 2060)/10 * mean(p1/lag(p1)-1, na.rm = T),
+                p1),
     ## Create empty variables
     eta = NA, AK = NA, AL = NA, k1 = NA, k2 = NA, k = NA, X = NA, L = NA, w = NA,
     r = NA, Y = NA, u = NA, theta = NA, tau = NA, b = NA, h = NA, S = NA) 
@@ -373,7 +374,7 @@ Considering appendix D, there are two regimes in the elasticity of substitution 
 # Change sigma for France
 param_base = param_base %>% 
   mutate(sigma = ifelse(Country == "France",
-                        ifelse(Year <= 1980, list.sigma$France$before85,
+                        ifelse(Year <= 1985, list.sigma$France$before85,
                                list.sigma$France$after85), sigma))
 ```
 
@@ -974,8 +975,8 @@ decomp2P1 = decompP1 %>% subset(from == "sim") %>%
 
 ```{r}
 # Counterfactual graphic parameters
-pgsr_labels = c("Data", "Benchmark", expression(n[1970]), expression(p[1970]),
-               expression(n[1970]*", "*p[1970]))
+pgsr_labels = c("Data", "Benchmark", "Constant population growth", "Constant survival rate",
+               "Baseline")
 
 ## Counterfactual PGSR
 graph_pgsr_counter = decomp %>% 
@@ -989,10 +990,10 @@ graph_pgsr_counter = decomp %>%
   ggplot(aes(x = Year, y = theta, color = PGSR, linetype = PGSR)) +
   facet_wrap(Country ~ .) +
   geom_line() +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_bw() +
   theme(legend.position = "bottom",) +
-  labs(x = element_blank(), y = element_blank(), title = "Labor share",
-       color = element_blank(), linetype = element_blank())
+  labs(x = element_blank(), y = "Labor share", title = element_blank(), color = element_blank(), linetype = element_blank())
 
 # Paper version
 graph_pgsr_counter +
@@ -1013,7 +1014,7 @@ graph_pgsr_counter +
 
 ```{r}
 # Labels
-pgsr_labels2 = c("Population growth effect", "Survival rate effect", 
+pgsr_labels2 = c("Population-growth effect", "Survival-rate effect", 
                  "Interaction effect")
 
 ## PGSR Decomposition
@@ -1063,10 +1064,10 @@ graph_pgsr_counterP1 = decompP1 %>%
   ggplot(aes(x = Year, y = theta, color = PGSR, linetype = PGSR)) +
   facet_wrap(Country ~ .) +
   geom_line() +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_bw() +
   theme(legend.position = "bottom",) +
-  labs(x = element_blank(), y = element_blank(), title = "Labor share",
-       color = element_blank(), linetype = element_blank())
+  labs(x = element_blank(), y = "Labor share", title = element_blank(), color = element_blank(), linetype = element_blank())
 
 # Paper version
 graph_pgsr_counterP1 +
@@ -1082,6 +1083,7 @@ graph_pgsr_counterP1 +
                      values = c("black", brewer.pal(8, "Set1")[c(1:4)])) +
   ggsave(file.path(loc_graphic, "quant-pgsr-counterP1-color.png"), width = 7, height = 7/1.5)
 ```
+
 ```{r}
 ## PGSR Decomposition
 graph_pgsr_decompP1 = decomp2P1 %>%
@@ -1122,8 +1124,8 @@ graph_pgsr_decompP1 +
 
 ```{r}
 # Counterfactual graphic parameters
-deie_labels = c("Data", "Benchmark", expression(p[1970]*", "*n[1970]), expression(eta[1970]),
-                expression(p[1970]*", "*n[1970]*", "*eta[1970]))
+deie_labels = c("Data", "Benchmark", "Factor accumulation", "Policy mechanism",
+                "Baseline")
 
 ## Counterfactual PGSR
 graph_deie_counter = decomp %>% 
@@ -1140,8 +1142,7 @@ graph_deie_counter = decomp %>%
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_bw() +
   theme(legend.position = "bottom",) +
-  labs(x = element_blank(), y = element_blank(), title = "Labor share",
-       color = element_blank(), linetype = element_blank())
+  labs(x = element_blank(), y = "Labor share", title = element_blank(), color = element_blank(), linetype = element_blank())
 
 # Paper version
 graph_deie_counter +
@@ -1161,7 +1162,7 @@ graph_deie_counter +
 
 ```{r}
 # Labels
-deie_labels2 = c("Factor accumulation effect", "Policy mechanism effect",
+deie_labels2 = c("Factor-accumulation effect", "Policy-mechanism effect",
                  "Interaction effect")
 
 ## DEIE Decomposition
@@ -1214,8 +1215,7 @@ graph_deie_counterP1 = decompP1 %>%
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_bw() +
   theme(legend.position = "bottom",) +
-  labs(x = element_blank(), y = element_blank(), title = "Labor share",
-       color = element_blank(), linetype = element_blank())
+  labs(x = element_blank(), y = "Labor share", title = element_blank(), color = element_blank(), linetype = element_blank())
 
 # Paper version
 graph_deie_counterP1 +
@@ -1605,10 +1605,8 @@ if(spe %in% c(2,3)){
 data = data %>% 
   group_by(Country, Sequence) %>% 
   # Merge with break year
-  merge(., data_base %>% 
-          subset(Year == break_year) %>%
+  merge(., data_base %>% subset(Year == break_year) %>% 
           select(Country, p_fix = p), by = "Country") %>% 
-  
   mutate(
     p1_to_p_dist = p1 - p,
     # New p and p1
