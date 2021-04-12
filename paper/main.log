@@ -1,0 +1,922 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6840 64-bit) (preloaded format=pdflatex 2018.11.8)  28 FEB 2020 23:12
+entering extended mode
+**./main.tex
+(main.tex
+LaTeX2e <2018-04-01> patch level 5
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\base\article.cls
+"
+Document Class: article 2014/09/29 v1.4h Standard LaTeX document class
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\base\size12.clo"
+File: size12.clo 2014/09/29 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count80
+\c@section=\count81
+\c@subsection=\count82
+\c@subsubsection=\count83
+\c@paragraph=\count84
+\c@subparagraph=\count85
+\c@figure=\count86
+\c@table=\count87
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\amssymb
+.sty"
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\amsfont
+s.sty"
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\@emptytoks=\toks14
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+))
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amsmath.
+sty"
+Package: amsmath 2017/09/02 v2.17a AMS math features
+\@mathmargin=\skip43
+
+For additional information on amsmath, use the `?' option.
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amstext.
+sty"
+Package: amstext 2000/06/29 v2.01 AMS text
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amsgen.s
+ty"
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks15
+\ex@=\dimen103
+))
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amsbsy.s
+ty"
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen104
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amsopn.s
+ty"
+Package: amsopn 2016/03/08 v2.02 operator names
+)
+\inf@bad=\count88
+LaTeX Info: Redefining \frac on input line 213.
+\uproot@=\count89
+\leftroot@=\count90
+LaTeX Info: Redefining \overline on input line 375.
+\classnum@=\count91
+\DOTSCASE@=\count92
+LaTeX Info: Redefining \ldots on input line 472.
+LaTeX Info: Redefining \dots on input line 475.
+LaTeX Info: Redefining \cdots on input line 596.
+\Mathstrutbox@=\box26
+\strutbox@=\box27
+\big@size=\dimen105
+LaTeX Font Info:    Redeclaring font encoding OML on input line 712.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 713.
+\macc@depth=\count93
+\c@MaxMatrixCols=\count94
+\dotsspace@=\muskip10
+\c@parentequation=\count95
+\dspbrk@lvl=\count96
+\tag@help=\toks16
+\row@=\count97
+\column@=\count98
+\maxfields@=\count99
+\andhelp@=\toks17
+\eqnshift@=\dimen106
+\alignsep@=\dimen107
+\tagshift@=\dimen108
+\tagwidth@=\dimen109
+\totwidth@=\dimen110
+\lineht@=\dimen111
+\@envbody=\toks18
+\multlinegap=\skip44
+\multlinetaggap=\skip45
+\mathdisplay@stack=\toks19
+LaTeX Info: Redefining \[ on input line 2817.
+LaTeX Info: Redefining \] on input line 2818.
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\doublestroke\dsf
+ont.sty"
+Package: dsfont 1995/08/01 v0.1 Double stroke roman fonts
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\eurosym\eurosym.
+sty"
+Package: eurosym 1998/08/06 v1.1 European currency symbol ``Euro''
+\@eurobox=\box28
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\geometry\geometr
+y.sty"
+Package: geometry 2018/04/16 v5.8 Page Geometry
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\keyval.
+sty"
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks20
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\generic\oberdiek\ifpdf
+.sty"
+Package: ifpdf 2018/09/07 v3.3 Provides the ifpdf switch
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\generic\oberdiek\ifvte
+x.sty"
+Package: ifvtex 2016/05/16 v1.6 Detect VTeX and its facilities (HO)
+Package ifvtex Info: VTeX not detected.
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\generic\ifxetex\ifxete
+x.sty"
+Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
+)
+\Gm@cnth=\count100
+\Gm@cntv=\count101
+\c@Gm@tempcnt=\count102
+\Gm@bindingoffset=\dimen112
+\Gm@wd@mp=\dimen113
+\Gm@odd@mp=\dimen114
+\Gm@even@mp=\dimen115
+\Gm@layoutwidth=\dimen116
+\Gm@layoutheight=\dimen117
+\Gm@layouthoffset=\dimen118
+\Gm@layoutvoffset=\dimen119
+\Gm@dimlist=\toks21
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\geometry\geometr
+y.cfg"))
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\ulem\ulem.sty"
+\UL@box=\box29
+\UL@hyphenbox=\box30
+\UL@skip=\skip46
+\UL@hook=\toks22
+\UL@height=\dimen120
+\UL@pe=\count103
+\UL@pixel=\dimen121
+\ULC@box=\box31
+Package: ulem 2012/05/18
+\ULdepth=\dimen122
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\graphic
+x.sty"
+Package: graphicx 2017/06/01 v1.1a Enhanced LaTeX Graphics (DPC,SPQR)
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\graphic
+s.sty"
+Package: graphics 2017/06/25 v1.2c Standard LaTeX Graphics (DPC,SPQR)
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\trig.st
+y"
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics-cfg\gra
+phics.cfg"
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 99.
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics-def\pdf
+tex.def"
+File: pdftex.def 2018/01/08 v1.0l Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen123
+\Gin@req@width=\dimen124
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\caption\caption.
+sty"
+Package: caption 2018/10/06 v3.3-154 Customizing captions (AR)
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\caption\caption3
+.sty"
+Package: caption3 2018/09/12 v1.8c caption3 kernel (AR)
+Package caption3 Info: TeX engine: e-TeX on input line 64.
+\captionmargin=\dimen125
+\captionmargin@=\dimen126
+\captionwidth=\dimen127
+\caption@tempdima=\dimen128
+\caption@indent=\dimen129
+\caption@parindent=\dimen130
+\caption@hangindent=\dimen131
+)
+\c@caption@flags=\count104
+\c@ContinuedFloat=\count105
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\color.s
+ty"
+Package: color 2016/07/10 v1.1e Standard LaTeX Color (DPC)
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics-cfg\col
+or.cfg"
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package color Info: Driver file: pdftex.def on input line 147.
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\tools\dcolumn.st
+y"
+Package: dcolumn 2014/10/28 v1.06 decimal alignment package (DPC)
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\tools\array.sty"
+Package: array 2018/04/30 v2.4h Tabular extension package (FMi)
+\col@sep=\dimen132
+\ar@mcellbox=\box32
+\extrarowheight=\dimen133
+\NC@list=\toks23
+\extratabsurround=\skip47
+\backup@length=\skip48
+\ar@cellbox=\box33
+))
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\setspace\setspac
+e.sty"
+Package: setspace 2011/12/19 v6.7a set line spacing
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\sectsty\sectsty.
+sty"
+Package: sectsty 2002/02/25 v2.0.2 Commands to change all sectional heading sty
+les
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\comment\comment.
+sty"
+\CommentStream=\write3
+ Excluding comment 'comment')
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\footmisc\footmis
+c.sty"
+Package: footmisc 2011/06/06 v5.5b a miscellany of footnote facilities
+\FN@temptoken=\toks24
+\footnotemargin=\dimen134
+\c@pp@next@reset=\count106
+Package footmisc Info: Declaring symbol style bringhurst on input line 855.
+Package footmisc Info: Declaring symbol style chicago on input line 863.
+Package footmisc Info: Declaring symbol style wiley on input line 872.
+Package footmisc Info: Declaring symbol style lamport-robust on input line 883.
+
+Package footmisc Info: Declaring symbol style lamport* on input line 903.
+Package footmisc Info: Declaring symbol style lamport*-robust on input line 924
+.
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\natbib\natbib.st
+y"
+Package: natbib 2010/09/13 8.31b (PWD, AO)
+\bibhang=\skip49
+\bibsep=\skip50
+LaTeX Info: Redefining \cite on input line 694.
+\c@NAT@ctr=\count107
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\pdflsca
+pe.sty"
+Package: pdflscape 2016/05/14 v0.11 Display of landscape pages in PDF (HO)
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\lscape.
+sty"
+Package: lscape 2000/10/22 v3.01 Landscape Pages (DPC)
+)
+Package pdflscape Info: Auto-detected driver: pdftex on input line 81.
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\caption\subcapti
+on.sty"
+Package: subcaption 2018/05/01 v1.1-162 Sub-captions (AR)
+\c@subfigure=\count108
+\c@subtable=\count109
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\hyperref\hyperre
+f.sty"
+Package: hyperref 2018/09/30 v6.88a Hypertext links for LaTeX
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\generic\oberdiek\hobsu
+b-hyperref.sty"
+Package: hobsub-hyperref 2016/05/16 v1.14 Bundle oberdiek, subset hyperref (HO)
+
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\generic\oberdiek\hobsu
+b-generic.sty"
+Package: hobsub-generic 2016/05/16 v1.14 Bundle oberdiek, subset generic (HO)
+Package: hobsub 2016/05/16 v1.14 Construct package bundles (HO)
+Package: infwarerr 2016/05/16 v1.4 Providing info/warning/error messages (HO)
+Package: ltxcmds 2016/05/16 v1.23 LaTeX kernel commands for general use (HO)
+Package: ifluatex 2016/05/16 v1.4 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+Package hobsub Info: Skipping package `ifvtex' (already loaded).
+Package: intcalc 2016/05/16 v1.2 Expandable calculations with integers (HO)
+Package hobsub Info: Skipping package `ifpdf' (already loaded).
+Package: etexcmds 2016/05/16 v1.6 Avoid name clashes with e-TeX commands (HO)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+Package: kvsetkeys 2016/05/16 v1.17 Key value parser (HO)
+Package: kvdefinekeys 2016/05/16 v1.4 Define keys (HO)
+Package: pdftexcmds 2018/09/10 v0.29 Utility functions of pdfTeX for LuaTeX (HO
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+Package: pdfescape 2016/05/16 v1.14 Implements pdfTeX's escape features (HO)
+Package: bigintcalc 2016/05/16 v1.4 Expandable calculations on big integers (HO
+)
+Package: bitset 2016/05/16 v1.2 Handle bit-vector datatype (HO)
+Package: uniquecounter 2016/05/16 v1.3 Provide unlimited unique counter (HO)
+)
+Package hobsub Info: Skipping package `hobsub' (already loaded).
+Package: letltxmacro 2016/05/16 v1.5 Let assignment for LaTeX macros (HO)
+Package: hopatch 2016/05/16 v1.3 Wrapper for package hooks (HO)
+Package: xcolor-patch 2016/05/16 xcolor patch
+Package: atveryend 2016/05/16 v1.9 Hooks at the very end of document (HO)
+Package atveryend Info: \enddocument detected (standard20110627).
+Package: atbegshi 2016/06/09 v1.18 At begin shipout hook (HO)
+Package: refcount 2016/05/16 v3.5 Data extraction from label references (HO)
+Package: hycolor 2016/05/16 v1.8 Color options for hyperref/bookmark (HO)
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\auxhook
+.sty"
+Package: auxhook 2016/05/16 v1.4 Hooks for auxiliary files (HO)
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\kvoptio
+ns.sty"
+Package: kvoptions 2016/05/16 v3.12 Key value format for package options (HO)
+)
+\@linkdim=\dimen135
+\Hy@linkcounter=\count110
+\Hy@pagecounter=\count111
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\hyperref\pd1enc.
+def"
+File: pd1enc.def 2018/09/30 v6.88a Hyperref: PDFDocEncoding definition (HO)
+Now handling font encoding PD1 ...
+... no UTF-8 mapping file for font encoding PD1
+)
+\Hy@SavedSpaceFactor=\count112
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\00miktex\hyperre
+f.cfg"
+File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
+)
+Package hyperref Info: Hyper figures OFF on input line 4535.
+Package hyperref Info: Link nesting OFF on input line 4540.
+Package hyperref Info: Hyper index ON on input line 4543.
+Package hyperref Info: Plain pages OFF on input line 4550.
+Package hyperref Info: Backreferencing OFF on input line 4555.
+Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
+Package hyperref Info: Bookmarks ON on input line 4788.
+\c@Hy@tempcnt=\count113
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\url\url.sty"
+\Urlmuskip=\muskip11
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+)
+LaTeX Info: Redefining \url on input line 5141.
+\XeTeXLinkMargin=\dimen136
+\Fld@menulength=\count114
+\Field@Width=\dimen137
+\Fld@charsize=\dimen138
+Package hyperref Info: Hyper figures OFF on input line 6396.
+Package hyperref Info: Link nesting OFF on input line 6401.
+Package hyperref Info: Hyper index ON on input line 6404.
+Package hyperref Info: backreferencing OFF on input line 6411.
+Package hyperref Info: Link coloring OFF on input line 6416.
+Package hyperref Info: Link coloring with OCG OFF on input line 6421.
+Package hyperref Info: PDF/A mode OFF on input line 6426.
+LaTeX Info: Redefining \ref on input line 6466.
+LaTeX Info: Redefining \pageref on input line 6470.
+\Hy@abspage=\count115
+\c@Item=\count116
+\c@Hfootnote=\count117
+)
+Package hyperref Info: Driver (autodetected): hpdftex.
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\hyperref\hpdftex
+.def"
+File: hpdftex.def 2018/09/30 v6.88a Hyperref driver for pdfTeX
+\Fld@listcount=\count118
+\c@bookmark@seq@number=\count119
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\rerunfi
+lecheck.sty"
+Package: rerunfilecheck 2016/05/16 v1.8 Rerun checks for auxiliary files (HO)
+Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
+82.
+)
+\Hy@SectionHShift=\skip51
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\threeparttable\t
+hreeparttable.sty"
+Package: threeparttable 2003/06/13  v 3.0
+\@tempboxb=\box34
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\booktabs\booktab
+s.sty"
+Package: booktabs 2005/04/14 v1.61803 publication quality tables
+\heavyrulewidth=\dimen139
+\lightrulewidth=\dimen140
+\cmidrulewidth=\dimen141
+\belowrulesep=\dimen142
+\belowbottomsep=\dimen143
+\aboverulesep=\dimen144
+\abovetopsep=\dimen145
+\cmidrulesep=\dimen146
+\cmidrulekern=\dimen147
+\defaultaddspace=\dimen148
+\@cmidla=\count120
+\@cmidlb=\count121
+\@aboverulesep=\dimen149
+\@belowrulesep=\dimen150
+\@thisruleclass=\count122
+\@lastruleclass=\count123
+\@thisrulewidth=\dimen151
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\ms\ragged2e.sty"
+Package: ragged2e 2009/05/21 v2.1 ragged2e Package (MS)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\ms\everysel.sty"
+Package: everysel 2011/10/28 v1.2 EverySelectfont Package (MS)
+)
+\CenteringLeftskip=\skip52
+\RaggedLeftLeftskip=\skip53
+\RaggedRightLeftskip=\skip54
+\CenteringRightskip=\skip55
+\RaggedLeftRightskip=\skip56
+\RaggedRightRightskip=\skip57
+\CenteringParfillskip=\skip58
+\RaggedLeftParfillskip=\skip59
+\RaggedRightParfillskip=\skip60
+\JustifyingParfillskip=\skip61
+\CenteringParindent=\skip62
+\RaggedLeftParindent=\skip63
+\RaggedRightParindent=\skip64
+\JustifyingParindent=\skip65
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\enumitem\enumite
+m.sty"
+Package: enumitem 2019/02/04 v3.8 Customized lists
+\labelindent=\skip66
+\enit@outerparindent=\dimen152
+\enit@toks=\toks25
+\enit@inbox=\box35
+\enit@count@id=\count124
+\enitdp@description=\count125
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\multirow\multiro
+w.sty"
+Package: multirow 2018/08/03 v2.3 Span multiple rows of a table
+\multirow@colwidth=\skip67
+\multirow@cntb=\count126
+\multirow@dima=\skip68
+\bigstrutjot=\dimen153
+)
+\c@theorem=\count127
+\c@proposition=\count128
+\c@conjecture=\count129
+\c@hyp=\count130
+\c@subhyp=\count131
+Package hyperref Info: Option `colorlinks' set `true' on input line 40.
+ (main.aux)
+\openout1 = `main.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 42.
+LaTeX Font Info:    ... okay on input line 42.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 42.
+LaTeX Font Info:    ... okay on input line 42.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 42.
+LaTeX Font Info:    ... okay on input line 42.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 42.
+LaTeX Font Info:    ... okay on input line 42.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 42.
+LaTeX Font Info:    ... okay on input line 42.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 42.
+LaTeX Font Info:    ... okay on input line 42.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 42.
+LaTeX Font Info:    ... okay on input line 42.
+
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: <default>
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(72.26999pt, 469.75502pt, 72.26999pt)
+* v-part:(T,H,B)=(72.26999pt, 650.43001pt, 72.26999pt)
+* \paperwidth=614.295pt
+* \paperheight=794.96999pt
+* \textwidth=469.75502pt
+* \textheight=650.43001pt
+* \oddsidemargin=0.0pt
+* \evensidemargin=0.0pt
+* \topmargin=-37.0pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=12.0pt
+* \footskip=30.0pt
+* \marginparwidth=44.0pt
+* \marginparsep=10.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.8pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\context\base\supp-pdf.
+mkii"
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count132
+\scratchdimen=\dimen154
+\scratchbox=\box36
+\nofMPsegments=\count133
+\nofMParguments=\count134
+\everyMPshowfont=\toks26
+\MPscratchCnt=\count135
+\MPscratchDim=\dimen155
+\MPnumerator=\count136
+\makeMPintoPDFobject=\count137
+\everyMPtoPDFconversion=\toks27
+)
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\epstopd
+f-base.sty"
+Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\grfext.
+sty"
+Package: grfext 2016/05/16 v1.2 Manage graphics extensions (HO)
+)
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+38.
+Package grfext Info: Graphics extension search list:
+(grfext)             [.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPE
+G,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 456.
+)
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: hyperref package is loaded.
+Package caption Info: threeparttable package is loaded.
+Package caption Info: End \AtBeginDocument code.
+\AtBeginShipoutBox=\box37
+Package hyperref Info: Link coloring ON on input line 42.
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\hyperref\nameref
+.sty"
+Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\generic\oberdiek\getti
+tlestring.sty"
+Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
+)
+\c@section@level=\count138
+)
+LaTeX Info: Redefining \ref on input line 42.
+LaTeX Info: Redefining \pageref on input line 42.
+LaTeX Info: Redefining \nameref on input line 42.
+ (main.out) (main.out)
+\@outlinefile=\write4
+\openout4 = `main.out'.
+
+
+ABD: EverySelectfont initializing macros
+LaTeX Info: Redefining \selectfont on input line 42.
+LaTeX Font Info:    Try loading font information for U+msa on input line 49.
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd
+"
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Try loading font information for U+msb on input line 49.
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd
+"
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 49.
+ ("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\base\omscmr.fd"
+File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <14.4> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 49.
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 49.
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <7> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 49.
+
+Underfull \hbox (badness 10000) in paragraph at lines 50--55
+
+ []
+
+[0
+
+{C:/Users/FabienP/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
+(chapters/introduction.tex [1] [2] [3] [4] [5] [6]) (chapters/model.tex
+[7] [8] [9] [10] [11] [12] [13] [14] [15] [16] [17]
+<../result/xsigma.png, id=461, 642.2394pt x 361.35pt>
+File: ../result/xsigma.png Graphic file (type png)
+<use ../result/xsigma.png>
+Package pdftex.def Info: ../result/xsigma.png  used on input line 199.
+(pdftex.def)             Requested size: 469.75502pt x 264.30711pt.
+ [18] [19 <../result/xsigma.png>] [20]
+Overfull \hbox (5.42612pt too wide) in paragraph at lines 257--259
+\OT1/cmr/m/n/12 Let de-fine, re-spec-tively, equa-tions [] and [] with the func
+-tions $\OML/cmm/m/it/12 g\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 L[]; K[]; []; N[]\
+OT1/cmr/m/n/12 ; \OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 )$
+ []
+
+[21]) (chapters/quantitative.tex [22] [23]
+<../result/demo_npdep.png, id=532, 642.2394pt x 213.9192pt>
+File: ../result/demo_npdep.png Graphic file (type png)
+<use ../result/demo_npdep.png>
+Package pdftex.def Info: ../result/demo_npdep.png  used on input line 13.
+(pdftex.def)             Requested size: 469.75502pt x 156.4698pt.
+ [24 <../result/demo_npdep.png>]
+(Tables/param.tex) [25]
+<../result/baseline7010.png, id=571, 642.2394pt x 321.1197pt>
+File: ../result/baseline7010.png Graphic file (type png)
+<use ../result/baseline7010.png>
+Package pdftex.def Info: ../result/baseline7010.png  used on input line 46.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+ [26] [27 <../result/baseline7010.png>]
+<../result/deviation/dev_multiple7010.png, id=595, 642.2394pt x 321.1197pt>
+File: ../result/deviation/dev_multiple7010.png Graphic file (type png)
+<use ../result/deviation/dev_multiple7010.png>
+Package pdftex.def Info: ../result/deviation/dev_multiple7010.png  used on inpu
+t line 67.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+ [28] [29 <../result/deviation/dev_multiple7010.png>]
+<../result/baseline7080.png, id=609, 642.2394pt x 321.1197pt>
+File: ../result/baseline7080.png Graphic file (type png)
+<use ../result/baseline7080.png>
+Package pdftex.def Info: ../result/baseline7080.png  used on input line 150.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+<../result/deviation/dev_multiple1080.png, id=613, 642.2394pt x 321.1197pt>
+File: ../result/deviation/dev_multiple1080.png Graphic file (type png)
+<use ../result/deviation/dev_multiple1080.png>
+Package pdftex.def Info: ../result/deviation/dev_multiple1080.png  used on inpu
+t line 159.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+ [30] [31 <../result/baseline7080.png>]
+[32 <../result/deviation/dev_multiple1080.png>] [33] [34]
+<../result/decomposition/counter_PGSR.png, id=649, 642.2394pt x 321.1197pt>
+File: ../result/decomposition/counter_PGSR.png Graphic file (type png)
+<use ../result/decomposition/counter_PGSR.png>
+Package pdftex.def Info: ../result/decomposition/counter_PGSR.png  used on inpu
+t line 262.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+
+
+LaTeX Warning: Reference `fig:counter_PGSR_1970' on page 35 undefined on input 
+line 272.
+
+<../result/decomposition/decomp_PGSR.png, id=652, 642.2394pt x 321.1197pt>
+File: ../result/decomposition/decomp_PGSR.png Graphic file (type png)
+<use ../result/decomposition/decomp_PGSR.png>
+Package pdftex.def Info: ../result/decomposition/decomp_PGSR.png  used on input
+ line 276.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+[35 <../result/decomposition/counter_PGSR.png>] [36]
+<../result/decomposition/counter_DEIE.png, id=672, 642.2394pt x 321.1197pt>
+File: ../result/decomposition/counter_DEIE.png Graphic file (type png)
+<use ../result/decomposition/counter_DEIE.png>
+Package pdftex.def Info: ../result/decomposition/counter_DEIE.png  used on inpu
+t line 292.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+<../result/decomposition/decomp_DEIE.png, id=675, 642.2394pt x 321.1197pt>
+File: ../result/decomposition/decomp_DEIE.png Graphic file (type png)
+<use ../result/decomposition/decomp_DEIE.png>
+Package pdftex.def Info: ../result/decomposition/decomp_DEIE.png  used on input
+ line 300.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+ [37 <../result/decomposition/decomp_PGSR.png>] [38 <../result/decomposition/co
+unter_DEIE.png>]
+<../result/decomposition/decomp_country_period.png, id=691, 642.2394pt x 321.11
+97pt>
+File: ../result/decomposition/decomp_country_period.png Graphic file (type png)
+
+<use ../result/decomposition/decomp_country_period.png>
+Package pdftex.def Info: ../result/decomposition/decomp_country_period.png  use
+d on input line 315.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+) [39 <../result/decomposition/decomp_DEIE.png>] (chapters/discussion.tex [40 <
+../result/decomposition/decomp_country_period.png>]
+<../result/redistribution/dev_incratio_raw_vs_net.png, id=705, 642.2394pt x 321
+.1197pt>
+File: ../result/redistribution/dev_incratio_raw_vs_net.png Graphic file (type p
+ng)
+<use ../result/redistribution/dev_incratio_raw_vs_net.png>
+Package pdftex.def Info: ../result/redistribution/dev_incratio_raw_vs_net.png  
+used on input line 13.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+ [41 <../result/redistribution/dev_incratio_raw_vs_net.png>]
+<../result/redistribution/redis_step3_stacked.png, id=717, 642.2394pt x 321.119
+7pt>
+File: ../result/redistribution/redis_step3_stacked.png Graphic file (type png)
+<use ../result/redistribution/redis_step3_stacked.png>
+Package pdftex.def Info: ../result/redistribution/redis_step3_stacked.png  used
+ on input line 24.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+ [42 <../result/redistribution/redis_step3_stacked.png>]
+[43] [44] [45]
+<../result/retirement/retage_p.png, id=778, 642.2394pt x 321.1197pt>
+File: ../result/retirement/retage_p.png Graphic file (type png)
+<use ../result/retirement/retage_p.png>
+Package pdftex.def Info: ../result/retirement/retage_p.png  used on input line 
+62.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+ [46 <../result/retirement/retage_p.png>]
+<../result/retirement/retage_ls.png, id=787, 642.2394pt x 321.1197pt>
+File: ../result/retirement/retage_ls.png Graphic file (type png)
+<use ../result/retirement/retage_ls.png>
+Package pdftex.def Info: ../result/retirement/retage_ls.png  used on input line
+ 74.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+ [47 <../result/retirement/retage_ls.png>]) (chapters/conclusion.tex [48]) [49]
+ [50] (main.bbl [51
+
+]
+[52] [53] [54]) [55] (chapters/appendix_uniqueness.tex
+<../result/appendix_A/function_g/graph_a.png, id=843, 505.89pt x 337.26pt>
+File: ../result/appendix_A/function_g/graph_a.png Graphic file (type png)
+<use ../result/appendix_A/function_g/graph_a.png>
+Package pdftex.def Info: ../result/appendix_A/function_g/graph_a.png  used on i
+nput line 17.
+(pdftex.def)             Requested size: 234.8775pt x 156.58755pt.
+<../result/appendix_A/function_g/graph_b.png, id=844, 505.89pt x 337.26pt>
+File: ../result/appendix_A/function_g/graph_b.png Graphic file (type png)
+<use ../result/appendix_A/function_g/graph_b.png>
+Package pdftex.def Info: ../result/appendix_A/function_g/graph_b.png  used on i
+nput line 23.
+(pdftex.def)             Requested size: 234.8775pt x 156.58755pt.
+<../result/appendix_A/function_g/graph_c.png, id=845, 505.89pt x 337.26pt>
+File: ../result/appendix_A/function_g/graph_c.png Graphic file (type png)
+<use ../result/appendix_A/function_g/graph_c.png>
+Package pdftex.def Info: ../result/appendix_A/function_g/graph_c.png  used on i
+nput line 30.
+(pdftex.def)             Requested size: 234.8775pt x 156.58755pt.
+<../result/appendix_A/function_g/graph_d.png, id=846, 505.89pt x 337.26pt>
+File: ../result/appendix_A/function_g/graph_d.png Graphic file (type png)
+<use ../result/appendix_A/function_g/graph_d.png>
+Package pdftex.def Info: ../result/appendix_A/function_g/graph_d.png  used on i
+nput line 36.
+(pdftex.def)             Requested size: 234.8775pt x 156.58755pt.
+
+Overfull \hbox (2.61107pt too wide) in paragraph at lines 15--40
+[][] []
+ []
+
+
+Overfull \hbox (2.61107pt too wide) in paragraph at lines 15--40
+[] [] 
+ []
+
+<../result/appendix_A/function_h/graph_1.png, id=848, 361.35pt x 361.35pt>
+File: ../result/appendix_A/function_h/graph_1.png Graphic file (type png)
+<use ../result/appendix_A/function_h/graph_1.png>
+Package pdftex.def Info: ../result/appendix_A/function_h/graph_1.png  used on i
+nput line 52.
+(pdftex.def)             Requested size: 150.32504pt x 150.32687pt.
+<../result/appendix_A/function_h/graph_2.png, id=849, 361.35pt x 361.35pt>
+File: ../result/appendix_A/function_h/graph_2.png Graphic file (type png)
+<use ../result/appendix_A/function_h/graph_2.png>
+Package pdftex.def Info: ../result/appendix_A/function_h/graph_2.png  used on i
+nput line 59.
+(pdftex.def)             Requested size: 150.32504pt x 150.32687pt.
+<../result/appendix_A/function_h/graph_3.png, id=850, 361.35pt x 361.35pt>
+File: ../result/appendix_A/function_h/graph_3.png Graphic file (type png)
+<use ../result/appendix_A/function_h/graph_3.png>
+Package pdftex.def Info: ../result/appendix_A/function_h/graph_3.png  used on i
+nput line 66.
+(pdftex.def)             Requested size: 150.32504pt x 150.32687pt.
+[56
+
+] [57 <../result/appendix_A/function_g/graph_a.png> <../result/appendix_A/funct
+ion_g/graph_b.png> <../result/appendix_A/function_g/graph_c.png> <../result/app
+endix_A/function_g/graph_d.png>] [58 <../result/appendix_A/function_h/graph_1.p
+ng> <../result/appendix_A/function_h/graph_2.png> <../result/appendix_A/functio
+n_h/graph_3.png>] [59]
+<../result/appendix_A/uniqueness/gd_all.png, id=911, 642.2394pt x 213.9192pt>
+File: ../result/appendix_A/uniqueness/gd_all.png Graphic file (type png)
+<use ../result/appendix_A/uniqueness/gd_all.png>
+Package pdftex.def Info: ../result/appendix_A/uniqueness/gd_all.png  used on in
+put line 153.
+(pdftex.def)             Requested size: 469.75502pt x 156.4698pt.
+<../result/appendix_A/uniqueness/gc_all.png, id=913, 642.2394pt x 213.9192pt>
+File: ../result/appendix_A/uniqueness/gc_all.png Graphic file (type png)
+<use ../result/appendix_A/uniqueness/gc_all.png>
+Package pdftex.def Info: ../result/appendix_A/uniqueness/gc_all.png  used on in
+put line 168.
+(pdftex.def)             Requested size: 469.75502pt x 156.4698pt.
+ [60 <../result/appendix_A/uniqueness/gd_all.png>])
+(chapters/appendix_derivatives.tex [61 <../result/appendix_A/uniqueness/gc_all.
+png>] [62])
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `math shift' on input line 98.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\sigma' on input line 98.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `math shift' on input line 98.
+
+(chapters/appendix_sigmaest.tex [63] (Tables/sigma_est_fr.tex) [64]
+(Tables/sigma_est_us.tex))
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `math shift' on input line 102.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\sigma' on input line 102.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `math shift' on input line 102.
+
+(chapters/appendix_regime.tex [65]
+<../result/appendix_CD/k_Theta_log.png, id=980, 642.2394pt x 321.1197pt>
+File: ../result/appendix_CD/k_Theta_log.png Graphic file (type png)
+<use ../result/appendix_CD/k_Theta_log.png>
+Package pdftex.def Info: ../result/appendix_CD/k_Theta_log.png  used on input l
+ine 12.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+ [66]
+<../result/appendix_CD/k_Theta_log_detrend.png, id=991, 642.2394pt x 321.1197pt
+>
+File: ../result/appendix_CD/k_Theta_log_detrend.png Graphic file (type png)
+<use ../result/appendix_CD/k_Theta_log_detrend.png>
+Package pdftex.def Info: ../result/appendix_CD/k_Theta_log_detrend.png  used on
+ input line 24.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+<../result/appendix_CD/k_Theta_log_reg85.png, id=993, 642.2394pt x 321.1197pt>
+File: ../result/appendix_CD/k_Theta_log_reg85.png Graphic file (type png)
+<use ../result/appendix_CD/k_Theta_log_reg85.png>
+Package pdftex.def Info: ../result/appendix_CD/k_Theta_log_reg85.png  used on i
+nput line 32.
+(pdftex.def)             Requested size: 469.75502pt x 234.88092pt.
+LaTeX Font Info:    Try loading font information for U+dsrom on input line 43.
+
+("C:\Users\FabienP\AppData\Local\Programs\MiKTeX 2.9\tex\latex\doublestroke\uds
+rom.fd"
+File: Udsrom.fd 1995/08/01 v0.1 Double stroke roman font definitions
+) (Tables/break.tex) (Tables/sigma_sub.tex)) [67 <../result/appendix_CD/k_Theta
+_log.png>]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 106.
+ [68 <../result/appendix_CD/k_Theta_log_detrend.png>] [69 <../result/appendix_C
+D/k_Theta_log_reg85.png>] [70]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 106.
+ (main.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 106.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 106.
+Package rerunfilecheck Info: File `main.out' has not changed.
+(rerunfilecheck)             Checksum: 0327B44EF75394C5F09759800BBF78BC;1632.
+
+
+LaTeX Warning: There were undefined references.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 106.
+ ) 
+Here is how much of TeX's memory you used:
+ 9766 strings out of 492970
+ 152769 string characters out of 3125706
+ 264341 words of memory out of 3000000
+ 13109 multiletter control sequences out of 15000+200000
+ 19782 words of font info for 80 fonts, out of 3000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 36i,19n,39p,2310b,560s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Users/FabienP/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfon
+ts/cm/cmbx10.pfb><C:/Users/FabienP/AppData/Local/Programs/MiKTeX 2.9/fonts/type
+1/public/amsfonts/cm/cmbx12.pfb><C:/Users/FabienP/AppData/Local/Programs/MiKTeX
+ 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/FabienP/AppData/Local/
+Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/FabienP
+/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C
+:/Users/FabienP/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/c
+m/cmmi5.pfb><C:/Users/FabienP/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/pub
+lic/amsfonts/cm/cmmi6.pfb><C:/Users/FabienP/AppData/Local/Programs/MiKTeX 2.9/f
+onts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/FabienP/AppData/Local/Program
+s/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/FabienP/AppData
+/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/F
+abienP/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr12.p
+fb><C:/Users/FabienP/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfo
+nts/cm/cmr17.pfb><C:/Users/FabienP/AppData/Local/Programs/MiKTeX 2.9/fonts/type
+1/public/amsfonts/cm/cmr5.pfb><C:/Users/FabienP/AppData/Local/Programs/MiKTeX 2
+.9/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/FabienP/AppData/Local/Prog
+rams/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/FabienP/AppDa
+ta/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/
+FabienP/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10
+.pfb><C:/Users/FabienP/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/ams
+fonts/cm/cmsy5.pfb><C:/Users/FabienP/AppData/Local/Programs/MiKTeX 2.9/fonts/ty
+pe1/public/amsfonts/cm/cmsy6.pfb><C:/Users/FabienP/AppData/Local/Programs/MiKTe
+X 2.9/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/FabienP/AppData/Local/
+Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/FabienP/
+AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:
+/Users/FabienP/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm
+/cmti12.pfb><C:/Users/FabienP/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/pub
+lic/doublestroke/dsrom12.pfb><C:/Users/FabienP/AppData/Local/Programs/MiKTeX 2.
+9/fonts/type1/public/amsfonts/symbols/msam10.pfb><C:/Users/FabienP/AppData/Loca
+l/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on main.pdf (71 pages, 1248295 bytes).
+PDF statistics:
+ 1171 PDF objects out of 1200 (max. 8388607)
+ 298 named destinations out of 1000 (max. 500000)
+ 320 words of extra memory for PDF output out of 10000 (max. 10000000)
+
