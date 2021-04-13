@@ -1,11 +1,12 @@
 ---
 title: "Inter-generational conflict and the declining labor share"
 output: github_document
+bibliography: referencesLISA.bib
 ---
 
 # Initialization
 
-I start loading all the initial script. If the summeR repository is not loaded, please download it [here](https://github.com/SummerTold/summeR). Place the summeR repository in the same directory as this one.
+I start loading all the initial script. If the summeR repository is not loaded, please download it [here](https://github.com/SummerTold/summeR). Place the summeR repository in the same folder as this repository.
 
 ```{r init, echo = F}
 # Load init script
@@ -65,7 +66,7 @@ df %>%
   ggsave(file.path(loc_graphic, "emp-ls-color.png"), width = 7, height = 7/1.5)
 ```
 
-Figure \@ref(fig:emp-lsadj) presents the labor share data on the same sample of countries over the same period with different adjustment methods for self-employed income from the PWT. The labor share from the OECD data is also plotted. Although the magnitude changes according to the adjustment method and the data source, the dynamics remain roughly similar.
+Figure \@ref(fig:emp-lsadj) presents the labor share data on the same sample of countries over the same period with different adjustment methods for self-employed income from the PWT. For a discussion of adjusment methods, see @Gollin2002Getting. For more details on adjustment methods in the PWT, see @Feenstra2015Next. The labor share from the OECD data is also plotted. Although the magnitude changes according to the adjustment method and the data source, the dynamics remain roughly similar. 
 
 ```{r emp-lsadj, fig.cap="Labor share in OECD countries with different adjustment methods"}
 ## Penn World Table : all adjustment methods for the labor share
@@ -143,7 +144,7 @@ df %>%
 
 Figure \@ref(fig:emp-lsdepcor) plots the labor share and the old age dependency ratio for a larger sample of countries from 1970 to 2010. The blue line corresponds to the linear regression line and the grey area is the 95% confidence interval.  The labor share adjustment method for the self-employed is mixed income.
 
-```{r emp-lsdepcor, fig.cap="Correlation between the old-age dependency ratio and the labor share in OECD countries"}
+```{r emp-lsdepcor, fig.cap="Correlation between the old-age dependency ratio and the labor share in OECD countries", echo=F}
 require(ggpmisc)
 df %>% 
   subset(Year %in% c(1970:2010)) %>% 
@@ -209,15 +210,16 @@ Then, I normalize labor and capital to their value in 1970. The capital-per-work
 # Variable modifications
 df1 = df0 %>%
   group_by(Country) %>% 
-  mutate(L = emp * 1000,
-         Y = rgdpna / avh * 1000, # AVH control
-         K = rnna / avh * 1000, # AVH control
+  mutate(L = emp * 1000, # Labor
+         Y = rgdpna / avh * 1000, # Output with AVH control
+         K = rnna / avh * 1000, # Capital with AVH control
          theta = lab_sh1, # Labor share
          tau = tax_rate / 100, # Tax rate
          u = 1 - L/young_1564, # Unemployment rate
-         p1 = lead(p, 40)) %>% 
+         p1 = lead(p, 40), # Expected survival rate
+         ) %>% 
   select(Country, Year, Ny = young, No = old, n, p, p1, dep, K, L, Y, theta, tau, u) %>% 
-  # Normalized labor, capital
+  # Normalized labor and capital
   mutate_at(vars("L", "K"), ~ {./first(.)}) %>% 
   # Normalized capital-labor ratio, young and old population
   mutate(k = K/L, Ny = L/(1-u), No = Ny*dep) %>% 
@@ -235,9 +237,13 @@ I prepare the dataset for simulation. I complete NA values for $p_{t+1}$ in 2070
 init_seq = seq(1970, 2000, 10)
 # Baseline data
 data_base = df1 %>% 
+  # Keep years simulation
   group_by(Country) %>% subset(Year %in% sim) %>% 
+  # Select predetermined variables of the 1st sequence
   select(Country, Year, Ny, No, n, p, p1, K) %>% 
+  # Define Sequence and Period
   mutate(Sequence = ((sim - 1970)/10) %% 4 + 1, Period = (sim - init_seq) / 40 + 1) %>%
+  # Remove values for Ny, No and K after the 1st periods
   mutate_at(vars("Ny", "No", "K"), ~ ifelse(Year >= 2010, NA, .)) %>% 
   # Complete NA values for p1 in 2070 and 2080
   mutate(
@@ -254,7 +260,7 @@ data_base = data_base %>%
 # Preview
 head(data_base, 10)
 ```
-Compute the young and old population sizes such that $N^y_t = n_t \times N^y_{t-1}$ and $N^o_t = p_t \times N^y_{t-1}$. The young population at previous period corresponds to the young population 40 years before.
+The demo_changer function computes the young and old population sizes such that $N^y_t = n_t \times N^y_{t-1}$ and $N^o_t = p_t \times N^y_{t-1}$. The young population at previous period corresponds to the young population 40 years before.
 
 ```{r data-demo}
 # Demography
@@ -303,16 +309,19 @@ param_base = data.frame(
   "Year" = sim, "alpha" = (0.99)^40, "gamma" = 0.5)
 ```
 
-I estimate the elasticity of substitution between capital and labor $\sigma$. For more details, see appendix C in the paper. The parameter $\phi$ corresponds to the capital share in 1970, so 1-$\theta_{1970}$.
+I estimate the elasticity of substitution between capital and labor $\sigma$. For more details, see appendix C in the paper. The parameter $\phi$ corresponds to the capital share in 1970, so $1-\theta_{1970}$.
 
 ```{r calib-sigma}
 # Dataframe for estimation of sigma
 df1.sigma0 = df1 %>% 
   group_by(Country) %>% 
-  mutate(k_log = log(k), 
-         THETA_log = log(theta/(1-theta)), 
-         t_diff = Year - first(Year)) %>% 
-  select(Country, Year, k_log, THETA_log, t_diff) %>% 
+  mutate(k_log = log(k), # Log capital-per-worker with AVH control
+         THETA_log = log(theta/(1-theta)), # Labor-to-capital income ratio
+         t_diff = Year - first(Year) # Time trend for biased technical change
+         ) %>% 
+  # Keep variables
+  select(Country, Year, k_log, THETA_log, t_diff) %>%
+  # Estimation on data from 1970 to 2010
   subset(Year %in% c(1970:2010)) %>% 
   ungroup()
 
@@ -324,14 +333,14 @@ list.sigma = list(
     all = lm(THETA_log ~ k_log + t_diff, data = df1.sigma0, 
              subset = Country == "France") %>% 
       coef %>% {1/(1+.[2])} %>% unname,
-    # Before 1985
+    # Before 1985 (see appendix D in the paper)
     before85 = 1,
-    # After 1985
+    # After 1985 (see appendix D in the paper)
     after85 = lm(THETA_log ~ k_log, data = df1.sigma0,
                subset = Country == "France" & Year > 1985) %>% 
       coef %>% {1/(1+.[2])} %>% unname
   ),
-  # United-States
+  ## United-States
   `United States` = list(
     all = lm(THETA_log ~ k_log, data = df1.sigma0, 
              subset = Country == "United States") %>% 
@@ -339,12 +348,14 @@ list.sigma = list(
     )
 )
 
-# Add production function parameters (sigma for all)
+# Add production function parameters
 param_base = param_base %>%
+  # Phi = 1 - theta in 1970
   merge(df1 %>% subset(Year == 1970) %>% mutate(phi = 1-theta) %>% select(Country, phi)) %>% 
+  # Sigma are those obtained from regressions above
   merge(data.frame(Country = c("France", "United States"),
-                   sigma = c(list.sigma$France$all, 
-                             list.sigma$`United States`$all))) %>% 
+                   sigma = c(list.sigma$France$all, list.sigma$`United States`$all))) %>% 
+  # No Biased technical change
   mutate(a = NA)
 ```
 
@@ -396,6 +407,8 @@ source(file.path(loc_script, "sim_AFinder.R"))
 param_base$A = data$A
 # Assign values
 param = param_base
+# Preview
+param_base[c(1,13),]
 ```
 
 Figure \@ref(tab:tab-param) summarizes the parameters for both countries. This table corresponds to Table 1 in the paper.
@@ -434,11 +447,12 @@ coef_summary %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), 
                 full_width = FALSE) %>% 
   row_spec(0, bold=TRUE) 
-
 ```
 
+I define break years for future counterfactual simulations. The breakers datable contains all the demographic variables according per decade.
+
 ```{r breakers}
-breakers = demo %>% 
+breakers = demo0 %>% 
   ## Compute demographic data for 1960
   subset(Year == 1960) %>% 
   mutate(Sequence = NA, Period = NA, Ny = NA, No = NA, p1 = NA) %>% 
@@ -455,7 +469,7 @@ breakers = demo %>%
          Period = ifelse(Year == 1960, 0, Period)) %>% 
   subset(Year == 1960) %>% 
   ungroup() %>% 
-  ## Demographic data for 1960 : done
+  ## Demographic data thereafter
   rbind(., data_base %>% 
           select(Country, Year, Sequence, Period, Ny, No, n, p, p1) %>% 
           ungroup()) %>% 
@@ -469,20 +483,28 @@ breakers = demo %>%
          No = ifelse(Period == 3, lag(Ny,1)*p, No),) %>% 
   select(-alpha, -omega) %>% 
   ungroup()
+# Preview
+head(breakers, 10)
 ```
 
-## Baseline
-
-### Simulation
+I regroup all simulations in a list.
 
 ```{r sim-list}
 # Empty list of simulations
 list.sim = list()
 ```
 
-```{r sim-baseline}
+## Benchmark
+
+The following simulation and graphics refer to the benchmark simulation.
+
+### Simulation
+
+I simulate the model for France and the United States.
+
+```{r sim-benchmark}
 # Specification
-spe = "baseline"
+spe = "benchmark"
 
 # Initialize result dataset
 final = data.frame(matrix(ncol = ncol(data)+ ncol(param) -2 + 1, nrow = 0)) %>%
@@ -504,7 +526,7 @@ data = data_base %>%
 # Prepare result data frame to loop on
 result = final
 
-# Simulate the baseline model for each country
+# Simulate the benchmark model for each country in CountrySet
 for(country in CountrySet){
     result = data %>%
       subset(Country == country) %>% 
@@ -513,91 +535,15 @@ for(country in CountrySet){
 }
 
 # Regroup result
-list.sim$baseline = result
+list.sim$benchmark = result
 ```
 
 ### Graphics
 
-```{r}
-graph_baseline7010_LS = list.sim$baseline %>% 
-  select(Country, Year, theta) %>% setDT %>% 
-  melt(id.vars = c("Country", "Year")) %>% 
-  rbind(df1 %>% select(Country, Year, theta) %>% setDT %>% 
-          melt(id.vars = c("Country", "Year")) %>% mutate(variable = "data")
-        ) %>% 
-  filter(complete.cases(.)) %>% 
-  subset(Year %in% c(1970:2010)) %>% 
-  mutate(variable = factor(variable, levels = c("data", "theta"))) %>% 
-  
-  # Graph
-  ggplot(aes(x = Year, y = value, color = Country, linetype = variable)) +
-  geom_line() +
-  scale_linetype_discrete(label = c("Data", "Model prediction")) +
-  labs(x = element_blank(), title = "Labor share", 
-       y = element_blank(),
-       linetype = element_blank(), color = element_blank()) +
-  theme_bw() +
-  theme(legend.position = "bottom")
+Figure \@ref(fig:graph-bench-ls) shows the labor share predictions of the model and the labor share in the data from 1970 to 2080 for France and the United States. Labor share data are from PWT with self-employed income as labor compensation. This figure corresponds to Figure 2 in the paper.
 
-# Paper version
-graph_baseline7010_LS +
-  scale_color_grey(start = 0, end = .5) +
-  ggsave(file.path(loc_graphic, "quant-base7010.png"), width = 7, height = 7/1.5)
-
-# Color version
-graph_baseline7010_LS +
-    scale_color_brewer(palette = "Set1") +
-  ggsave(file.path(loc_graphic, "quant-base7010-color.png"), width = 7, height = 7/1.5)
-
-```
-
-```{r}
-graph_dev7010 = list.sim$baseline %>% 
-  group_by(Country) %>% 
-  mutate(outside = b/(1-tau)) %>% 
-  select(Country, Year, eta, outside, w, L, u, K, Y, theta) %>% 
-  mutate_at(vars(eta, outside, w, L, u, K, Y, theta),
-            ~ (./.[Year == 1970]-1)*100) %>% 
-  subset(Year %in% c(1970:2010)) %>% 
-  # Variables and names
-  select(Country, Year,
-         "Political~weight~of~the~young~(eta)" = eta,
-         # "Outside~option" = outside,
-         "Wage~rate~(w)" = w, 
-         "Labor~(L)" = L, 
-         "Unemployment~rate~(u)" = u,
-         # "Capital~(K)" = K,
-         "Output~(Y)" = Y
-         # "Labor~share~(theta)" = theta
-         ) %>% 
-  setDT %>% melt(id.vars = c("Country", "Year")) %>% 
-  
-  ggplot(aes(x = Year, y = value, color = Country)) +
-  geom_hline(yintercept = 0, linetype = "dotted") +
-  geom_line() +
-  facet_wrap(. ~ variable, scales = "free", nrow = 2,
-             labeller = label_parsed) +
-  scale_x_continuous(breaks = seq(1970, 2010, 10), labels = c("1970","", "1990", "", "2010")) +
-  labs(x = element_blank(), y = "Percentage deviation (1970 = 0)", color = element_blank()) +
-  theme_bw() +
-  theme(legend.position = c(0.95, 0.4), legend.justification = c(1,1),
-        legend.text = element_text(size=12),
-        panel.spacing.x = unit(1, "lines"))
-
-# Paper version
-graph_dev7010 +
-  scale_color_grey(start = 0, end = .5) +
-  ggsave(file.path(loc_graphic, "quant-dev7010.png"), width = 7, height = 7/1.5)
-
-
-# Color version
-graph_dev7010 +
-  scale_color_brewer(palette = "Set1") +
-  ggsave(file.path(loc_graphic, "quant-dev7010-color.png"), width = 7, height = 7/1.5)
-```
-
-```{r}
-graph_baseline1080_LS = list.sim$baseline %>% 
+```{r graph-bench-ls, fig.cap="Model predictions of the labor share"}
+graph_bench_LS = list.sim$benchmark %>% 
   select(Country, Year, theta) %>% setDT %>% 
   melt(id.vars = c("Country", "Year")) %>% 
   rbind(df1 %>% select(Country, Year, theta) %>% setDT %>% 
@@ -615,28 +561,29 @@ graph_baseline1080_LS = list.sim$baseline %>%
   theme_bw() +
   theme(legend.position = "bottom")
   
-  
 # Paper version
-graph_baseline1080_LS +
+graph_bench_LS +
   scale_color_grey(start = 0, end = .5) +
-  ggsave(file.path(loc_graphic, "quant-base1080.png"), width = 7, height = 7/1.5)
+  ggsave(file.path(loc_graphic, "quant-bench-ls.png"), width = 7, height = 7/1.5)
 
 # Color version
-graph_baseline1080_LS +
+graph_bench_LS +
   scale_color_brewer(palette = "Set1") +
   annotate("text", x = 2000, y = .71, label = "France", color = brewer.pal(8, "Set1")[1]) +
   annotate("text", x = 2000, y = .61, label = "United-States", color = brewer.pal(8, "Set1")[2]) +
   guides(color = "none") +
-  ggsave(file.path(loc_graphic, "quant-base1080-color.png"),  width = 7, height = 7/1.5)
+  ggsave(file.path(loc_graphic, "quant-bench-ls-color.png"),  width = 7, height = 7/1.5)
 ```
 
-```{r}
-graph_dev1080 = list.sim$baseline %>% 
+Figure \@ref(fig:graph-bench-dev7010) shows the deviation of the variables from their 1970’s value (in percentage) for France and the United States over the 1970-2010 period. Solid lines represent the dynamics obtained from the model simulation, whereas the dotted line represents the 0-degree line. This figure corresponds to Figure 3 in the paper.
+
+```{r graph-bench-dev7010, fig.cap="Variables dynamics over the 1970-2010 period"}
+graph_dev7010 = list.sim$benchmark %>% 
   group_by(Country) %>% 
   mutate(outside = b/(1-tau)) %>% 
-  select(Country, Year, eta, outside, w, L, u, K, Y) %>% 
-  mutate_at(vars(eta, outside, w, L, u, K, Y), ~ (./.[Year == 2010]-1)*100) %>% 
-  subset(Year %in% c(2010: 2080)) %>% 
+  select(Country, Year, eta, outside, w, L, u, K, Y, theta) %>% 
+  mutate_at(vars(eta, outside, w, L, u, K, Y, theta), ~ (./.[Year == 1970]-1)*100) %>% 
+  subset(Year %in% c(1970:2010)) %>% 
   # Variables and names
   select(Country, Year,
          "Political~weight~of~the~young~(eta)" = eta,
@@ -645,15 +592,61 @@ graph_dev1080 = list.sim$baseline %>%
          "Labor~(L)" = L, 
          "Unemployment~rate~(u)" = u,
          # "Capital~(K)" = K,
-         "Output~(Y)" = Y) %>% 
+         "Output~(Y)" = Y
+         # "Labor~share~(theta)" = theta
+         ) %>% 
   setDT %>% melt(id.vars = c("Country", "Year")) %>% 
   
   ggplot(aes(x = Year, y = value, color = Country)) +
   geom_hline(yintercept = 0, linetype = "dotted") +
   geom_line() +
   facet_wrap(. ~ variable, scales = "free", nrow = 2, labeller = label_parsed) +
-  scale_x_continuous(breaks = seq(2010, 2080, 10),
-                     labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
+  scale_x_continuous(breaks = seq(1970, 2010, 10), labels = c("1970","", "1990", "", "2010")) +
+  labs(x = element_blank(), y = "Percentage deviation (1970 = 0)", color = element_blank()) +
+  theme_bw() +
+  theme(legend.position = c(0.95, 0.4), legend.justification = c(1,1),
+        legend.text = element_text(size=12),
+        panel.spacing.x = unit(1, "lines"))
+
+# Paper version
+graph_dev7010 +
+  scale_color_grey(start = 0, end = .5) +
+  ggsave(file.path(loc_graphic, "quant-bench-dev7010.png"), width = 7, height = 7/1.5)
+
+
+# Color version
+graph_dev7010 +
+  scale_color_brewer(palette = "Set1") +
+  ggsave(file.path(loc_graphic, "quant-bench-dev7010-color.png"), width = 7, height = 7/1.5)
+```
+
+Figure \@ref(fig:graph-bench-dev1080) shows the deviation of the variables from their 2010’s value (in percentage) for France and the United States over the 2010-2080 period. Solid lines represent the dynamics obtained from the model simulation, whereas the dotted line represents the 0-degree line. This figure corresponds to Figure 4 in the paper.
+
+```{r graph-bench-dev1080, fig.cap="Variables dynamics over the 2010-2080 period"}
+graph_dev1080 = list.sim$benchmark %>% 
+  group_by(Country) %>% 
+  mutate(outside = b/(1-tau)) %>% 
+  select(Country, Year, eta, outside, w, L, u, K, Y, theta) %>% 
+  mutate_at(vars(eta, outside, w, L, u, K, Y, theta), ~ (./.[Year == 2010]-1)*100) %>% 
+  subset(Year %in% c(2010:2080)) %>% 
+  # Variables and names
+  select(Country, Year,
+         "Political~weight~of~the~young~(eta)" = eta,
+         # "Outside~option" = outside,
+         "Wage~rate~(w)" = w, 
+         "Labor~(L)" = L, 
+         "Unemployment~rate~(u)" = u,
+         # "Capital~(K)" = K,
+         "Output~(Y)" = Y,
+         # "Labor~share~(theta)" = theta
+         ) %>% 
+  setDT %>% melt(id.vars = c("Country", "Year")) %>% 
+  
+  ggplot(aes(x = Year, y = value, color = Country)) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_line() +
+  facet_wrap(. ~ variable, scales = "free", nrow = 2, labeller = label_parsed) +
+  scale_x_continuous(breaks = seq(2010, 2080, 10), labels = c("2010","", "2030", "", "2050", "", "2070", "")) +
   labs(x = element_blank(), y = "Percentage deviation (2010 = 0)", color = element_blank()) +
   theme_bw() +
   theme(legend.position = c(0.95, 0.4), legend.justification = c(1,1), 
@@ -663,51 +656,50 @@ graph_dev1080 = list.sim$baseline %>%
 # Paper version
 graph_dev1080 + 
   scale_color_grey(start = 0, end = .5) +
-  ggsave(file.path(loc_graphic, "quant-dev1080.png"), width = 7, height = 7/1.5)
+  ggsave(file.path(loc_graphic, "quant-bench-dev1080.png"), width = 7, height = 7/1.5)
 
 
 # Color version
 graph_dev1080 +
   scale_color_brewer(palette = "Set1") +
-  ggsave(file.path(loc_graphic, "quant-dev1080-color.png"), width = 7, height = 7/1.5)
+  ggsave(file.path(loc_graphic, "quant-bench-dev1080-color.png"), width = 7, height = 7/1.5)
 
 ```
 
-## Counterfactual
+## Counterfactual and decomposition
+
+The following simulations and graphics refer to the counterfactual and decomposition analysis.
 
 ### Simulation
 
-```{r}
+Table \@ref(tab:tab-demo70) summarizes the demographic variables in 1970 for France and the United States. This table corresponds to Table 2 in the paper.
+
+```{r tab-demo70}
 # Print demographic variables in 1970 in the table
-tab_demo_1970 = list.sim$baseline %>% 
+tab_demo70 = list.sim$benchmark %>% 
   subset(Year == 1970) %>% mutate(dep = p/n) %>% 
-  select(Country, p, n, p1, dep, eta) %>% setDT %>% 
+  select(Country, n, p, p1, dep, eta) %>% setDT %>% 
   melt(id.vars = "Country", variable.name = "var") %>% 
   dcast(var ~ Country, value.var = "value") %>% 
   mutate(
-    "var" = c("$p_{1970}$", "$n_{1970}$", "$p_{2010}$",
-              "$\\frac{p_{1970}}{n_{1970}}$", "$\\eta_{1970}$"),
-    "Variable" = c("Survival rate", "Population growth",
-                        "Expected survival rate", "Old-age-dependency ratio",
-                        "Young political power")) %>% 
+    "var" = c("$n_{1970}$", "$p_{1970}$", "$p_{2010}$", "$\\frac{p_{1970}}{n_{1970}}$", "$\\eta_{1970}$"),
+    "Variable" = c("Population growth", "Survival rate", "Expected survival rate", "Old-age-dependency ratio", "Young political power")) %>% 
   mutate_if(is.numeric, ~ round(., 3)) %>% 
   select(var, Variable, everything())
 
 # Table infos
-tab_demo_1970.col_names = c("", "Variable", "France", "United States")
+tab_demo70.col_names = c("", "Variable", "France", "United States")
 
 # Save table in TeX format
-tab_demo_1970 %>% 
-  kable(format = "latex", col.names = tab_demo_1970.col_names, 
-        booktabs = TRUE, linesep = "", escape = FALSE) %>% 
+tab_demo70 %>% 
+  kable(format = "latex", col.names = tab_demo70.col_names, booktabs = TRUE, linesep = "", escape = FALSE) %>% 
   row_spec(0, bold = TRUE) %>% 
   writeLines(., con = "_tabular/quant-demo70.tex")
 
 # Print table in html format
-tab_demo_1970 %>% 
-  kable(col.names = coef_table_col.names, align = "llrr") %>% 
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), 
-                full_width = FALSE) %>% 
+tab_demo70 %>% 
+  kable(col.names = tab_demo70.col_names, align = "llrr") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE) %>% 
   row_spec(0, bold=TRUE)
 ```
 
@@ -975,17 +967,13 @@ decomp2P1 = decompP1 %>% subset(from == "sim") %>%
 
 ```{r}
 # Counterfactual graphic parameters
-pgsr_labels = c("Data", "Benchmark", "Constant population growth", "Constant survival rate",
-               "Baseline")
+pgsr_labels = c("Data", "Benchmark", "Constant population growth", "Constant survival rate",        "Baseline")
 
 ## Counterfactual PGSR
 graph_pgsr_counter = decomp %>% 
-  # subset(Year >= 2000) %>% 
   subset(DE %in% c("TDE", NA) & IE %in% c("TIE", NA)) %>%
-  mutate(PGSR = interaction(PG, SR) %>% as.character %>%
-           ifelse(is.na(.), "data", .)) %>% 
-  mutate(PGSR = factor(PGSR,
-                       levels = c("data", "TPG.TSR", "FPG.TSR", "TPG.FSR", "FPG.FSR"))) %>% 
+  mutate(PGSR = interaction(PG, SR) %>% as.character %>% ifelse(is.na(.), "data", .)) %>% 
+  mutate(PGSR = factor(PGSR, levels = c("data", "TPG.TSR", "FPG.TSR", "TPG.FSR", "FPG.FSR"))) %>% 
   
   ggplot(aes(x = Year, y = theta, color = PGSR, linetype = PGSR)) +
   facet_wrap(Country ~ .) +
@@ -1000,14 +988,14 @@ graph_pgsr_counter +
   scale_linetype_manual(labels = pgsr_labels, 
                         values = c("solid", "solid", "dashed", "twodash", "dotted")) +
   scale_color_manual(labels = pgsr_labels, values = c("grey", rep("black", 4))) +
-  ggsave(file.path(loc_graphic, "quant-pgsr-counter.png"), width = 7, height = 7/1.5)
+  ggsave(file.path(loc_graphic, "quant-counter-pgsr.png"), width = 7, height = 7/1.5)
 
 # Color version
 graph_pgsr_counter +
   scale_linetype_manual(labels = pgsr_labels, values = c("solid", rep("dashed", 4))) +
   scale_color_manual(labels = pgsr_labels, 
                      values = c("black", brewer.pal(8, "Set1")[c(1:4)])) +
-  ggsave(file.path(loc_graphic, "quant-pgsr-counter-color.png"), width = 7, height = 7/1.5)
+  ggsave(file.path(loc_graphic, "quant-counter-pgsr-color.png"), width = 7, height = 7/1.5)
  
   
 ```
@@ -1378,15 +1366,28 @@ graph_decomp_summaryP1 +
 
 # Discussion
 
-## Age-related conflict: who are the winners ? {#winners}
+This section provides the details of the discussion in the paper.
 
-```{r}
-# Compute redistribution
-redis = list.sim$baseline %>%
-  group_by(Country) %>% 
+## Age-related conflict: who are the winners ?
+
+```{r winners-redis}
+# Utility and GDP split
+redis = list.sim$benchmark %>%
+  group_by(Country, Sequence) %>% 
+  # Compute Utility
+  mutate(
+    # Expected income
+    y = (1-u)*(1-tau)*w+u*b,
+    # Consumption 1st period
+    c1 = log(y/(1+alpha*p1)),
+    # Consumption 2nd period
+    c2 = alpha*p1/(1+alpha*p1)*(1-lead(tau,1))*y*r/p,
+    # Life-time utility
+    utility = log(c1) + alpha*p1*(log(c2) + beta*log(lead(h,1)))
+    ) %>% 
   # Compute GDP split
   mutate(
-    # Step 1
+    # Step 1: labor and capital income
     wL = w*L, rK = r*K,
     # Step 2
     wL_net = (1-tau)*wL, rK_net = (1-tau)*rK, gov_rev = tau*Y,
@@ -1396,70 +1397,60 @@ redis = list.sim$baseline %>%
     C1 = 1/(1+alpha*p1)*(wL_net+unemp_ben),
     Saving = alpha*p1/(1+alpha*p1)*(wL_net+unemp_ben),
     C2 = rK_net,
-    # Incomes
+    # Incomes of the young and the old
     inc_y = wL_net + unemp_ben, inc_o = rK_net,
-    # Labor share
-    theta = wL/Y,
-    # Dep ratio
-    dep = p/n,
+    # Labor share and dependency ratio
+    theta = wL/Y, dep = p/n,
     ) %>% 
-  select(Country, Year, wL, rK, wL_net, rK_net, gov_rev, unemp_ben, health_spen,
-         C1, Saving, C2, inc_y, inc_o, Y, theta, eta, dep) %>% 
   ungroup()
 ```
 
+Figure \@ref(fig:winners-utility) shows the expected life time utility and the expected survival rate for an individual born in year $t$, according to benchmark simulation. Both are highly correlated because the expected survival rate affects utility through the probability to survive and also the propensity to consume. Thus, comparing two generations on the basis of their utility to assess the winner of the inter-generational conflict does not make sense.
 
-```{r}
+```{r winners-utility, fig.cap = 'Expected life time utility and expected survival rate'}
 ## Core
-graph_dev_income_ratio = redis %>% 
-  select(Country, Year, inc_y, inc_o, wL, rK, health_spen, eta) %>% 
-  group_by(Country) %>% 
-  mutate(inc_ratio = inc_y/inc_o,
-         #inc_ratio_with_h = inc_y/(inc_o + health_spen),
-         lab_to_cap_ratio = wL/rK) %>% 
-  mutate_at(vars(contains("ratio")), ~ {(./.[Year == 1970] -1)*100}) %>% 
-  select(Country, Year, lab_to_cap_ratio, inc_ratio) %>% 
+graph_utility = redis %>% 
+  # Select expected life time utility and expected survival rate
+  select(Country, Year, utility, p1) %>% subset(Year %in% c(1970:2040)) %>% 
+  # Melt (from wide to long)
   setDT %>% melt(id.vars = c("Country", "Year")) %>% 
-  mutate(variable = factor(variable, 
-                           labels = c("Labor-to-capital", "Young-to-old"))) %>% 
+  # Rename variables
+  mutate(variable = factor(variable, labels = c("Expected~life~time~utility", "Expected~survival~rate"))) %>% 
   
-  ggplot(aes(x = Year, y = value, linetype = variable, color = Country)) +
+  ggplot(aes(x = Year, y = value, color = Country)) +
   geom_line() +
-  # geom_hline(yintercept = 0, linetype = "dotted") +
+  facet_wrap(variable ~ ., scales = "free_y", labeller = label_parsed) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_bw() +
-  labs(x = element_blank(), y = element_blank(), 
-       linetype = "Income ratio", color = "Country") +
+  labs(x = element_blank(), y = element_blank(), title = element_blank(), linetype = element_blank(), color = element_blank()) +
   theme(legend.position = "right")
 
 # Color version
-graph_dev_income_ratio + 
-  scale_color_grey(start = 0, end = .5) +
-  ggsave(file.path(loc_graphic, "discuss-dev-inc-ratio.png"), 
-         width = 7, height = 7/2)
+graph_utility + scale_color_grey(start = 0, end = .5) +
+  ggsave(file.path(loc_graphic, "discuss-utility.png"), width = 7, height = 7/2)
 
 # Paper version
-graph_dev_income_ratio +
-  geom_hline(yintercept = 0, linetype = "dotted") +
-  scale_color_brewer(palette = "Set1") +
-  labs(title = "Income ratios in deviation from the 1970's value (in %)") +
-  ggsave(file.path(loc_graphic, "discuss-dev-inc-ratio-color.png"), 
-         width = 7, height = 7/2)
+graph_utility + scale_color_brewer(palette = "Set1") +
+  ggsave(file.path(loc_graphic, "discuss-utility-color.png"), width = 7, height = 7/2)
 
 ```
 
+Figure \@ref(fig:winners-ratio) shows the (before-tax) young-to-old and (after-tax) labor-to-capital income ratios in percentage deviation from their 1970's values. These variables are aggregate variables and therefore do not take into account generation sizes.
 
-```{r}
+```{r winners-ratio, fig.cap = 'Income ratio dynamics'}
 ## Core
-graph_dev_income_ratio_capita = redis %>% 
-  select(Country, Year, inc_y, inc_o, wL, rK, health_spen, eta, dep) %>% 
+graph_ratio = redis %>% 
+  select(Country, Year, inc_y, inc_o, wL, rK, eta) %>% 
   group_by(Country) %>% 
-  mutate(inc_ratio = inc_y/inc_o*dep,
-         #inc_ratio_with_h = inc_y/(inc_o + health_spen),
-         lab_to_cap_ratio = wL/rK*dep) %>% 
+  # Young-to-old income ratio and labor-to-capital income ratio
+  mutate(inc_ratio = inc_y/inc_o, lab_to_cap_ratio = wL/rK) %>%
+  # In % deviation from 1970
   mutate_at(vars(contains("ratio")), ~ {(./.[Year == 1970] -1)*100}) %>% 
+  # Select variables
   select(Country, Year, lab_to_cap_ratio, inc_ratio) %>% 
+  # Melt (from wide to long)
   setDT %>% melt(id.vars = c("Country", "Year")) %>% 
+  # Rename ratios
   mutate(variable = factor(variable, labels = c("Before-tax", "After-tax"))) %>% 
   
   ggplot(aes(x = Year, y = value, linetype = variable, color = Country)) +
@@ -1467,40 +1458,71 @@ graph_dev_income_ratio_capita = redis %>%
   geom_hline(yintercept = 0, linetype = "dotted") +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_bw() +
-  labs(x = element_blank(), y = element_blank(), 
-       title = "Per-capita income ratio in percentage deviation (1970 = 0)",
-       linetype = element_blank(), color = element_blank()) +
+  labs(x = element_blank(), y = element_blank(), title = "Income ratio in percentage deviation (1970 = 0)", linetype = element_blank(), color = element_blank()) +
   theme(legend.position = "right")
 
 # Color version
-graph_dev_income_ratio_capita + 
-  scale_color_grey(start = 0, end = .5) +
-  ggsave(file.path(loc_graphic, "discuss-dev-inc-ratio-capita.png"), 
-         width = 7, height = 7/2)
+graph_ratio + scale_color_grey(start = 0, end = .5) + 
+  ggsave(file.path(loc_graphic, "discuss-ratio.png"), width = 7, height = 7/2)
 
 # Paper version
-graph_dev_income_ratio_capita +
-  scale_color_brewer(palette = "Set1") +
-  ggsave(file.path(loc_graphic, "discuss-dev-inc-ratio-capita-color.png"), 
-         width = 7, height = 7/2)
+graph_ratio + scale_color_brewer(palette = "Set1") +
+  ggsave(file.path(loc_graphic, "discuss-ratio-color.png"), width = 7, height = 7/2)
 
 ```
 
-```{r}
-## 3rd step decomposition of GDP
-graph_step3_stacked = redis %>% 
-  mutate(wL_net = wL_net/Y,
-         unemp_ben = unemp_ben/Y,
-         health_spen = health_spen/Y,
-         rK_net = rK_net/Y) %>% 
+Figure \@ref(fig:winners-ratio-pc) shows the per-capita (before-tax) young-to-old and (after-tax) labor-to-capital income ratios in percentage deviation from their 1970's values. These variables take into account changes in generation sizes.
+
+```{r winners-ratio-pc, fig.cap = 'Per-capita income ratio dynamics'}
+## Core
+graph_ratio_pc = redis %>% 
+  select(Country, Year, inc_y, inc_o, wL, rK, eta, dep) %>% 
+  group_by(Country) %>% 
+  # Young-to-old income ratio and labor-to-capital income ratio (PER CAPITA)
+  mutate(inc_ratio = inc_y/inc_o*dep, lab_to_cap_ratio = wL/rK*dep) %>% 
+  # In % deviation from 1970
+  mutate_at(vars(contains("ratio")), ~ {(./.[Year == 1970] -1)*100}) %>% 
+  # Select variables
+  select(Country, Year, lab_to_cap_ratio, inc_ratio) %>% 
+  # Melt (from wide to long)
+  setDT %>% melt(id.vars = c("Country", "Year")) %>% 
+  # Rename ratios
+  mutate(variable = factor(variable, labels = c("Before-tax", "After-tax"))) %>% 
+  
+  ggplot(aes(x = Year, y = value, linetype = variable, color = Country)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
+  theme_bw() +
+  labs(x = element_blank(), y = element_blank(), title = "Per-capita income ratio in percentage deviation (1970 = 0)", linetype = element_blank(), color = element_blank()) +
+  theme(legend.position = "right")
+
+# Color version
+graph_ratio_pc + scale_color_grey(start = 0, end = .5) +
+  ggsave(file.path(loc_graphic, "discuss-ratiopc.png"), width = 7, height = 7/2)
+
+# Paper version
+graph_ratio_pc + scale_color_brewer(palette = "Set1") +
+  ggsave(file.path(loc_graphic, "discuss-ratiopc-color.png"), width = 7, height = 7/2)
+
+```
+
+Figure \@ref(fig:winners-gdpshare) shows the decomposition of total income between net labor income, unemployment benefits, health spending and capital income. The dashed line corresponds to the labor share which represents the gross labor income. When the dashed line lies in the unemployment spending area, it means that the gross labor income is smaller than the total young income (net labor income + unemployment spending). In this case, the young increase their income through redistribution. Conversely, when the dashed line lies in the health spending area, it means that the old reduce the total income of the young through redistribution in order to finance health spending.
+
+```{r winners-gdpshare, fig.cap = 'Decomposition of total income'}
+## Decomposition of GDP between net labor income, unemp. benefits, health spending and net capital income
+graph_gdpshare = redis %>% 
+  # Variables in share of GDP
+  mutate_at(vars(wL_net, unemp_ben, health_spen, rK_net), ~ {./Y}) %>% 
+  # Select variables and labor share
   select(Country, Year, rK_net, health_spen, unemp_ben, wL_net, theta) %>% 
+  # Melt (from wide to long)
   setDT %>% melt(id.vars = c("Country", "Year", "theta")) %>%
+  # Rename variables
   mutate(variable = factor(variable, 
-                           levels = c("rK_net", "health_spen", "unemp_ben",
-                                      "wL_net"), 
-                           labels = c("Net capital income", "Health spending", 
-                                      "Unemployment spending", "Net labor income"))
-         ) %>% 
+    levels = c("rK_net", "health_spen", "unemp_ben", "wL_net"), 
+    labels = c("Net capital income", "Health spending", "Unemployment spending", "Net labor income"))
+    ) %>% 
   
   # Plot
   ggplot(aes(x = Year)) +
@@ -1510,45 +1532,19 @@ graph_step3_stacked = redis %>%
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_bw() +
   theme(legend.position = "bottom", panel.spacing.x = unit(1.5, "lines")) +
-  labs(x = element_blank(), y = element_blank(), title = "Share of GDP",
-       fill = element_blank()) 
-# + 
-#   guides(fill = guide_legend(nrow = 2, byrow = TRUE))
-
+  labs(x = element_blank(), y = "Share of GDP", title = element_blank(), fill = element_blank())
 
 # Paper version
-graph_step3_stacked + 
+graph_gdpshare + 
   scale_fill_grey(start = .8, end = 0) +
-  ggsave(file.path(loc_graphic, "discuss-step3-stacked.png"), 
-         width = 7, height = 7/2)
+  ggsave(file.path(loc_graphic, "discuss-gdpshare.png"), width = 7, height = 7/2)
   
 # Color version
-graph_step3_stacked + 
+graph_gdpshare + 
     scale_fill_manual(values = brewer.pal(8, "Set3")[c(4,6,3,5)]) +
-  ggsave(file.path(loc_graphic, "discuss-step3-stacked-color.png"), 
-         width = 7, height = 7/2)
+  ggsave(file.path(loc_graphic, "discuss-gdpshare-color.png"), width = 7, height = 7/2)
 
 ```
-
-```{r}
-# Utility level per generation
-utility = list.sim$baseline %>%
-  group_by(Country, Sequence) %>% 
-  # Compute GDP split
-  mutate(
-    y = (1-u)*(1-tau)*w+u*b,
-    c1 = log(y/(1+alpha*p1)),
-    c2 = alpha*p1/(1+alpha*p1)*(1-lead(tau,1))*y*r/p,
-    util = log(c1) + alpha*p1*(log(c2) + beta*log(lead(h,1)))
-    ) %>% 
-  ungroup()
-
-# View(utility)
-
-# Always increasing because of the increase in survival rate
-
-```
-
 
 ## Retirement age
 
@@ -1660,7 +1656,7 @@ list.sim$retage = rbind(list.sim$retage, result)
 ```{r discuss-retage-p}
 ## Survival rate dataframe
 retage_p = list.sim$retage[,-c({ncol(list.sim$retage)-2}:ncol(list.sim$retage))] %>%
-  rbind(list.sim$baseline) %>% 
+  rbind(list.sim$benchmark) %>% 
   select(Specification, Country, Year, p, p1) %>% setDT %>% 
   melt(id.vars = c("Specification" ,"Country", "Year")) %>% 
   subset(Year >= 2020) %>% 
@@ -1712,7 +1708,7 @@ retage_p  %>%
 ```{r}
 ## Survival rate dataframe
 retage_ls = list.sim$retage[,-c({ncol(list.sim$retage)-2}:ncol(list.sim$retage))] %>%
-  rbind(list.sim$baseline) %>% 
+  rbind(list.sim$benchmark) %>% 
   select(Specification, Country, Year, theta) %>% setDT %>% 
   melt(id.vars = c("Specification" ,"Country", "Year")) %>% 
   subset(Year >= 2020) %>% 
