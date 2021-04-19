@@ -23,6 +23,8 @@ ceiling_digit = function(x, level=1) round(x+ 5*10^(-level-1), level)
 flooring_digit = function(x, level=1) round(x - 5*10^(-level-1), level)
 # Country set
 CountrySet = c("France", "United States")
+# List
+list.graph = list()
 ```
 
 Then, I load the data. For more details on data, see the README.md file in _data/_raw. For more details on data treatment and the construction of these datasets, see the scripts in _script/_treatment.
@@ -1355,46 +1357,36 @@ Figure \@ref(fig:graph-retage-p) shows the survival rate dynamics with changing 
 
 ```{r graph-retage-p}
 ## Survival rate dataframe
-retage_p = list.sim$retage[,-c({ncol(list.sim$retage)-2}:ncol(list.sim$retage))] %>%
+list.graph$retage_p = list.sim$retage[,-c({ncol(list.sim$retage)-2}:ncol(list.sim$retage))] %>%
   rbind(list.sim$benchmark) %>% 
   select(Specification, Country, Year, p, p1) %>% setDT %>% 
   melt(id.vars = c("Specification" ,"Country", "Year")) %>% 
   subset(Year >= 2020) %>% 
-  mutate(Specification = factor(Specification,
-    levels = c("benchmark", 1:3),
-    labels = c("Benchmark", "Shift -10%", "Constant", "Half growth")))
-
-# Paper version
-retage_p %>% 
+  mutate(Specification = factor(Specification, levels = c("benchmark", 1:3), 
+    labels = c("Benchmark", "Shift -10%", "Constant", "Half growth"))) %>% 
   
-  ggplot(aes(x = Year, y = value, linetype = Specification, color = variable)) +
-  geom_line() +
+  ggplot(aes(x = Year, y = value)) +
   facet_wrap(Country ~ ., scales = "fixed") +
-  scale_linetype_manual(values = c("solid", "dashed", "dotdash", "dotted")) +
-  scale_color_grey(start = 0, end = .5, labels = c(expression(p[t]), expression(p[t+1]))) +
-  scale_x_continuous(breaks = seq(2020, 2080, 10), labels = c("2020", "", "2040", "", "2060", "", "2080")) +
   theme_bw() +
   theme(legend.position = "right", legend.text.align = 0, panel.spacing.x = unit(1, "lines")) +
-  labs(x = element_blank(), y = element_blank(), linetype = "Scenario",
-       color = "Survival rate", title = element_blank()) +
-  guides(linetype = guide_legend(order = 2), color = guide_legend(order = 1)) +
+  scale_x_continuous(breaks = seq(2020, 2080, 10), labels = c("2020", "", "2040", "", "2060", "", "2080")) +
+  labs(x = element_blank(), y = element_blank(), linetype = "Scenario", color = "Survival rate", title = element_blank()) +
+  guides(linetype = guide_legend(order = 2), color = guide_legend(order = 1))
+
+# Paper version
+list.graph$retage_p +
+  geom_line(aes(linetype = Specification, color = variable)) +
+  
+  scale_linetype_manual(values = c("solid", "dashed", "dotdash", "dotted")) +
+  scale_color_grey(start = 0, end = .5, labels = c(expression(p[t]), expression(p[t+1]))) +
   ggsave(file.path(loc_graphic, "discuss-retage-p.png"), width = 7, height = 7/2.5)
 
 # Color version
-retage_p  %>% 
+list.graph$retage_p +
+  geom_line(aes(linetype = variable, color = Specification)) +
   
-  ggplot(aes(x = Year, y = value, linetype = variable, color = Specification)) +
-  geom_line() +
-  facet_wrap(Country ~ ., scales = "fixed") +
   scale_linetype_manual(values = c("solid", "dashed"), labels = c(expression(p[t]), expression(p[t+1]))) +
-  scale_color_manual(values = c("black", brewer.pal(8, "Set1")[c(1:3)])) +
-  scale_x_continuous(breaks = seq(2020, 2080, 10), labels = c("2020", "", "2040", "", "2060", "", "2080")) +
-  theme_bw() +
-  theme(legend.position = "right", legend.text.align = 0, 
-        panel.spacing.x = unit(1, "lines")) +
-  labs(x = element_blank(), y = element_blank(), linetype = "Survival rate",
-       color = "Scenario", title = element_blank()) +
-  guides(linetype = guide_legend(order = 1), color = guide_legend(order = 2)) +
+  scale_color_manual(values = c("black", brewer.pal(8, "Set1")[c(1:3)])) 
   ggsave(file.path(loc_graphic, "discuss-retage-p-color.png"), width = 7, height = 7/2.5)
 
 ```
@@ -1404,45 +1396,35 @@ Figure \@ref(fig:graph-retage-ls) shows the survival rate dynamics with changing
 
 ```{r graph-retage-ls}
 ## Dataframe for the labor share
-retage_ls = list.sim$retage[,-c({ncol(list.sim$retage)-2}:ncol(list.sim$retage))] %>%
+list.graph$retage_ls = list.sim$retage[,-c({ncol(list.sim$retage)-2}:ncol(list.sim$retage))] %>%
   rbind(list.sim$benchmark) %>% 
   select(Specification, Country, Year, theta) %>% setDT %>% 
   melt(id.vars = c("Specification" ,"Country", "Year")) %>% 
   subset(Year >= 2020) %>% 
   mutate(Specification = factor(Specification,
     levels = c("benchmark", 1:3),
-    labels = c("Benchmark", "Shift -10%", "Constant", "Half growth")))
-
-# Paper version
-retage_ls %>% 
+    labels = c("Benchmark", "Shift -10%", "Constant", "Half growth"))) %>% 
   
   ggplot(aes(x = Year, y = value, linetype = Specification, color = Specification)) +
   geom_line() +
   facet_wrap(Country ~ ., scales = "fixed") +
-  scale_color_manual(values = rep("black", 4)) +
-  scale_linetype_manual(values = c("solid", "dashed", "dotdash", "dotted")) +
-  scale_x_continuous(breaks = seq(2020, 2080, 10),
-                     labels = c("2020", "", "2040", "", "2060", "", "2080")) +
+  scale_x_continuous(breaks = seq(2020, 2080, 10), labels = c("2020", "", "2040", "", "2060", "", "2080")) +
   theme_bw() +
   theme(legend.position = "bottom", legend.text.align = 0) +
-  labs(x = element_blank(), y = "Labor share", linetype = "Scenario",
-       color = "Scenario", title = element_blank()) +
+  labs(x = element_blank(), y = "Labor share", linetype = "Scenario", color = "Scenario", title = element_blank())
+
+# Paper version
+list.graph$retage_ls +
+  
+  scale_color_manual(values = rep("black", 4)) +
+  scale_linetype_manual(values = c("solid", "dashed", "dotdash", "dotted")) +
   ggsave(file.path(loc_graphic, "discuss-retage-ls.png"), width = 7, height = 7/1.5)
 
 # Color version
-retage_ls  %>% 
+list.graph$retage_ls +
   
-  ggplot(aes(x = Year, y = value, linetype = Specification, color = Specification)) +
-  geom_line() +
-  facet_wrap(Country ~ ., scales = "fixed") +
   scale_color_manual(values = c("black", brewer.pal(8, "Set1")[c(1:3)])) +
   scale_linetype_manual(values = c("solid", rep("dashed", 3))) +
-  scale_x_continuous(breaks = seq(2020, 2080, 10),
-                     labels = c("2020", "", "2040", "", "2060", "", "2080")) +
-  theme_bw() +
-  theme(legend.position = "bottom", legend.text.align = 0) +
-  labs(x = element_blank(), y = element_blank(), linetype = "Scenario",
-       color = "Scenario", title = "Labor share") +
   ggsave(file.path(loc_graphic, "discuss-retage-ls-color.png"), width = 7, height = 7/1.5)
 
 ```
@@ -1615,7 +1597,7 @@ min_val = result_after %>%
 x_bound = min_val %>% pull("min_x")
 
 ## Figure
-graph_uniq_case_d = result1 %>%
+graph_uniq_rho01 = result1 %>%
   
   ggplot(aes(x = inter, color = sigmarho)) +
   # g function
@@ -1625,23 +1607,20 @@ graph_uniq_case_d = result1 %>%
   # Limit in +infinity of the h function
   geom_hline(data = min_val, aes(yintercept = x_bound, color = sigmarho), linetype = "dotted") +
   # Wrap
-  # facet_wrap(k2 ~ ., labeller = label_bquote(nu == .(as.numeric(as.character(k2))))) +
   facet_wrap(k2 ~ ., labeller = label_bquote(nu == .(k2))) +
   # Axis
   scale_x_continuous(breaks = 0, limits = c(0, 3), expand = c(0,0)) +
   scale_y_continuous(breaks = c(0,1), limits = c(0, 3), expand = c(0,0)) +
   # Graphic parameters
-  theme_bw() +
-  theme(legend.position = "right") +
-  labs(x = element_blank(), y = element_blank())
+  theme_bw() + theme(legend.position = "right") + labs(x = element_blank(), y = element_blank())
 
 # Paper version
-graph_uniq_case_d +
+graph_uniq_rho01 +
   scale_color_grey(name = bquote(sigma~(rho)), start = 0, end  = .8) +
   ggsave(file.path(loc_graphic, "uniq-rho01.png"), width = 7, height = 7/1.5)
 
 # Color version
-graph_uniq_case_d +
+graph_uniq_rho01 +
   scale_color_manual(name = bquote(sigma~(rho)), values = brewer.pal(8, "Set1")) +
   ggsave(file.path(loc_graphic, "uniq-rho01-color.png"), width = 7, height = 7/1.5)
 ```
@@ -1691,10 +1670,11 @@ pwt2 = pwt1 %>%
          k.avh_log = log(k.avh),
          # Time trend
          t_diff = Year - first(Year)) %>% 
-  ungroup
+  ungroup %>% 
+  subset(Country %in% c("France", "United States"))
 
 # Preview
-head(subset(pwt2, Country %in% c("France", "United States")))
+head(pwt2)
 ```
 
 ```{r sigma-reg}
@@ -1723,6 +1703,8 @@ reg$btc = lm(formula = THETA1_log ~ k_log * Country + t_diff*Country, data = pwt
 # (HWC-BTC) column
 reg$both = lm(formula = THETA1_log ~ k.avh_log * Country + t_diff * Country, data = pwt2)
 ```
+
+Compute the elasticity for all the specifications.
 
 ```{r sigma-compute}
 ## Compute sigma
@@ -1775,7 +1757,7 @@ pwt2.fr$THETA1_log_detrend = pwt2.fr %>%
   residuals()
 
 ## Core
-graph_detrend = pwt2.fr %>% 
+list.graph$regime_detrend = pwt2.fr %>% 
   select(Country, Year, k.avh_log, THETA1_log, k.avh_log_detrend, THETA1_log_detrend) %>% 
   setDT %>% melt(id.vars = c("Country", "Year")) %>% 
   mutate(type = factor(variable, labels = c("raw", "raw", "detrend", "detrend")),
@@ -1790,7 +1772,7 @@ graph_detrend = pwt2.fr %>%
   theme(legend.position = "bottom")
 
 ## Paper version
-graph_detrend +
+list.graph$regime_detrend +
   scale_color_grey(start = 0, end = 0,
     labels = c("Normalized capital-per-worker (in log)", "Labor-to-capital income ratio (in log)")) +
   scale_linetype_manual(values = c("solid", "dashed"),
@@ -1798,7 +1780,7 @@ graph_detrend +
   ggsave(file.path(loc_graphic, "regime-detrend.png"), width = 7, height = 7/2)
 
 ## Color version
-graph_detrend +
+list.graph$regime_detrend +
   scale_color_manual(values = brewer.pal(8, "Set1"),
     labels = c("Normalized capital-per-worker (in log)", "Labor-to-capital income ratio (in log)")) +
   scale_linetype_manual(values = c("solid", "solid"),
@@ -1811,7 +1793,7 @@ Figure \@ref(fig:graph-regime-regline) shows the regression lines of the labor-t
 
 ```{r graph-regime-regline}
 ## Core
-graph_regline = pwt2.fr %>% 
+list.graph$regime_regline = pwt2.fr %>% 
   select(Country, Year, k_raw = k.avh_log, THETA_raw = THETA1_log, 
          k_detrend = k.avh_log_detrend, THETA_detrend = THETA1_log_detrend) %>% 
   setDT %>% 
@@ -1831,17 +1813,19 @@ graph_regline = pwt2.fr %>%
   theme(legend.position = "bottom")
 
 ## Paper version
-graph_regline +
+list.graph$regime_regline +
   scale_color_grey(start = 0.1, end = 0.5) +
   scale_shape_manual(values = c(16, 17)) +
   ggsave(file.path(loc_graphic, "regime-regline.png"), width = 7, height = 7/2)
 
 ## Color version
-graph_regline +
+list.graph$regime_regline +
   scale_color_manual(values = brewer.pal(8, "Set1")[c(3,4)]) +
   scale_shape_manual(values = c(16, 17)) +
   ggsave(file.path(loc_graphic, "regime-regline-color.png"), width = 7, height = 7/2)
 ```
+
+Loop to run regressions with changing break in the regime between 1975 and 1995.
 
 ```{r regime-breakyear}
 # Empty dataframes
@@ -1876,13 +1860,12 @@ for(splitter in c(1975:1995)){
 # Sort data
 split.coef = split.coef %>% 
   setNames(c("splitter", "variable", "estimate", "se", "tvalue", "pvalue")) %>% 
-  mutate(star = ifelse(pvalue > 0.1, NA,
-                       ifelse(pvalue > 0.05, "*",
-                              ifelse(pvalue > 0.01, "**", "***"))))
+  mutate(star = ifelse(pvalue > 0.1, NA, ifelse(pvalue > 0.05, "*", ifelse(pvalue > 0.01, "**", "***"))))
 ```
 
+Prepare the table to summarize coefficients and $R^2$.
 
-```{r break_year_optimal_splitter_coef}
+```{r regime-split-compute}
 # R2
 split.R2 = split.R2 %>% 
   mutate(variable = "estimate", R2 = sprintf("%.3f", R2))
@@ -1908,8 +1891,9 @@ split.coef = split.coef %>%
          rho2 = "k.avh_log_detrend:after_split", R2)
 ```
 
+Table \@ref(tab:tab-regime-split) summarizes the parameters for France wit a break in the regime at year $\bar{t]$. This table corresponds to Table 4 in the paper (appendix).
 
-```{r break_year_optimal_splitter_coef}
+```{r tab-regime-split}
 options(knitr.kable.NA = '') # Fill NA with blank
 # Table infos
 split_table_col.names = c("$\\bar{t}$", "\\multicolumn{1}{c}{$\\nu_1$}", "\\multicolumn{1}{c}{$\\nu_2$}", "\\multicolumn{1}{c}{$\\rho_1$}",
@@ -1936,46 +1920,41 @@ split.coef %>%
   
 ```
 
-```{r}
+The regression with a change in the regime in 1985 has the greatest $R^2$ and all its coefficients are significant. Thus, I asssume that the break in the regime has occurred in 1985.
+
+```{r regime-break85}
 # Break year
 break_year = 1985
-
 # Empty list
 reg2 = list()
-
 # Coefficients
-coef.map2 = list(
-  "(Intercept)" = "$\\alpha$",
-  "k.avh_log" = "$\\beta$",
-  "t_diff" = "$\\gamma$"
-)
+coef.map2 = list("(Intercept)" = "$\\alpha$", "k.avh_log" = "$\\beta$", "t_diff" = "$\\gamma$")
 ```
 
+Consider the (HWC) and (HWC-BTC) specifications with the break in the regime.
 
-```{r est_adjust1}
+```{r regime-estimate}
+# Regressions
 reg2$p1_hwc = lm(formula = THETA1_log ~ k.avh_log, data = pwt2.fr, subset = Year <= break_year)
 reg2$p1_both = lm(formula = THETA1_log ~ k.avh_log + t_diff, data = pwt2.fr, subset = Year <= break_year)
 reg2$p2_hwc = lm(formula = THETA1_log ~ k.avh_log, data = pwt2.fr, subset = Year > break_year)
 reg2$p2_both = lm(formula = THETA1_log ~ k.avh_log + t_diff, data = pwt2.fr, subset = Year > break_year)
-```
 
-```{r}
-## Compute sigma
-# France
+## Compute sigma for France
 sigma2 = c(1/(1+reg2$p1_hwc$coefficients["k.avh_log"]),
              1/(1+reg2$p1_both$coefficients["k.avh_log"]),
              1/(1+reg2$p2_hwc$coefficients["k.avh_log"]),
              1/(1+reg2$p2_both$coefficients["k.avh_log"])
              ) %>% unname()
-
+# Round
 sigma2 = lapply(sigma2, function(x){round(x, 3)})
 ```
 
-```{r est_adjust1}
+Table \@ref(tab:tab-regime-estimate) summarizes the parameters for France wit a break in the regime in 1985. This table corresponds to Table 5 in the paper (appendix).
+
+```{r tab-regime-estimate}
 tabular(reg2, coef_map = coef.map2,
-        gof.row = list(
-          "$\\sigma_{FR}$" = c(sigma2)
-          ),
+        gof.row = list("$\\sigma_{FR}$" = c(sigma2)),
         digits = 3,
         group.models = list("1970-1985" = 1:2, "1986-2010" = 3:4),
         model_map = c("(HWC)", "(HWC-BTC)", "(HWC)", "(HWC-BTC)")) %>% 
