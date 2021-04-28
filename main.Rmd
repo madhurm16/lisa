@@ -1440,7 +1440,7 @@ g = function(k, sigma, ks){
   k2 = ks[2]
   G = log((k/k1-1)/((k/k2)^((sigma-1)/sigma)-1))
   return(G)
-}-
+}
 
 # Create a dataframe with only x values
 df.inter = data.frame("inter" = seq(0, 6, length.out = 10000))
@@ -1960,3 +1960,78 @@ tabular(reg2, coef_map = coef.map2,
         model_map = c("(HWC)", "(HWC-BTC)", "(HWC)", "(HWC-BTC)")) %>% 
   writeLines(., con = "_tabular/regime-estimate.tex")
 ```
+
+#### Structural break
+
+```{r}
+require(strucchange)
+
+pwt2.fr.struct = pwt2.fr %>% 
+  select(Year, k.avh_log_detrend, THETA1_log_detrend)
+
+test = efp(THETA1_log_detrend ~ k.avh_log_detrend, data = pwt2.fr.struct)
+plot(test)
+
+m0 = lm(THETA1_log_detrend ~ k.avh_log_detrend, data = pwt2.fr.struct)
+
+bp = breakpoints(THETA1_log_detrend ~ k.avh_log_detrend, data = pwt2.fr.struct, breaks = 1)
+summary(bp)
+# Optimal break
+pwt2.fr.struct$Year[bp$breakpoints]
+
+m1 = lm(THETA1_log_detrend ~ k.avh_log_detrend*I(Year>1985), data = pwt2.fr.struct)
+
+plot(bp)
+lines(bp, breaks = 1)
+
+plot(pwt2.fr.struct$k.avh_log_detrend)
+
+waldtest(m1, m0)
+```
+
+```{r}
+# Compute break point
+bp = breakpoints(THETA1_log_detrend ~ k.avh_log_detrend, data = pwt2.fr, breaks = 1)
+summary(bp)
+# Optimal break
+breakyear = pwt2.fr$Year[bp$breakpoints]
+breakyear
+
+m0 = lm(THETA1_log ~ k.avh_log + t_diff, data = pwt2.fr)
+summary(m0)
+m1 = lm(THETA1_log ~ k.avh_log*I(Year > breakyear) + t_diff*I(Year >= breakyear), data = pwt2.fr)
+summary(m1)
+
+waldtest(m1, m0)
+
+# Before break point
+m1a = lm(THETA1_log ~ k.avh_log, subset = Year <= breakyear, data = pwt2.fr)
+summary(m1a)
+# After break point
+m1b = lm(THETA1_log ~ k.avh_log, subset = Year > breakyear, data = pwt2.fr)
+summary(m1b)
+```
+
+
+```{r}
+pwt2.us
+
+bp = breakpoints(THETA1_log ~ k.avh_log + t_diff, data = pwt2.us, breaks = 1)
+summary(bp)
+# Optimal break
+breakyear = pwt2.us$Year[bp$breakpoints]
+breakyear
+
+m0 = lm(THETA1_log ~ k.avh_log + t_diff, data = pwt2.us)
+m1 = lm(THETA1_log ~ k.avh_log*I(Year > breakyear) + t_diff*I(Year > breakyear), data = pwt2.us)
+
+waldtest(m1, m0)
+
+# Before break point
+m1a = lm(THETA1_log ~ k.avh_log + t_diff, subset = Year <= breakyear, data = pwt2.us)
+summary(m1a)
+# After break point
+m1b = lm(THETA1_log ~ k.avh_log + t_diff, subset = Year > breakyear, data = pwt2.us)
+summary(m1b)
+```
+
