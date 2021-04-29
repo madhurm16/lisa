@@ -1682,46 +1682,43 @@ head(pwt2)
 reg = list()
 
 # Coefficients
-coef.map = list(
-  "(Intercept)" = "$\\alpha$",
-  "CountryUnited States" = "$\\alpha~\\times$ US",
-  "k_log" = "$\\beta$",
-  "k_log:CountryUnited States" = "$\\beta~\\times$ US",
-  "k.avh_log" = "$\\beta$",
-  "k.avh_log:CountryUnited States" = "$\\beta~\\times$ US",
-  "t_diff" = "$\\gamma$",
-  "CountryUnited States:t_diff" = "$\\gamma~\\times$ US"
-)
+coef.map = list("(Intercept)" = "$\\alpha$", "k_log" = "$\\beta$", "k.avh_log" = "$\\beta$", "t_diff" = "$\\gamma$")
 
 ## Regressions
+# France
 # (RAW) column
-reg$raw = lm(formula = THETA1_log ~ k_log * Country, data = pwt2)
+reg$FRraw = lm(formula = THETA1_log ~ k_log, data = pwt2, subset = Country =="France")
 # (HWC) column
-reg$hwc = lm(formula = THETA1_log ~ k.avh_log * Country, data = pwt2)
+reg$FRhwc = lm(formula = THETA1_log ~ k.avh_log, data = pwt2, subset = Country =="France")
 # (BTC) column
-reg$btc = lm(formula = THETA1_log ~ k_log * Country + t_diff*Country, data = pwt2)
+reg$FRbtc = lm(formula = THETA1_log ~ k_log + t_diff, data = pwt2, subset = Country =="France")
 # (HWC-BTC) column
-reg$both = lm(formula = THETA1_log ~ k.avh_log * Country + t_diff * Country, data = pwt2)
+reg$FRboth = lm(formula = THETA1_log ~ k.avh_log + t_diff, data = pwt2, subset = Country =="France")
+# United States
+# (RAW) column
+reg$USraw = lm(formula = THETA1_log ~ k_log, data = pwt2, subset = Country =="United States")
+# (HWC) column
+reg$UShwc = lm(formula = THETA1_log ~ k.avh_log, data = pwt2, subset = Country =="United States")
+# (BTC) column
+reg$USbtc = lm(formula = THETA1_log ~ k_log + t_diff, data = pwt2, subset = Country =="United States")
+# (HWC-BTC) column
+reg$USboth = lm(formula = THETA1_log ~ k.avh_log + t_diff, data = pwt2, subset = Country =="United States")
+
 ```
 
 Compute the elasticity for all the specifications.
 
 ```{r sigma-compute}
 ## Compute sigma
-# France
-sigma$fr = c(1/(1+reg$raw$coefficients["k_log"]),
-             1/(1+reg$hwc$coefficients["k.avh_log"]),
-             1/(1+reg$btc$coefficients["k_log"]),
-             1/(1+reg$both$coefficients["k.avh_log"])
-             ) %>% unname()
-# United-States
-sigma$us = c(1/(1+reg$raw$coefficients["k_log"]+reg$raw$coefficients["k_log:CountryUnited States"]),
-             1/(1+reg$hwc$coefficients["k.avh_log"]+reg$hwc$coefficients["k.avh_log:CountryUnited States"]),
-             1/(1+reg$btc$coefficients["k_log"]+reg$btc$coefficients["k_log:CountryUnited States"]),
-             1/(1+reg$both$coefficients["k.avh_log"]+reg$both$coefficients["k.avh_log:CountryUnited States"])
-             ) %>% unname()
-# Round them all
-sigma = lapply(sigma, function(x){round(x, 3)})
+sigma = c(1/(1+reg$FRraw$coefficients["k_log"]),
+             1/(1+reg$FRhwc$coefficients["k.avh_log"]),
+             1/(1+reg$FRbtc$coefficients["k_log"]),
+             1/(1+reg$FRboth$coefficients["k.avh_log"]),
+             1/(1+reg$USraw$coefficients["k_log"]),
+             1/(1+reg$UShwc$coefficients["k.avh_log"]),
+             1/(1+reg$USbtc$coefficients["k_log"]),
+             1/(1+reg$USboth$coefficients["k.avh_log"])
+          ) %>% unname() %>% round(3)
 ```
 
 Table \@ref(tab:tab-sigma-estimate) summarizes the parameters for both countries. This table corresponds to Table 3 in the paper (appendix).
@@ -1729,18 +1726,17 @@ Table \@ref(tab:tab-sigma-estimate) summarizes the parameters for both countries
 ```{r tab-sigma-estimate}
 # Table from regressions with siglma
 tabular(reg, coef_map = coef.map,
-        gof.row = list(
-          "$\\sigma_{FR}$" = c(sigma$fr),
-          "$\\sigma_{US}$" = c(sigma$us)
-          ),
+        gof.row = list("$\\sigma$" = sigma),
         digits = 3,
-        model_map = c("(RAW)", "(HWC)", "(BTC)", "(HWC-BTC)")) %>% 
+        model_map = rep(c("(RAW)", "(HWC)", "(BTC)", "(HWC-BTC)"),2),
+        group.models = list("France" = 1:4, "United States" = 5:8),
+        reg.type = "Linear regression") %>% 
   writeLines(., con = "_tabular/sigma-estimate.tex")
 ```
 
 # Two capital-labor elasticity regimes in France
 
-Figure \@ref(fig:graph-regime-detrend) shows raw and detrended data of the capital-per-worker and the labor-to-capital income ratio in France between 1970 and 2010. This figure corresponds to Figure 13 in the paper (appendix).
+This section provides the details of the two capital-labor elasticity regimes for France in the paper (appendix). Figure \@ref(fig:graph-regime-detrend) shows raw and detrended data of the capital-per-worker and the labor-to-capital income ratio in France between 1970 and 2010. This figure corresponds to Figure 13 in the paper (appendix).
 
 ```{r graph-regime-detrend, warnings = FALSE}
 # Select France
@@ -1825,115 +1821,35 @@ list.graph$regime_regline +
   ggsave(file.path(loc_graphic, "regime-regline-color.png"), width = 7, height = 7/2)
 ```
 
-Loop to run regressions with changing break in the regime between 1975 and 1995.
+Estimate the optimal break point. Find that the optimal break is in 1985. Wald test rejects the null hypothesis.
 
-```{r regime-breakyear}
-# Empty dataframes
-split.coef = data.frame(matrix(nrow = 0, ncol = 6))
-split.R2 = data.frame(matrix(nrow = 0, ncol = 2))
+```{r find-breakpoint}
+# Required packages
+require(strucchange)
+require(lmtest)
 
-# Loop to analysis splitters
-for(splitter in c(1975:1995)){
-  
-  est_sigma.fr = pwt2.fr %>% 
-    mutate(after_split = ifelse(Year > splitter, 1, 0),
-           before_split = ifelse(Year <= splitter, 1, 0))
-  
-  # Break
-  ols.france_dummy = est_sigma.fr %>% 
-    lm(THETA1_log_detrend ~ k.avh_log_detrend*before_split + k.avh_log_detrend*after_split - 1 -
-         k.avh_log_detrend, data = .)
-  ols.france_dummy = summary(ols.france_dummy)
-  
-  ## Gather results
-  # Coefs
-  split.coef = split.coef %>%
-    rbind(data.frame(splitter,
-                     var = ols.france_dummy$coefficients %>% row.names(),
-                     ols.france_dummy$coefficients,
-                     row.names = NULL))
-  # R^2
-  split.R2 = split.R2 %>% 
-    rbind(data.frame(splitter, R2 = ols.france_dummy$r.squared))
-}
+## Base model as in (HWC-BTC) from Appendix C
+m0 = lm(THETA1_log_detrend ~ k.avh_log_detrend, data = pwt2.fr)
+## Estimate the optimal break point
+mbp = breakpoints(THETA1_log_detrend ~ k.avh_log_detrend, data = pwt2.fr, breaks = 1)
+# Optimal break
+break_year = pwt2.fr$Year[mbp$breakpoints]
+break_year
 
-# Sort data
-split.coef = split.coef %>% 
-  setNames(c("splitter", "variable", "estimate", "se", "tvalue", "pvalue")) %>% 
-  mutate(star = ifelse(pvalue > 0.1, NA, ifelse(pvalue > 0.05, "*", ifelse(pvalue > 0.01, "**", "***"))))
+## Model with 1 breakpoint
+m1 = lm(THETA1_log_detrend ~ k.avh_log_detrend*I(Year<=1985), data = pwt2.fr)
+
+## WALD TEST to compare both
+waldtest(m1, m0)
 ```
+I run the regressions with break year in 1985.
 
-Prepare the table to summarize coefficients and $R^2$.
-
-```{r regime-split-compute}
-# R2
-split.R2 = split.R2 %>% 
-  mutate(variable = "estimate", R2 = sprintf("%.3f", R2))
-
-# Coefficients
-split.coef = split.coef %>% 
-  mutate( 
-    estimate = ifelse(!is.na(star), 
-                      paste0(sprintf("%.3f", estimate), "^{", star, "}"), 
-                      sprintf("%.3f", estimate)),
-    se = paste0("(", sprintf("%.3f", se), ")"),
-    ) %>% 
-  select(splitter, var = variable, estimate, se) %>%  setDT %>% 
-  melt(id.vars = c("splitter", "var")) %>% 
-  dcast(splitter + variable ~ var, value.var = "value") %>% 
-  merge(split.R2, by = c("splitter", "variable"), all.x = T) %>% 
-  # Select years to show
-  subset(splitter %in% c(1980:1990)) %>% 
-  mutate(splitter = c(rbind(unique(splitter), NA))) %>% 
-  select(-variable) %>% 
-  select(splitter, nu1 = before_split, nu2 = after_split,
-         rho1 = "k.avh_log_detrend:before_split", 
-         rho2 = "k.avh_log_detrend:after_split", R2)
-```
-
-Table \@ref(tab:tab-regime-split) summarizes the parameters for France wit a break in the regime at year $\bar{t]$. This table corresponds to Table 4 in the paper (appendix).
-
-```{r tab-regime-split}
-options(knitr.kable.NA = '') # Fill NA with blank
-# Table infos
-split_table_col.names = c("$\\bar{t}$", "\\multicolumn{1}{c}{$\\nu_1$}", "\\multicolumn{1}{c}{$\\nu_2$}", "\\multicolumn{1}{c}{$\\rho_1$}",
-                          "\\multicolumn{1}{c}{$\\rho_2$}", "\\multicolumn{1}{c}{$R^2$}")
-  
-
-# Save table in TeX format
-split.coef %>% 
-  kable(format = "latex", col.names = split_table_col.names, 
-        booktabs = TRUE, linesep = "", escape = FALSE) %>% 
-  strsplit("\n") %>% 
-  unlist %>% 
-  {.[-c(1:2)]} %>% 
-  c("\\begin{tabular}{c D{.}{.}{-3} D{.}{.}{-3} D{.}{.}{-3} D{.}{.}{-3} D{.}{.}{-3}}", .) %>% 
-  writeLines(., con = "_tabular/regime-split.tex", sep = "\n")
-
-
-# HTML format
-split.coef %>% 
-  kable(col.names = split_table_col.names) %>% 
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), 
-                full_width = FALSE) %>% 
-  row_spec(0, bold=TRUE) 
-  
-```
-
-The regression with a change in the regime in 1985 has the greatest $R^2$ and all its coefficients are significant. Thus, I asssume that the break in the regime has occurred in 1985.
-
-```{r regime-break85}
-# Break year
-break_year = 1985
+```{r reg-breakpoint}
 # Empty list
 reg2 = list()
 # Coefficients
 coef.map2 = list("(Intercept)" = "$\\alpha$", "k.avh_log" = "$\\beta$", "t_diff" = "$\\gamma$")
-```
 
-Consider the (HWC) and (HWC-BTC) specifications with the break in the regime.
-
-```{r regime-estimate}
 # Regressions
 reg2$p1_hwc = lm(formula = THETA1_log ~ k.avh_log, data = pwt2.fr, subset = Year <= break_year)
 reg2$p1_both = lm(formula = THETA1_log ~ k.avh_log + t_diff, data = pwt2.fr, subset = Year <= break_year)
@@ -1957,81 +1873,7 @@ tabular(reg2, coef_map = coef.map2,
         gof.row = list("$\\sigma_{FR}$" = c(sigma2)),
         digits = 3,
         group.models = list("1970-1985" = 1:2, "1986-2010" = 3:4),
-        model_map = c("(HWC)", "(HWC-BTC)", "(HWC)", "(HWC-BTC)")) %>% 
+        model_map = c("(HWC)", "(HWC-BTC)", "(HWC)", "(HWC-BTC)"),
+        reg.type = "Linear regression") %>% 
   writeLines(., con = "_tabular/regime-estimate.tex")
 ```
-
-#### Structural break
-
-```{r}
-require(strucchange)
-
-pwt2.fr.struct = pwt2.fr %>% 
-  select(Year, k.avh_log_detrend, THETA1_log_detrend)
-
-test = efp(THETA1_log_detrend ~ k.avh_log_detrend, data = pwt2.fr.struct)
-plot(test)
-
-m0 = lm(THETA1_log_detrend ~ k.avh_log_detrend, data = pwt2.fr.struct)
-
-bp = breakpoints(THETA1_log_detrend ~ k.avh_log_detrend, data = pwt2.fr.struct, breaks = 1)
-summary(bp)
-# Optimal break
-pwt2.fr.struct$Year[bp$breakpoints]
-
-m1 = lm(THETA1_log_detrend ~ k.avh_log_detrend*I(Year>1985), data = pwt2.fr.struct)
-
-plot(bp)
-lines(bp, breaks = 1)
-
-plot(pwt2.fr.struct$k.avh_log_detrend)
-
-waldtest(m1, m0)
-```
-
-```{r}
-# Compute break point
-bp = breakpoints(THETA1_log_detrend ~ k.avh_log_detrend, data = pwt2.fr, breaks = 1)
-summary(bp)
-# Optimal break
-breakyear = pwt2.fr$Year[bp$breakpoints]
-breakyear
-
-m0 = lm(THETA1_log ~ k.avh_log + t_diff, data = pwt2.fr)
-summary(m0)
-m1 = lm(THETA1_log ~ k.avh_log*I(Year > breakyear) + t_diff*I(Year >= breakyear), data = pwt2.fr)
-summary(m1)
-
-waldtest(m1, m0)
-
-# Before break point
-m1a = lm(THETA1_log ~ k.avh_log, subset = Year <= breakyear, data = pwt2.fr)
-summary(m1a)
-# After break point
-m1b = lm(THETA1_log ~ k.avh_log, subset = Year > breakyear, data = pwt2.fr)
-summary(m1b)
-```
-
-
-```{r}
-pwt2.us
-
-bp = breakpoints(THETA1_log ~ k.avh_log + t_diff, data = pwt2.us, breaks = 1)
-summary(bp)
-# Optimal break
-breakyear = pwt2.us$Year[bp$breakpoints]
-breakyear
-
-m0 = lm(THETA1_log ~ k.avh_log + t_diff, data = pwt2.us)
-m1 = lm(THETA1_log ~ k.avh_log*I(Year > breakyear) + t_diff*I(Year > breakyear), data = pwt2.us)
-
-waldtest(m1, m0)
-
-# Before break point
-m1a = lm(THETA1_log ~ k.avh_log + t_diff, subset = Year <= breakyear, data = pwt2.us)
-summary(m1a)
-# After break point
-m1b = lm(THETA1_log ~ k.avh_log + t_diff, subset = Year > breakyear, data = pwt2.us)
-summary(m1b)
-```
-
