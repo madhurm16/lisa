@@ -6,7 +6,7 @@ bibliography: referencesLISA.bib
 
 # Initialization
 
-I start loading all the initial script. If the summeR repository is not loaded, please download it [here](https://github.com/SummerTold/summeR). Place the summeR repository in the same folder as this repository.
+I start loading all the initial script. If the summeR repository is not loaded, please download it [here](https://github.com/FabienPetitEconomics/summeR). Place the summeR repository in the same folder as this repository.
 
 ```{r init, echo = F}
 # Load init script

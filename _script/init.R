@@ -1,12 +1,34 @@
-#### from summeR ####
-# summeR location files
-loc_summeR = file.path(dirname(getwd()), "summeR")
+#### PACKAGES ####
+# List all packages
+packages <- c(
+  # Load Data
+  "foreign", "haven",
+  # Deal with Data
+  "dplyr", "reshape2", "tidyr", "tidyselect", "data.table",
+  "stringr", # String
+  "lubridate", # Date format
+  "zoo", # Time series
+  # Graphics
+  "ggplot2", "ggrepel", "RColorBrewer", "grid", "ggpubr", "gridExtra",
+  # Tables
+  "texreg",
+  # Knitr and Kable
+  "kableExtra", "knitr")
+# Load packages
+lapply(packages, require, character.only = TRUE)
+# Clear
+rm(packages)
 
-# Load packages from summeR
-source(file.path(loc_summeR, "_script", "packages.R"))
-source(file.path(loc_summeR, "_script", "loc_base.R"))
-# Load functions from summeR
-sapply(list.files(pattern = "[.]R$", path = file.path(loc_summeR, "_function"), full.names = TRUE), source)
+#### LOCATIONS ####
+# Standard file location
+loc_data = file.path(getwd(), "_data")
+loc_function = file.path(getwd(), "_function")
+loc_graphic = file.path(getwd(), "_graphic")
+loc_script = file.path(getwd(), "_script")
+loc_tabular = file.path(getwd(), "_tabular")
 
-# Systime
+#### FUNCTIONS ####
+sapply(list.files(pattern = "[.]R$", path = loc_function, full.names = TRUE), source)
+
+#### SYSTIME #####
 Sys.setlocale("LC_TIME", "English")
