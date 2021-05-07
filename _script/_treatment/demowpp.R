@@ -32,7 +32,7 @@ countryOECD_full = c("Australia", "Austria", "Belgium", "Canada", "Chile", "Czec
                      "Portugal", "Slovakia", "Slovenia", "South Korea", "Spain", "Sweden",
                      "Switzerland", "Turkey", "United Kingdom", "United States")
 # Load data
-wpp <- read.csv(file.path(loc_csv_un,"WPP2017_PopulationByAgeSex_Medium.csv"))
+wpp <- read.csv(file.path(loc_csv_un, "WPP2017_PopulationByAgeSex_Medium.csv"))
 populstat <- read.csv(file.path(loc_csv_populstat, "populstat_info.csv")) %>% 
   select(Country, Year, total = pop_total)
 ##### TREATMENT WPP #####

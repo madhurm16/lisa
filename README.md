@@ -59,7 +59,6 @@ Each directory contains a README file describing each file and subdirectory.
 | `_script`               | All the scripts |
 | `_tabular`              | All the tabulars |
 | `lisa.Rproj`            | R Project settings |
-| `main.md`               | Main notebook |
 | `main.Rmd`              | Main notebook (R code) |
 | `referencesLISA.bib`    | References in the paper|
 
