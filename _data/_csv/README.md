@@ -8,6 +8,6 @@ Directories are organized as follows:
 
 - `_cwed`: data from the [Comparative Welfare Entitlements Dataset](http://cwed2.org/).
 - `_oecd`: data from the [OECD database](https://data.oecd.org/).
-- `_populstat`: data from the [Population Statistics website](http://www.populstat.info/).
+- `_populstat`: data from the [Population Statistics website](https://web.archive.org/web/20170201224557/http://populstat.info/).
 - `_pwt`: data from the [Penn World Table 9.1](https://www.rug.nl/ggdc/productivity/pwt/).
 - `_wpp`: data from the [United Nations (World Population Prospect 2017)](https://population.un.org/wpp/).
