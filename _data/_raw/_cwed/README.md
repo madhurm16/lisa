@@ -8,5 +8,5 @@ The Comparative Welfare Entitlements Dataset (CWED) contains information about t
 
 Files are organized as follows:
 
-- **Codebook_cwed.pdf**: User guide, downloaded on the 28th November 2018.
-- **cwed.csv**: Raw data, downloaded on the 26th November 2018.
+- `Codebook_cwed.pd`: User guide, downloaded on the 28th November 2018.
+- `cwed.csv`: Raw data, downloaded on the 26th November 2018.

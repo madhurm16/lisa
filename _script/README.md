@@ -1,16 +1,11 @@
 # Script
 
-This directory contains all the scripts used in this project.
+This directory contains all the scripts used in this study.
 
 ---
 
-Directories are organized as follows:
+Directories and files are organized as follows:
 
-- **_treatment**: treatment script to transformed .csv data into final datasets.
-
----
-
-Files are organized as follows:
-
-- **init.R**: initialization script.
-- **sim_AFinder.R**: grid search script for A parameter.
+- `_treatment`: treatment scripts to transform data in `_data/_csv/` into final datasets in `_data/_final/`.
+- `init.R`: initialization script.
+- `sim_AFinder.R``: grid search script for A parameter.
