@@ -6,18 +6,13 @@ bibliography: referencesLISA.bib
 
 # Initialization
 
-I start loading all the initial script. If the summeR repository is not loaded, please download it [here](https://github.com/FabienPetitEconomics/summeR). Place the summeR repository in the same folder as this repository.
+I start loading all the initial script.
 
 ```{r init, echo = F}
 # Load init script
 source("_script/init.R")
-# Additional packages
-# require(ggpmisc)
 # knitr options
 knitr::opts_chunk$set(warning = FALSE)
-# Function
-source(file.path(loc_function, "demo_changer.R"))
-source(file.path(loc_function, "model.R"))
 # Function to round in solver
 ceiling_digit = function(x, level=1) round(x+ 5*10^(-level-1), level)
 flooring_digit = function(x, level=1) round(x - 5*10^(-level-1), level)
