@@ -8,7 +8,7 @@ All data used to support the findings of this study have been deposited in `_dat
 
 # Dataset list
 
-Thus list contains datasets used in the `main.Rmd` notebook. Original data are available in `_data/_raw/`. Original data in csv format are available in `_data/_csv/`. Directories may contain additional data, although not used in the main notebook.
+This list contains datasets used in the `main.Rmd` notebook. Original data are available in `_data/_raw/`. Original data in csv format are available in `_data/_csv/`. Directories may contain additional data, although not used in the main notebook.
 
 | DATA FILE               | SOURCE                    | NOTES               | PROVIDED |
 | ----------------------- | ------------------------- | ------------------- | -------- |
@@ -54,15 +54,15 @@ Each directory contains a README file describing each file and subdirectory.
 | DATA FILE               | DESCRIPTION                                                    |
 | ----------------------- | -------------------------------------------------------------- |
 | `_data`                 | All the data (raw, intermediate and final datasets) |
-| `_deprecated`           | Deprecated notebooks, scripts and files |
-| `_diagram`              | Diagrams of the model for slides |
 | `_function`             | All the functions |
 | `_graphic`              | All the graphics |
-| `_paper`                | Current version of the paper and slides |
 | `_script`               | All the scripts |
 | `_tabular`              | All the tabulars |
-| ----------------------- | -------------------------------------------------------------- |
 | `lisa.Rproj`            | R Project settings |
 | `main.md`               | Main notebook |
 | `main.Rmd`              | Main notebook (R code) |
-| `referencesLISA.bib`    | References |
+| `referencesLISA.bib`    | References in the paper|
+
+# Acknowledgements
+
+Structure of this file was copied from the [Template README and Guidance of The Review of Economic Studies](https://restud.github.io/data-editor/template-README/).

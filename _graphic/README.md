@@ -1,12 +1,6 @@
 # Graphic
 
-This directory contains all the graphics used in this project.
-
----
-
-Directories are organized as follows:
-
-- **_agestructure**: contains all the graphics used to display the age structure of population.
+This directory contains all the graphics used in this study.
 
 ---
 
