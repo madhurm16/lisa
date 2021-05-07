@@ -1,6 +1,6 @@
 # Data in .csv format
 
-This directory contains the same data as in the `_data/_raw/` directory, but in .csv format. Except populstat data for which extraction has been done directly into .csv format with web scraping, not provided in this repository.
+This directory contains the same data as in the `_data/_raw/` directory, but in csv format. Except populstat data for which extraction has been done directly into .csv format with web scraping, not provided in this repository.
 
 ---
 

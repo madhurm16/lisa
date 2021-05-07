@@ -1,6 +1,6 @@
 # Treatment scripts
 
-This directory contains all the scripts used to treat data and generate datasets in `_data/_final`.
+This directory contains all the scripts used to treat data and generate datasets in `_data/_final/`.
 
 ---
 

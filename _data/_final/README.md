@@ -1,6 +1,6 @@
 # Final data in .csv format
 
-This directory contains all the final data used in this project, they are generated with scripts in _script/_treatment.
+This directory contains all the final data used in this project, they are generated with scripts in `_script/_treatment`.
 
 ---
 

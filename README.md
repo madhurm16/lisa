@@ -8,7 +8,7 @@ All data used to support the findings of this study have been deposited in `_dat
 
 # Dataset list
 
-This list contains datasets used in the `main.Rmd` notebook. Original data are available in `_data/_raw/`. Original data in csv format are available in `_data/_csv/`.
+This list contains datasets used in the `main.Rmd` notebook. Original data are available in `_data/_raw/`. Original data in csv format are available in `_data/_csv/`. Transformation of data are performed with scripts in `_script/_treatment/`.
 
 | DATA FILE               | SOURCE                    | NOTES               | PROVIDED |
 | ----------------------- | ------------------------- | ------------------- | -------- |
