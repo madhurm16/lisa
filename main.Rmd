@@ -1192,7 +1192,7 @@ graph_ratio_pc = redis %>%
   geom_hline(yintercept = 0, linetype = "dotted") +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_bw() +
-  labs(x = element_blank(), y = element_blank(), title = "Per-capita income ratio in percentage deviation (1970 = 0)", linetype = element_blank(), color = element_blank()) +
+  labs(x = element_blank(), y = element_blank(), title = "Per-capita young-to-old income ratio in percentage deviation (1970 = 0)", linetype = element_blank(), color = element_blank()) +
   theme(legend.position = "right")
 
 # Color version
