@@ -103,6 +103,36 @@ df %>%
 
 ```
 
+
+
+```{r emp-ls, fig.cap="Labor share in France", fig.show="hide", warning=F}
+pwt %>% 
+  subset(Year %in% c(1950:2017)) %>% 
+  select(Country, Year, contains("lab_sh")) %>% 
+  subset(Country == "France") %>%
+  mutate(lab_sh1 = ifelse(i_lab_sh1 == 1, lab_sh1, NA),
+         lab_sh2 = ifelse(i_lab_sh2 == 1, lab_sh2, NA),
+         lab_sh3 = ifelse(i_lab_sh3 == 1, lab_sh3, NA),
+         lab_sh4 = ifelse(i_lab_sh4 == 1, lab_sh4, NA)) %>% # Remove interpolated labor share by the PWT
+  select(Year, starts_with("lab_sh")) %>% 
+  setDT %>% melt(id.vars = "Year") %>%  
+  mutate(variable = factor(variable,
+    labels = c("Mixed income", "Part mixed income",
+               "Average wage", "Agriculture"))) %>% 
+  
+  ggplot(aes(x = Year, y = value)) +
+  geom_line(aes(color = variable)) +
+  scale_color_brewer(palette = "Set1") +
+  labs(x = element_blank(), y = element_blank(), title = "Labor share", color = "Adjustment method") +
+  scale_x_continuous(breaks = seq(1950,2020, 10)) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  ggsave(file.path(loc_graphic, "emp-ls-france-color.png"), width = 7, height = 7/1.5)
+```
+
+```{r emp-ls-show, fig.cap="Labor share in OECD countries"}
+include_graphics(file.path(loc_graphic, "emp-ls-france-color.png"))
+```
 ### Dependency ratio
 
 Figure \@ref(fig:emp-dep) shows the old-age dependency ratio for the same sample until 2100. The old-age dependency ratio in this figure is the ratio between the population above 65 and the population between 15 and 64. The ratio slightly increases until 2000, when the boomers are young and explodes thereafter, once they retire.
@@ -371,11 +401,15 @@ Then, $\beta$ is set to match the tax rate $\tau_t$ in 1970.
 param_base = param_base %>%
   merge(., df1) %>% 
   mutate(X = exp(-(sigma + (1-phi)/phi*(1-gamma*(1-sigma))/gamma*k^((1-sigma)/sigma))^(-1)),
-         eta = (1-phi)/phi*k^((1-sigma)/sigma) * ((Ny/K*k-1)*X + 1),
+         # eta = (1-phi)/phi*k^((1-sigma)/sigma) * ((Ny/K*k-1)*X + 1),
+         eta = Ny/K*k*((1+phi/(1-phi)*k^((sigma-1)/sigma))/X-1)^(-1), # model2
          omega = p/n/(1+alpha*p1)*eta,
-         beta = 1/(1 - tau)/(1-theta) - 1 - eta) %>% 
+         # beta = 1/(1 - tau)/(1-theta) - 1 - eta,
+         beta = ((1+eta)*tau-u*eta)/(1-tau),# model2
+         ) %>% 
   group_by(Country) %>% 
-  mutate(omega = first(omega), beta = first(beta)) %>% 
+  mutate(omega = first(omega), beta = first(beta)) %>%
+  # mutate_at(vars(omega, beta), ~ mean(., na.rm = T)) %>% 
   select(Country, Year, alpha, gamma, phi, sigma, a, omega, beta) %>% 
   ungroup()
 # Preview
@@ -385,11 +419,11 @@ param_base[c(1,13),]
 Considering appendix D, there are two regimes in the elasticity of substitution between capital and labor in France. Thus, the elasticity is about 1 before 1985 and about 1.32 thereafter.
 
 ```{r calib-sigma-france}
-# Change sigma for France
-param_base = param_base %>% 
-  mutate(sigma = ifelse(Country == "France",
-                        ifelse(Year <= 1985, list.sigma$France$before85,
-                               list.sigma$France$after85), sigma))
+# # Change sigma for France
+# param_base = param_base %>% 
+#   mutate(sigma = ifelse(Country == "France",
+#                         ifelse(Year <= 1985, list.sigma$France$before85,
+#                                list.sigma$France$after85), sigma))
 ```
 
 To set the scale parameter of the production function $A$, I match the average labor share between 2008 and 2012.
@@ -533,7 +567,7 @@ result = final
 for(country in CountrySet){
     result = data %>%
       subset(Country == country) %>% 
-      model(time = 3) %>% 
+      model2(time = 3) %>% 
       rbind(result, .)
 }
 
@@ -738,7 +772,7 @@ break_year = 1970
       for(country in CountrySet){
           result = data %>%
             subset(Country == country) %>% 
-            model(time = 3) %>% 
+            model2(time = 3) %>% 
             rbind(result, .)
       }
     }
@@ -768,7 +802,7 @@ break_year = 1970
       for(country in CountrySet){
           result = data %>%
             subset(Country == country) %>% 
-            model(time = 3) %>% 
+            model2(time = 3) %>% 
             rbind(result, .)
       }
     }  }
@@ -1344,7 +1378,7 @@ for(spe in c(1:3)){
   for(country in CountrySet){
     result = data %>%
     subset(Country == country) %>% 
-    model(time = 3) %>% 
+    model2(time = 3) %>% 
     rbind(result, .)
   }
   

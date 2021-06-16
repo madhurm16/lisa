@@ -7,11 +7,11 @@
       mean() %>% 
       round(3)
     
-    A_bound = c(0,100) # Grid search interval
+    A_bound = c(1,100) # Grid search interval
     precision = nchar(strsplit(as.character(target), "\\.")[[1]][2]) # Precision
     
     # Loop on precision level
-    for(preci in c(0:precision)){
+    for(preci in c(1:precision)){
       
       A_interval = seq(A_bound[1], A_bound[2], by = 0.1^(preci))
       est = NA
@@ -21,7 +21,8 @@
         est_add = data %>%
           subset(Country == country) %>% 
           mutate(A = A_interval[Ai]) %>% 
-          model(time = 2, AFinder = TRUE) %>% 
+          # model(time = 2, AFinder = TRUE) %>% 
+          model2(time = 2, AFinder = TRUE) %>%
           subset(Year == 2010) %>% 
           pull("theta")
         
