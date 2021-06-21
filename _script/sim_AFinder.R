@@ -2,7 +2,7 @@
   for(country in levels(data$Country)){
     
     target = df1 %>% 
-      subset(Year %in% c(2008:2012) & Country == country) %>% 
+      subset(Year %in% c(1988:1992) & Country == country) %>% 
       pull("theta") %>% 
       mean() %>% 
       round(3)
@@ -23,7 +23,7 @@
           mutate(A = A_interval[Ai]) %>% 
           # model(time = 2, AFinder = TRUE) %>% 
           model2(time = 2, AFinder = TRUE) %>%
-          subset(Year == 2010) %>% 
+          subset(Year == 1990) %>% 
           pull("theta")
         
         est = c(est, est_add)

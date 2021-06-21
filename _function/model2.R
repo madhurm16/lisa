@@ -36,11 +36,18 @@ model2 <- function(data, time, AFinder = FALSE){
         }
         
         data$k[t] = round(uniroot(to_solve, interval = c(0.001, 10000))$root, 3)
-        data$X[t] = exp(-(data$sigma[t] + (1-data$phi[t])/data$phi[t] * (1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t] * (data$AK[t]/data$AL[t]*data$k[t])^((1-data$sigma[t])/data$sigma[t]))^(-1))
         
         ## Other variables
         # Labor
         data$L[t] = data$K[t]/data$k[t]
+        if(data$L[t] > data$Ny[t]){
+          data$L[t] = data$Ny[t]
+          data$k[t] = data$K[t]/data$Ny[t]
+        } else {
+          data$L[t] = data$K[t]/data$k[t]
+        }
+        # Unemployment replacement rate
+        data$X[t] = exp(-(data$sigma[t] + (1-data$phi[t])/data$phi[t] * (1-data$gamma[t]*(1-data$sigma[t]))/data$gamma[t] * (data$AK[t]/data$AL[t]*data$k[t])^((1-data$sigma[t])/data$sigma[t]))^(-1))
         # Wage
         data$w[t] = data$A[t]*(1-data$phi[t])*data$AL[t]*(data$phi[t]*(data$k[t]*data$AK[t]/data$AL[t])^((data$sigma[t]-1)/data$sigma[t])+1-data$phi[t])^(1/(data$sigma[t]-1))
         # Rental rate
@@ -57,9 +64,11 @@ model2 <- function(data, time, AFinder = FALSE){
       # Tax rate
       data$tau[t] = (data$beta[t]+data$u[t]*data$eta[t])/(1+data$beta[t]+data$eta[t])
       # Unemployment benefits per capita
-      data$b[t] = (1-data$tau[t])*data$w[t]*data$X[t]
+      # data$b[t] = (1-data$tau[t])*data$w[t]*data$X[t]
+      data$b[t] = data$eta[t]/(1+data$beta[t]+data$eta[t])*data$Y[t]/data$Ny[t]
       # Health spending per capita
-      data$h[t] = (data$tau[t]*data$Y[t]-data$b[t]*data$u[t]*data$Ny[t])/data$No[t]
+      # data$h[t] = (data$tau[t]*data$Y[t]-data$b[t]*data$u[t]*data$Ny[t])/data$No[t]
+      data$h[t] = data$beta[t]/(1+data$beta[t]+data$eta[t])*data$Y[t]/data$No[t]
       # Savings
       data$S[t] = data$alpha[t]*data$p1[t]/(1+data$alpha[t]*data$p1[t])*((1-data$tau[t])*data$w[t]*(1-data$u[t])+data$b[t]*data$u[t])*data$Ny[t]
       # Capital accumulation

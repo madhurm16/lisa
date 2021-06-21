@@ -65,7 +65,7 @@ demo_changer = function(data = data, break_year = 1970,
                            n = ifelse(Year >= break_year, n_fix, n),
                            p = ifelse(Year >= break_year, p_fix, p),
                            # p1 only has > instead of >= to attribute the difference with counterfactual 
-                           # to 2010 instead of 1970
+                           # to second period instead of first on sequence 1
                            # Same initial labor income share required : same fixed point
                            p1 = ifelse(Year >= break_year, p1_fix, p1),
                            )
