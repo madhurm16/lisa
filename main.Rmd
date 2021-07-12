@@ -1082,6 +1082,43 @@ graph_decomp_summary +
   ggsave(file.path(loc_graphic, "quant-decomp-sum-color.png"), 
          width = 7, height = 7/1.5)
 ```
+```{r graph-decomp-sum2}
+# Summary
+graph_decomp_summary2 = decomp_mean.period %>% setDT %>% 
+  melt(id.vars = c("Country_break", "Period")) %>% 
+  mutate(value = value*100) %>% 
+  subset(Country_break %in% c("1970 - France", "1970 - United States")) %>% 
+  mutate(Country = ifelse(Country_break == "1970 - France", "France", "United States"),
+         effect = factor(ifelse(variable %>% grepl(pattern = "PG", .), "first", "second")),
+         Period = ifelse(Period == "P1", "1980 - 2010", "2020 - 2050")) %>% 
+  mutate(variable = factor(variable, 
+    levels = c("FPG.TSR.share", "TPG.FSR.share", "FDE.TIE.share", 
+               "TDE.FIE.share", "FPG.FSR.share", "FDE.FIE.share"),
+    labels = c("Population growth", "Survival rate", "Factor accumulation", 
+               "Policy mechanism", "Interaction", "Interaction"))) %>% 
+  subset(effect == "second") %>% 
+  
+  ggplot(aes(x = Period, y = value, fill = variable)) +
+  facet_grid(. ~ Country) +
+  # scale_x_discrete(breaks = c("first", "second"), 
+  #                  labels = c("Determinants", "Channels")) +
+  theme_bw() +
+  theme(legend.direction = "horizontal", legend.position = "bottom") +
+  labs(x = element_blank(), y = "Share of the effect (in percentage)", fill = element_blank())
+
+# Paper version
+graph_decomp_summary2 +
+  geom_bar(stat = "identity", position = position_dodge(), color = "black") +
+  scale_fill_grey(start = 1, end = 0) +
+  ggsave(file.path(loc_graphic, "quant-decomp-sum.png"), width = 7, height = 7/2)
+
+# Color version
+graph_decomp_summary2 +
+    geom_bar(stat = "identity", position = position_dodge(), alpha = .7) +
+    scale_fill_manual(values = brewer.pal(8, "Set1")[c(5,8,4)]) +
+  ggsave(file.path(loc_graphic, "quant-decomp-sum-color.png"), 
+         width = 7, height = 7/2)
+```
 
 # Discussion
 
