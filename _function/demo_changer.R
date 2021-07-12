@@ -7,7 +7,7 @@ demo_changer = function(data = data, break_year = 1970,
   if(init_spe == TRUE | AFinder == TRUE){
     # Compute population
     for(seq in 1:4){
-      for(t in 2:3){
+      for(t in 2:4){
         # Young population dynamics
         data$Ny[data$Period == t & data$Sequence == seq] = 
           data$Ny[data$Period == t-1 & data$Sequence == seq] * data$n[data$Period == t & data$Sequence == seq]
@@ -78,7 +78,7 @@ demo_changer = function(data = data, break_year = 1970,
   ## Computation
   # Compute population
   for(seq in 1:4){
-   for(t in 2:3){
+   for(t in 2:4){
      # Young population dynamics
      data$Ny[data$Period == t & data$Sequence == seq] = 
        data$Ny[data$Period == t-1 & data$Sequence == seq] * data$n[data$Period == t & data$Sequence == seq]

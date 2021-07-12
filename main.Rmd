@@ -203,12 +203,12 @@ This section provides the details of the quantitative analysis in the paper. I c
 
 ```{r quant-init}
 # Simulation periods
-sim = seq(1950, 2060, 10)
+sim = seq(1950, 2100, 10)
 # Estimation sample
 est_sample = c(1950:2010)
 # Graphic parameters
-breaks_10_years = seq(1950, 2060, 10)
-labs_20_years = as.vector(rbind(seq(1950, 2060, 20), rep("", length(breaks_10_years)/2)))
+breaks_10_years = seq(1950, 2100, 10)
+labs_20_years = as.vector(rbind(seq(1950, 2100, 20), rep("", length(breaks_10_years)/2)))
 scale_graph = 1920/1080
 ```
 
@@ -284,7 +284,13 @@ data_base = df1 %>%
   # Create empty variables
   mutate(
     eta = NA, AK = NA, AL = NA, k1 = NA, k2 = NA, k = NA, X = NA, L = NA, w = NA,
-    r = NA, Y = NA, u = NA, theta = NA, tau = NA, b = NA, h = NA, S = NA) 
+    r = NA, Y = NA, u = NA, theta = NA, tau = NA, b = NA, h = NA, S = NA) %>% 
+  # Mean of p1 growth for p1 between 2060 and 2100
+  merge(., summarise(., p1.growth = mean(p1/lag(p1)-1, na.rm = T)), by = "Country") %>% 
+  group_by(Country) %>% 
+  mutate(p1 = ifelse(is.na(p1) & Year > 2060, 
+                     p1[Year == 2060]*(1+p1.growth)^Sequence, p1)) %>% 
+  ungroup
 # Re-order variables
 data_base = data_base %>% 
   select(Country, Year, Sequence, Period, Ny, No, n, p, p1, eta, AK, AL,
@@ -317,7 +323,8 @@ graph_demo = data %>% mutate(dep = p/n) %>% # Compute old-age dependency ratio
     labeller = labeller(variable = c(n = "Population growth (n)", p = "Survival rate (p)",
                                      dep = "Old-age dependency ratio (p/n) "))) +
   scale_x_continuous(breaks = breaks_10_years,
-                     labels = c(1950, "", "", 1980, "", "", 2010, "", "", 2040, "", "")) +
+                     labels = c(1950, "", "", 1980, "", "", 2010, "", "", 2040, "", "",
+                                2070, "", "", 2100)) +
   theme_bw() + theme(legend.position = "bottom") +
   labs(x = element_blank(), y = element_blank(), color = element_blank())
 
@@ -414,7 +421,7 @@ param_base = param_base %>%
   select(Country, Year, alpha, gamma, phi, sigma, a, omega, beta) %>% 
   ungroup()
 # Preview
-param_base[c(1,13),]
+param_base[c(1,17),]
 ```
 
 Considering appendix D, there are two regimes in the elasticity of substitution between capital and labor in France. Thus, the elasticity is about 1 before 1985 and about 1.32 thereafter.
@@ -426,14 +433,6 @@ param_base = param_base %>%
                         ifelse(Year <= 1985, list.sigma$France$before85,
                                list.sigma$France$after85), sigma))
 ```
-
-```{r}
-# Bound beta to 0 for the US
-param_base = param_base %>%
-  mutate(beta = ifelse(Country == "United States" & beta < 0, 0, beta))
-
-```
-
 
 To set the scale parameter of the production function $A$, I match the average labor share between 2008 and 2012.
 
@@ -454,7 +453,7 @@ param_base$A = data$A
 # Assign values
 param = param_base
 # Preview
-param_base[c(1,15),]
+param_base[c(1,17),]
 ```
 
 Table \@ref(tab:tab-param) summarizes the parameters for both countries. This table corresponds to Table 1 in the paper.
@@ -469,7 +468,7 @@ coef_summary = param_base %>%
   mutate(
     variable = c("$\\phi$", "$\\gamma$", "$\\alpha$", "$\\sigma$", 
                  "$\\omega$", "$\\beta$", "$A$"),
-    var_desc = c("Capital share in 1970", "Relative bargaining power of the union",
+    var_desc = c("Capital share in 1950", "Relative bargaining power of the union",
                  "Discount rate", "Capital-labor elasticity of substitution",
                  "Relative ideological spread-out", 
                  "Preference for government health expenditure", 
@@ -557,7 +556,7 @@ result = final
 for(country in CountrySet){
     result = data %>%
       subset(Country == country) %>% 
-      model2(time = 3) %>% 
+      model2(time = 4) %>% 
       rbind(result, .)
 }
 
@@ -609,8 +608,8 @@ graph_dev7010 = list.sim$benchmark %>%
   group_by(Country) %>% 
   mutate(outside = b/(1-tau)) %>% 
   select(Country, Year, eta, outside, w, L, u, K, Y, theta) %>% 
-  mutate_at(vars(eta, outside, w, L, u, K, Y, theta), ~ (./.[Year == 1950]-1)*100) %>% 
-  subset(Year %in% c(1950:2010)) %>% 
+  mutate_at(vars(eta, outside, w, L, u, K, Y, theta), ~ (./.[Year == 1970]-1)*100) %>% 
+  subset(Year %in% c(1970:2010)) %>% 
   # Variables and names
   select(Country, Year,
          "Political~weight~of~the~young~(eta)" = eta,
@@ -628,7 +627,7 @@ graph_dev7010 = list.sim$benchmark %>%
   geom_hline(yintercept = 0, linetype = "dotted") +
   geom_line() +
   facet_wrap(. ~ variable, scales = "free", nrow = 2, labeller = label_parsed) +
-  scale_x_continuous(breaks = seq(1950, 2010, 10), labels = c("1950","", "1970","", "1990", "", "2010")) +
+  scale_x_continuous(breaks = seq(1970, 2010, 10), labels = c("1970","", "1990", "", "2010")) +
   labs(x = element_blank(), y = "Percentage deviation (1970 = 0)", color = element_blank()) +
   theme_bw() +
   theme(legend.position = c(0.95, 0.4), legend.justification = c(1,1),
@@ -655,7 +654,7 @@ graph_dev1080 = list.sim$benchmark %>%
   mutate(outside = b/(1-tau)) %>% 
   select(Country, Year, eta, outside, w, L, u, K, Y, theta) %>% 
   mutate_at(vars(eta, outside, w, L, u, K, Y, theta), ~ (./.[Year == 2010]-1)*100) %>% 
-  subset(Year %in% c(2010:2060)) %>% 
+  subset(Year %in% c(2010:2100)) %>% 
   # Variables and names
   select(Country, Year,
          "Political~weight~of~the~young~(eta)" = eta,
@@ -673,7 +672,7 @@ graph_dev1080 = list.sim$benchmark %>%
   geom_hline(yintercept = 0, linetype = "dotted") +
   geom_line() +
   facet_wrap(. ~ variable, scales = "free", nrow = 2, labeller = label_parsed) +
-  scale_x_continuous(breaks = seq(2010, 2060, 10), labels = c("2010","", "2030", "", "2050", "")) +
+  scale_x_continuous(breaks = seq(2010, 2100, 10), labels = c("2010","", "2030", "", "2050", "", "2070", "", "2090", "")) +
   labs(x = element_blank(), y = "Percentage deviation (2010 = 0)", color = element_blank()) +
   theme_bw() +
   theme(legend.position = c(0.95, 0.4), legend.justification = c(1,1), 
@@ -736,7 +735,7 @@ I run the counterfactual simulations. The break year corresponds to the year at 
 # Re initialize result data frame
 result = result[0,]
 # Define break_year
-break_year = 1960
+break_year = 1970
 
 ## Decomposition : Survival rate versus Population growth
   for(sr in c("TSR", "FSR")){
@@ -762,7 +761,7 @@ break_year = 1960
       for(country in CountrySet){
           result = data %>%
             subset(Country == country) %>% 
-            model2(time = 3) %>% 
+            model2(time = 4) %>% 
             rbind(result, .)
       }
     }
@@ -792,7 +791,7 @@ break_year = 1960
       for(country in CountrySet){
           result = data %>%
             subset(Country == country) %>% 
-            model2(time = 3) %>% 
+            model2(time = 4) %>% 
             rbind(result, .)
       }
     }  }
@@ -1341,8 +1340,8 @@ for(spe in c(1:3)){
       p1_to_p_dist = p1 - p,
       # New p and p1
       p.new = ifelse(Year > break_year, frac*(p-p_fix) + p_fix, p),
-      p1.new = ifelse(Year > break_year & Period < 3, dplyr::lead(p.new,1),
-                      ifelse(Period == 3, p.new + p1_to_p_dist*frac, p1)),
+      p1.new = ifelse(Year > break_year & Period < 4, dplyr::lead(p.new,1),
+                      ifelse(Period == 4, p.new + p1_to_p_dist*frac, p1)),
       # Scale for the affected periods
       shock = (p.new - p)/p
       )
@@ -1378,7 +1377,7 @@ for(spe in c(1:3)){
   for(country in CountrySet){
     result = data %>%
     subset(Country == country) %>% 
-    model2(time = 3) %>% 
+    model2(time = 4) %>% 
     rbind(result, .)
   }
   
@@ -1404,7 +1403,7 @@ list.graph$retage_p = list.sim$retage[,-c({ncol(list.sim$retage)-2}:ncol(list.si
   facet_wrap(Country ~ ., scales = "fixed") +
   theme_bw() +
   theme(legend.position = "right", legend.text.align = 0, panel.spacing.x = unit(1, "lines")) +
-  scale_x_continuous(breaks = seq(2020, 2080, 10), labels = c("2020", "", "2040", "", "2060", "", "2080")) +
+  scale_x_continuous(breaks = seq(2020, 2100, 10), labels = c("2020", "", "2040", "", "2060", "", "2080", "", "2100")) +
   labs(x = element_blank(), y = element_blank(), linetype = "Scenario", color = "Survival rate", title = element_blank()) +
   guides(linetype = guide_legend(order = 2), color = guide_legend(order = 1))
 
@@ -1443,7 +1442,7 @@ list.graph$retage_ls = list.sim$retage[,-c({ncol(list.sim$retage)-2}:ncol(list.s
   ggplot(aes(x = Year, y = value, linetype = Specification, color = Specification)) +
   geom_line() +
   facet_wrap(Country ~ ., scales = "fixed") +
-  scale_x_continuous(breaks = seq(2020, 2080, 10), labels = c("2020", "", "2040", "", "2060", "", "2080")) +
+  scale_x_continuous(breaks = seq(2020, 2100, 10), labels = c("2020", "", "2040", "", "2060", "", "2080", "", "2100")) +
   theme_bw() +
   theme(legend.position = "bottom", legend.text.align = 0) +
   labs(x = element_blank(), y = "Labor share", linetype = "Scenario", color = "Scenario", title = element_blank())
