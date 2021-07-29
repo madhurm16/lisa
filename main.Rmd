@@ -1072,7 +1072,7 @@ graph_decomp_summary = decomp_mean.period %>% setDT %>%
 # Paper version
 graph_decomp_summary +
   geom_bar(stat = "identity", position = position_dodge(), color = "black") +
-  scale_fill_grey(start = 1, end = 0) +
+  scale_fill_grey(start = .1, end = .8) +
   ggsave(file.path(loc_graphic, "quant-decomp-sum.png"), width = 7, height = 7/1.5)
 
 # Color version
@@ -1109,7 +1109,7 @@ graph_decomp_summary2 = decomp_mean.period %>% setDT %>%
 # Paper version
 graph_decomp_summary2 +
   geom_bar(stat = "identity", position = position_dodge(), color = "black") +
-  scale_fill_grey(start = 1, end = 0) +
+  scale_fill_grey(start = .1, end = .8) +
   ggsave(file.path(loc_graphic, "quant-decomp-sum.png"), width = 7, height = 7/2)
 
 # Color version
@@ -1165,6 +1165,11 @@ redis = list.sim$benchmark %>%
     inc_y = wL_net + unemp_ben, inc_o = rK_net,
     # Labor share and dependency ratio
     theta = wL/Y, dep = p/n,
+    THETA = theta/(1-theta),
+    inc_ratio = inc_y/inc_o,
+    delta1 = inc_ratio-THETA,
+    delta2 = 1/((1-theta)*(1/u/eta+(1-u)/u)),
+    delta2_dep = 1/((1-theta)*(1/u/eta+(1-u)/u))*p/n,
     ) %>% 
   ungroup()
 ```
@@ -1204,74 +1209,48 @@ graph_utility + scale_color_brewer(palette = "Set1") +
 
 Figure \@ref(fig:winners-ratio) shows the (before-tax) young-to-old and (after-tax) labor-to-capital income ratios in percentage deviation from their 1970's values. These variables are aggregate variables and therefore do not take into account generation sizes.
 
-```{r winners-ratio, fig.cap = 'Income ratio dynamics'}
-## Core
-graph_ratio = redis %>% 
-  select(Country, Year, inc_y, inc_o, wL, rK, eta) %>% 
-  group_by(Country) %>% 
-  # Young-to-old income ratio and labor-to-capital income ratio
-  mutate(inc_ratio = inc_y/inc_o, lab_to_cap_ratio = wL/rK) %>%
-  # In % deviation from 1970
-  mutate_at(vars(contains("ratio")), ~ {(./.[Year == 1950] -1)*100}) %>% 
-  # Select variables
-  select(Country, Year, lab_to_cap_ratio, inc_ratio) %>% 
-  # Melt (from wide to long)
-  setDT %>% melt(id.vars = c("Country", "Year")) %>% 
-  # Rename ratios
-  mutate(variable = factor(variable, labels = c("Before-tax", "After-tax"))) %>% 
-  
-  ggplot(aes(x = Year, y = value, linetype = variable, color = Country)) +
-  geom_line() +
-  geom_hline(yintercept = 0, linetype = "dotted") +
-  scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
-  theme_bw() +
-  labs(x = element_blank(), y = element_blank(), title = "Income ratio in percentage deviation (1970 = 0)", linetype = element_blank(), color = element_blank()) +
-  theme(legend.position = "right")
-
-# Color version
-graph_ratio + scale_color_grey(start = 0, end = .5) + 
-  ggsave(file.path(loc_graphic, "discuss-ratio.png"), width = 7, height = 7/2)
-
-# Paper version
-graph_ratio + scale_color_brewer(palette = "Set1") +
-  ggsave(file.path(loc_graphic, "discuss-ratio-color.png"), width = 7, height = 7/2)
-
+```{r}
+boomer_period = data.frame(
+  x1 = c(1970, 2010), x2 = c(2010, 2050), y1 = c(-100, -100), y2 = c(100, 100),
+  period = factor(c("Young boomers", "Old boomers"), levels = c("Young boomers", "Old boomers"))
+)
 ```
 
-Figure \@ref(fig:winners-ratio-pc) shows the per-capita (before-tax) young-to-old and (after-tax) labor-to-capital income ratios in percentage deviation from their 1970's values. These variables take into account changes in generation sizes.
 
-```{r winners-ratio-pc, fig.cap = 'Per-capita income ratio dynamics'}
+```{r winners-ratio-pc, fig.cap = 'Per-capita redistribution from old to young'}
 ## Core
 graph_ratio_pc = redis %>% 
-  select(Country, Year, inc_y, inc_o, wL, rK, eta, dep) %>% 
+  select(Country, Year, delta2_dep, delta2, dep) %>% 
   group_by(Country) %>% 
-  # Young-to-old income ratio and labor-to-capital income ratio (PER CAPITA)
-  mutate(inc_ratio = inc_y/inc_o*dep, lab_to_cap_ratio = wL/rK*dep) %>% 
   # In % deviation from 1970
-  mutate_at(vars(contains("ratio")), ~ {(./.[Year == 1970] -1)*100}) %>% 
+  mutate_at(vars("delta2_dep", "delta2", "dep"), ~ {(./.[Year == 1950] -1)*100}) %>% 
   # Select variables
-  select(Country, Year, lab_to_cap_ratio, inc_ratio) %>% 
+  select(Country, Year, delta2_dep) %>% 
   # Melt (from wide to long)
-  setDT %>% melt(id.vars = c("Country", "Year")) %>% 
-  # Rename ratios
-  mutate(variable = factor(variable, labels = c("Before-tax", "After-tax"))) %>% 
-  subset(Year >= 1970) %>% 
+  # setDT %>% melt(id.vars = c("Country", "Year")) %>%
+  # subset(Year >= 1970) %>% 
   
-  ggplot(aes(x = Year, y = value, linetype = variable, color = Country)) +
+  ggplot(aes(x = Year, y = delta2_dep, color = Country)) +
   geom_line() +
   geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_rect(data = boomer_period, inherit.aes = FALSE,
+            aes(xmin = x1, xmax = x2, ymin = y1, ymax = y2, fill = period),
+            color = "transparent", alpha = .3) +
   scale_x_continuous(breaks = breaks_10_years, labels = labs_20_years) +
   theme_bw() +
-  labs(x = element_blank(), y = element_blank(), title = "Per-capita young-to-old income ratio in percentage deviation (1970 = 0)", linetype = element_blank(), color = element_blank()) +
-  theme(legend.position = "right")
+  labs(x = element_blank(), y = element_blank(), title = "Per-capita redistribution from old to young (1950 = 0)", linetype = element_blank(), color = element_blank(),
+       fill = element_blank()) +
+  theme(legend.position = "bottom")
 
 # Color version
 graph_ratio_pc + scale_color_grey(start = 0, end = .5) +
-  ggsave(file.path(loc_graphic, "discuss-ratiopc.png"), width = 7, height = 7/2)
+  scale_fill_grey(start = 0, end = .5) +
+  ggsave(file.path(loc_graphic, "discuss-ratiopc.png"), width = 7, height = 7/1.5)
 
 # Paper version
 graph_ratio_pc + scale_color_brewer(palette = "Set1") +
-  ggsave(file.path(loc_graphic, "discuss-ratiopc-color.png"), width = 7, height = 7/2)
+  scale_fill_manual(values = brewer.pal(8, "Set1")[c(8,5)]) +
+  ggsave(file.path(loc_graphic, "discuss-ratiopc-color.png"), width = 7, height = 7/1.5)
 
 ```
 
@@ -1519,8 +1498,9 @@ h = function(k, sigma, phi, gamma){
 # Create dataframe with k
 df.uniq = expand.grid(
   k = seq(0, 10, length.out = 10000),
-  sigma = c(0.25, 0.8, 1.1, 1.2, 1.3, 1.5, 1.7), 
-  phi = .3, gamma = .5, Ny = 1, K = 3, eta = 3
+  sigma = c(0.25, 0.8, 1, 1.1, 1.2, 1.3, 1.5, 1.7), 
+  phi = c(.1, .3, .5, .7), gamma = c(.1, .3, .5, .7, .9), 
+  Ny = c(1, 2, 3, 4, 5), K = c(1, 2, 3, 4, 5), eta = c(1, 2, 3, 4, 5)
   ) %>% 
   mutate(g = g(k, sigma, phi, Ny, eta, K), 
          h = h(k, sigma, phi, gamma))
@@ -1531,7 +1511,7 @@ Figure \@ref(fig:graph-uniq-gshape) shows the shapes of the g function. This fig
 ```{r graph-uniq-gshape, warning=F}
 # Figure
 df.uniq %>% 
-  subset(sigma %in% c(0.8, 1.2)) %>% 
+  subset(sigma %in% c(.8, 1.2)) %>% 
   mutate(sigma = factor(sigma, labels = c('sigma~"<"~1','sigma~">"~1'))) %>%
   
   ggplot(aes(x = k, y = g)) +
@@ -1542,7 +1522,7 @@ df.uniq %>%
   scale_y_continuous(breaks = 0) +
   labs(x = element_blank(), y = element_blank()) +
   theme_bw() +
-  ggsave(file.path(loc_graphic, "uniq-gshape.png"), width = 7, height = 7/1.5)
+  ggsave(file.path(loc_graphic, "uniq-gshape.png"), width = 7, height = 7/2)
 ```
 
 Figure \@ref(fig:graph-uniq-hshape) shows the shapes of the h function.
