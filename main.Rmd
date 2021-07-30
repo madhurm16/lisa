@@ -1,10 +1,10 @@
 ---
 title: "Inter-generational conflict and the declining labor share"
+author: Fabien Petit
 output: 
   github_document:
     fig_width: 7
 always_allow_html: true
-bibliography: referencesLISA.bib
 ---
 
 # Initialization
@@ -61,12 +61,8 @@ df %>%
   scale_color_brewer(palette = "Set1") +
   labs(x = element_blank(), y = element_blank(), title = "Labor share", color = element_blank()) +
   theme_bw() +
-  theme(legend.position = "bottom") +
+  theme(legend.position = "bottom")
   ggsave(file.path(loc_graphic, "emp-ls-color.png"), width = 7, height = 7/1.5)
-```
-
-```{r emp-ls-show, fig.cap="Labor share in OECD countries"}
-include_graphics(file.path(loc_graphic, "emp-ls-color.png"))
 ```
 
 Figure \@ref(fig:emp-lsadj) presents the labor share data on the same sample of countries over the same period with different adjustment methods for self-employed income from the PWT. For a discussion of adjusment methods, see @Gollin2002Getting. For more details on adjustment methods in the PWT, see @Feenstra2015Next. The labor share from the OECD data is also plotted. Although the magnitude changes according to the adjustment method and the data source, the dynamics remain roughly similar. 
@@ -98,7 +94,7 @@ df %>%
   labs(x = element_blank(), y = "Labor share", title = element_blank(),
        color = "Adjustment method", linetype = "Data") +
   theme_bw() +
-  theme(legend.position = "right") +
+  theme(legend.position = "right")
   ggsave(file.path(loc_graphic, "emp-lsadj-color.png"), width = 7, height = 7/1.5)
 
 ```
@@ -126,13 +122,10 @@ pwt %>%
   labs(x = element_blank(), y = element_blank(), title = "Labor share", color = "Adjustment method") +
   scale_x_continuous(breaks = seq(1950,2020, 10)) +
   theme_bw() +
-  theme(legend.position = "bottom") +
+  theme(legend.position = "bottom")
   ggsave(file.path(loc_graphic, "emp-ls-france-color.png"), width = 7, height = 7/1.5)
 ```
 
-```{r emp-ls-show, fig.cap="Labor share in OECD countries"}
-include_graphics(file.path(loc_graphic, "emp-ls-france-color.png"))
-```
 ### Dependency ratio
 
 Figure \@ref(fig:emp-dep) shows the old-age dependency ratio for the same sample until 2100. The old-age dependency ratio in this figure is the ratio between the population above 65 and the population between 15 and 64. The ratio slightly increases until 2000, when the boomers are young and explodes thereafter, once they retire.
@@ -149,7 +142,7 @@ df %>%
   scale_x_continuous(breaks = seq(1970, 2080, 20)) +
   labs(x = element_blank(), y = element_blank(), title = "Old-age-dependency ratio",
        color = element_blank()) +
-  theme_bw() + theme(legend.position = "bottom") +
+  theme_bw() + theme(legend.position = "bottom")
   ggsave(file.path(loc_graphic, "emp-dep-color.png"), width = 7, height = 7/1.5)
 ```
 
@@ -171,7 +164,7 @@ df %>%
   facet_wrap(variable ~ ., scales = "free",
              labeller = labeller(variable = c(lab_sh1 = "Labor share", dep = "Old-age dependency ratio"))) +
   labs(x = "Year", y = element_blank(), color = element_blank()) +
-  theme_bw() + theme(legend.position = "bottom") +
+  theme_bw() + theme(legend.position = "bottom")
   ggsave(file.path(loc_graphic, "emp-lsdep-color.png"), width = 7, height = 7/1.5)
 ```
 
@@ -193,7 +186,7 @@ df %>%
                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
                parse = TRUE) +         
   labs(x = "Old-age-dependency ratio", y = "Labor share", color = element_blank()) +
-  theme_bw() + theme(legend.position = "right") +
+  theme_bw() + theme(legend.position = "right")
   ggsave(file.path(loc_graphic, "emp-lsdepcor-color.png"), width = 7, height = 7/1.5)
 ```
 
@@ -329,7 +322,7 @@ graph_demo = data %>% mutate(dep = p/n) %>% # Compute old-age dependency ratio
   labs(x = element_blank(), y = element_blank(), color = element_blank())
 
 # Paper version
-graph_demo + scale_color_grey(start = 0, end = .5) +
+graph_demo + scale_color_grey(start = 0, end = .5)
   ggsave(file.path(loc_graphic, "quant-demo.png"), width = 7, height = 7/2.5)
 
 # Color version
@@ -589,7 +582,7 @@ graph_bench_LS = list.sim$benchmark %>%
   
 # Paper version
 graph_bench_LS +
-  scale_color_grey(start = 0, end = .5) +
+  scale_color_grey(start = 0, end = .5)
   ggsave(file.path(loc_graphic, "quant-bench-ls.png"), width = 7, height = 7/1.5)
 
 # Color version
@@ -597,7 +590,7 @@ graph_bench_LS +
   scale_color_brewer(palette = "Set1") +
   annotate("text", x = 2000, y = .71, label = "France", color = brewer.pal(8, "Set1")[1]) +
   annotate("text", x = 2000, y = .61, label = "United-States", color = brewer.pal(8, "Set1")[2]) +
-  guides(color = "none") +
+  guides(color = "none")
   ggsave(file.path(loc_graphic, "quant-bench-ls-color.png"),  width = 7, height = 7/1.5)
 ```
 
@@ -636,13 +629,13 @@ graph_dev7010 = list.sim$benchmark %>%
 
 # Paper version
 graph_dev7010 +
-  scale_color_grey(start = 0, end = .5) +
+  scale_color_grey(start = 0, end = .5)
   ggsave(file.path(loc_graphic, "quant-bench-dev7010.png"), width = 7, height = 7/1.5)
 
 
 # Color version
 graph_dev7010 +
-  scale_color_brewer(palette = "Set1") +
+  scale_color_brewer(palette = "Set1")
   ggsave(file.path(loc_graphic, "quant-bench-dev7010-color.png"), width = 7, height = 7/1.5)
 ```
 
@@ -681,12 +674,12 @@ graph_dev1080 = list.sim$benchmark %>%
 
 # Paper version
 graph_dev1080 + 
-  scale_color_grey(start = 0, end = .5) +
+  scale_color_grey(start = 0, end = .5)
   ggsave(file.path(loc_graphic, "quant-bench-dev1080.png"), width = 7, height = 7/1.5)
 
 # Color version
 graph_dev1080 +
-  scale_color_brewer(palette = "Set1") +
+  scale_color_brewer(palette = "Set1")
   ggsave(file.path(loc_graphic, "quant-bench-dev1080-color.png"), width = 7, height = 7/1.5)
 
 ```
@@ -905,14 +898,14 @@ graph_pgsr_counter = decomp %>%
 graph_pgsr_counter +
   scale_linetype_manual(labels = pgsr_labels, 
                         values = c("solid", "solid", "dashed", "twodash", "dotted")) +
-  scale_color_manual(labels = pgsr_labels, values = c("grey", rep("black", 4))) +
+  scale_color_manual(labels = pgsr_labels, values = c("grey", rep("black", 4)))
   ggsave(file.path(loc_graphic, "quant-counter-determinant.png"), width = 7, height = 7/1.5)
 
 # Color version
 graph_pgsr_counter +
   scale_linetype_manual(labels = pgsr_labels, values = c("solid", rep("dashed", 4))) +
   scale_color_manual(labels = pgsr_labels, 
-                     values = c("black", brewer.pal(8, "Set1")[c(1:4)])) +
+                     values = c("black", brewer.pal(8, "Set1")[c(1:4)]))
   ggsave(file.path(loc_graphic, "quant-counter-determinant-color.png"), width = 7, height = 7/1.5)
  
   
@@ -941,13 +934,13 @@ graph_pgsr_decomp = decomp2 %>%
 # Paper version
 graph_pgsr_decomp +
   geom_line(aes(y = position_PGSR), color = "black") +
-  scale_fill_grey(labels = pgsr_labels2, start = .1, end = .8) +
+  scale_fill_grey(labels = pgsr_labels2, start = .1, end = .8)
   ggsave(file.path(loc_graphic, "quant-decomp-determinant.png"), width = 7, height = 7/1.5)
 
 # Color version
 graph_pgsr_decomp + 
   geom_line(aes(y = position_PGSR), color = brewer.pal(8, "Set1")[1]) +
-  scale_fill_manual(labels = pgsr_labels2, values = brewer.pal(8, "Set1")[c(2:4)]) +
+  scale_fill_manual(labels = pgsr_labels2, values = brewer.pal(8, "Set1")[c(2:4)])
   ggsave(file.path(loc_graphic, "quant-decomp-determinant-color.png"), width = 7, height = 7/1.5)
 
 ```
@@ -978,13 +971,13 @@ graph_deie_counter = decomp %>%
 # Paper version
 graph_deie_counter +
     scale_linetype_manual(labels = deie_labels, values = c("solid", "solid", "dashed", "twodash", "dotted")) +
-    scale_color_manual(labels = deie_labels, values = c("grey", rep("black", 4))) +
+    scale_color_manual(labels = deie_labels, values = c("grey", rep("black", 4)))
   ggsave(file.path(loc_graphic, "quant-counter-channel.png"), width = 7, height = 7/1.5)
 
 # Color version
 graph_deie_counter +
     scale_linetype_manual(labels = deie_labels, values = c("solid", rep("dashed", 4))) +
-    scale_color_manual(labels = deie_labels, values = c("black", brewer.pal(8, "Set1")[c(1,5,8,4)])) +
+    scale_color_manual(labels = deie_labels, values = c("black", brewer.pal(8, "Set1")[c(1,5,8,4)]))
   ggsave(file.path(loc_graphic, "quant-counter-channel-color.png"), width = 7, height = 7/1.5)
 ```
 
@@ -1012,13 +1005,13 @@ graph_deie_decomp = decomp2 %>%
 # Paper version
 graph_deie_decomp +
   geom_line(aes(y = position_DEIE), color = "black") +
-    scale_fill_grey(labels = deie_labels2, start = .1, end = .8) +
+    scale_fill_grey(labels = deie_labels2, start = 0, end = .5)
   ggsave(file.path(loc_graphic, "quant-decomp-channel.png"), width = 7, height = 7/1.5)
 
 # Color version
 graph_deie_decomp + 
   geom_line(aes(y = position_DEIE), color = brewer.pal(8, "Set1")[1]) +
-  scale_fill_manual(labels = deie_labels2, values = brewer.pal(8, "Set1")[c(5,8,4)]) +
+  scale_fill_manual(labels = deie_labels2, values = brewer.pal(8, "Set1")[c(5,8,4)])
   ggsave(file.path(loc_graphic, "quant-decomp-channel-color.png"),
          width = 7, height = 7/1.5)
 
@@ -1072,16 +1065,17 @@ graph_decomp_summary = decomp_mean.period %>% setDT %>%
 # Paper version
 graph_decomp_summary +
   geom_bar(stat = "identity", position = position_dodge(), color = "black") +
-  scale_fill_grey(start = .1, end = .8) +
+  scale_fill_grey(start = 0, end = .5)
   ggsave(file.path(loc_graphic, "quant-decomp-sum.png"), width = 7, height = 7/1.5)
 
 # Color version
 graph_decomp_summary +
     geom_bar(stat = "identity", position = position_dodge(), alpha = .7) +
-    scale_fill_manual(values = brewer.pal(8, "Set1")[c(2,3,5,8,4)]) +
+    scale_fill_manual(values = brewer.pal(8, "Set1")[c(2,3,5,8,4)])
   ggsave(file.path(loc_graphic, "quant-decomp-sum-color.png"), 
          width = 7, height = 7/1.5)
 ```
+
 ```{r graph-decomp-sum2}
 # Summary
 graph_decomp_summary2 = decomp_mean.period %>% setDT %>% 
@@ -1100,22 +1094,20 @@ graph_decomp_summary2 = decomp_mean.period %>% setDT %>%
   
   ggplot(aes(x = Period, y = value, fill = variable)) +
   facet_grid(. ~ Country) +
-  # scale_x_discrete(breaks = c("first", "second"), 
-  #                  labels = c("Determinants", "Channels")) +
   theme_bw() +
   theme(legend.direction = "horizontal", legend.position = "bottom") +
   labs(x = element_blank(), y = "Share of the effect (in percentage)", fill = element_blank())
 
 # Paper version
 graph_decomp_summary2 +
-  geom_bar(stat = "identity", position = position_dodge(), color = "black") +
-  scale_fill_grey(start = .1, end = .8) +
+  geom_bar(stat = "identity", position = position_dodge(), alpha = .7) +
+  scale_fill_grey(start = 0, end = .5)
   ggsave(file.path(loc_graphic, "quant-decomp-sum.png"), width = 7, height = 7/2)
 
 # Color version
 graph_decomp_summary2 +
     geom_bar(stat = "identity", position = position_dodge(), alpha = .7) +
-    scale_fill_manual(values = brewer.pal(8, "Set1")[c(5,8,4)]) +
+    scale_fill_manual(values = brewer.pal(8, "Set1")[c(5,8,4)])
   ggsave(file.path(loc_graphic, "quant-decomp-sum-color.png"), 
          width = 7, height = 7/2)
 ```
@@ -1198,11 +1190,11 @@ graph_utility = redis %>%
   theme(legend.position = "right")
 
 # Color version
-graph_utility + scale_color_grey(start = 0, end = .5) +
+graph_utility + scale_color_grey(start = 0, end = .5)
   ggsave(file.path(loc_graphic, "discuss-utility.png"), width = 7, height = 7/2)
 
 # Paper version
-graph_utility + scale_color_brewer(palette = "Set1") +
+graph_utility + scale_color_brewer(palette = "Set1")
   ggsave(file.path(loc_graphic, "discuss-utility-color.png"), width = 7, height = 7/2)
 
 ```
@@ -1244,12 +1236,12 @@ graph_ratio_pc = redis %>%
 
 # Color version
 graph_ratio_pc + scale_color_grey(start = 0, end = .5) +
-  scale_fill_grey(start = 0, end = .5) +
+  scale_fill_grey(start = 0, end = .5)
   ggsave(file.path(loc_graphic, "discuss-ratiopc.png"), width = 7, height = 7/1.5)
 
 # Paper version
 graph_ratio_pc + scale_color_brewer(palette = "Set1") +
-  scale_fill_manual(values = brewer.pal(8, "Set1")[c(8,5)]) +
+  scale_fill_manual(values = brewer.pal(8, "Set1")[c(8,5)])
   ggsave(file.path(loc_graphic, "discuss-ratiopc-color.png"), width = 7, height = 7/1.5)
 
 ```
@@ -1283,12 +1275,12 @@ graph_gdpshare = redis %>%
 
 # Paper version
 graph_gdpshare + 
-  scale_fill_grey(start = .8, end = 0) +
+  scale_fill_grey(start = .8, end = 0)
   ggsave(file.path(loc_graphic, "discuss-gdpshare.png"), width = 7, height = 7/2)
   
 # Color version
 graph_gdpshare + 
-    scale_fill_manual(values = brewer.pal(8, "Set3")[c(4,6,3,5)]) +
+    scale_fill_manual(values = brewer.pal(8, "Set3")[c(4,6,3,5)])
   ggsave(file.path(loc_graphic, "discuss-gdpshare-color.png"), width = 7, height = 7/2)
 
 ```
@@ -1428,7 +1420,7 @@ list.graph$retage_p +
   geom_line(aes(linetype = Specification, color = variable)) +
   
   scale_linetype_manual(values = c("solid", "dashed", "dotdash", "dotted")) +
-  scale_color_grey(start = 0, end = .5, labels = c(expression(p[t]), expression(p[t+1]))) +
+  scale_color_grey(start = 0, end = .5, labels = c(expression(p[t]), expression(p[t+1])))
   ggsave(file.path(loc_graphic, "discuss-retage-p.png"), width = 7, height = 7/2.5)
 
 # Color version
@@ -1467,14 +1459,14 @@ list.graph$retage_ls = list.sim$retage[,-c({ncol(list.sim$retage)-2}:ncol(list.s
 list.graph$retage_ls +
   
   scale_color_manual(values = rep("black", 4)) +
-  scale_linetype_manual(values = c("solid", "dashed", "dotdash", "dotted")) +
+  scale_linetype_manual(values = c("solid", "dashed", "dotdash", "dotted"))
   ggsave(file.path(loc_graphic, "discuss-retage-ls.png"), width = 7, height = 7/1.5)
 
 # Color version
 list.graph$retage_ls +
   
   scale_color_manual(values = c("black", brewer.pal(8, "Set1")[c(1:3)])) +
-  scale_linetype_manual(values = c("solid", rep("dashed", 3))) +
+  scale_linetype_manual(values = c("solid", rep("dashed", 3)))
   ggsave(file.path(loc_graphic, "discuss-retage-ls-color.png"), width = 7, height = 7/1.5)
 
 ```
@@ -1521,7 +1513,7 @@ df.uniq %>%
   scale_x_continuous(breaks = 0) +
   scale_y_continuous(breaks = 0) +
   labs(x = element_blank(), y = element_blank()) +
-  theme_bw() +
+  theme_bw()
   ggsave(file.path(loc_graphic, "uniq-gshape.png"), width = 7, height = 7/2)
 ```
 
@@ -1545,7 +1537,7 @@ df.uniq %>%
   scale_y_continuous(breaks = c(0, 1), labels = c(0, expression(frac(1,sigma))), 
                      limits = c(0, 1.05), expand = c(0,0)) +
   labs(x = element_blank(), y = element_blank()) +
-  theme_bw() +
+  theme_bw()
   ggsave(file.path(loc_graphic, "uniq-hshape.png"), width = 7, height = 7/2.5)
 ```
 
@@ -1572,13 +1564,13 @@ graph_uniq = df.uniq %>%
 
 # Paper version
 graph_uniq +
-  scale_color_grey(name = bquote(sigma), start = 0, end  = .8) +
-  ggsave(file.path(loc_graphic, "uniq-rho01.png"), width = 7, height = 7/1.5)
+  scale_color_grey(name = bquote(sigma), start = 0, end  = .5)
+  ggsave(file.path(loc_graphic, "uniq-sigmaplus1.png"), width = 7, height = 7/1.5)
 
 # Color version
 graph_uniq +
-  scale_color_manual(name = bquote(sigma), values = brewer.pal(8, "Set1")) +
-  ggsave(file.path(loc_graphic, "uniq-rho01-color.png"), width = 7, height = 7/1.5)
+  scale_color_manual(name = bquote(sigma), values = brewer.pal(8, "Set1"))
+  ggsave(file.path(loc_graphic, "uniq-sigmaplus1-color.png"), width = 7, height = 7/1.5)
 
 ```
 
@@ -1741,7 +1733,7 @@ list.graph$regime_detrend +
   scale_color_grey(start = 0, end = 0,
     labels = c("Normalized capital-per-worker (in log)", "Labor-to-capital income ratio (in log)")) +
   scale_linetype_manual(values = c("solid", "dashed"),
-    labels = c("Normalized capital-per-worker (in log)", "Labor-to-capital income ratio (in log)")) +
+    labels = c("Normalized capital-per-worker (in log)", "Labor-to-capital income ratio (in log)"))
   ggsave(file.path(loc_graphic, "regime-detrend.png"), width = 7, height = 7/2)
 
 ## Color version
@@ -1749,7 +1741,7 @@ list.graph$regime_detrend +
   scale_color_manual(values = brewer.pal(8, "Set1"),
     labels = c("Normalized capital-per-worker (in log)", "Labor-to-capital income ratio (in log)")) +
   scale_linetype_manual(values = c("solid", "solid"),
-    labels = c("Normalized capital-per-worker (in log)", "Labor-to-capital income ratio (in log)")) +
+    labels = c("Normalized capital-per-worker (in log)", "Labor-to-capital income ratio (in log)"))
   ggsave(file.path(loc_graphic, "regime-detrend-color.png"), width = 7, height = 7/2)
 
 ```
@@ -1780,13 +1772,13 @@ list.graph$regime_regline = pwt2.fr %>%
 ## Paper version
 list.graph$regime_regline +
   scale_color_grey(start = 0.1, end = 0.5) +
-  scale_shape_manual(values = c(16, 17)) +
+  scale_shape_manual(values = c(16, 17))
   ggsave(file.path(loc_graphic, "regime-regline.png"), width = 7, height = 7/2)
 
 ## Color version
 list.graph$regime_regline +
   scale_color_manual(values = brewer.pal(8, "Set1")[c(3,4)]) +
-  scale_shape_manual(values = c(16, 17)) +
+  scale_shape_manual(values = c(16, 17))
   ggsave(file.path(loc_graphic, "regime-regline-color.png"), width = 7, height = 7/2)
 ```
 
