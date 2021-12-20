@@ -23,12 +23,18 @@ for(i in c(1:length(files))){
 }
 ##### MERGING #####
 # Merge main dataset and labor detail
-pwt = merge(pwt91, pwt91_labor_detail, by = c("countrycode", "year"), suffixes = c("",".y"), all = TRUE)
+pwt91.final = merge(pwt91, pwt91_labor_detail, by = c("countrycode", "year"), suffixes = c("",".y"), all = TRUE)
+pwt100.final = merge(pwt100, pwt100_labor_detail, by = c("countrycode", "year"), suffixes = c("",".y"), all = TRUE)
 # Remove duplicated columns
-pwt = pwt %>% select(- grep("*\\.y", names(.)))
+pwt91.final = pwt91.final %>% select(- grep("*\\.y", names(.)))
+pwt100.final = pwt100.final %>% select(- grep("*\\.y", names(.)))
 # Reorder columns and keep only OECD countries // Rename Country and Year
-pwt = pwt %>% 
+pwt91.final = pwt91.final %>% 
+  select(Country = country, Year = year, everything()) %>% 
+  subset(Country %in% countryOECD_full)
+pwt100.final = pwt100.final %>% 
   select(Country = country, Year = year, everything()) %>% 
   subset(Country %in% countryOECD_full)
 # SAVE DATA
-write.csv(pwt, file.path(loc_final, "pwt.csv"), row.names = FALSE)
+write.csv(pwt91.final, file.path(loc_final, "pwt91.csv"), row.names = FALSE)
+write.csv(pwt100.final, file.path(loc_final, "pwt100.csv"), row.names = FALSE)
