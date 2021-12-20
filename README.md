@@ -1,6 +1,6 @@
 # Inter-generational conflict and the declining labor share - Fabien Petit
 
-<p align="justify"><b>Abstract</b>: I develop a model in which a generational conflict arises because youngand old individuals have different income sources and opposite objec-tives in terms of public policy. The youth face unemployment risk anduse their political weight to raise the unemployment benefit, while theold favor health expenditures. This tension over the public budget al-location has consequences for wage bargaining and thus for the laborshare. Numerical simulations for France and the United States indicatethat the model can replicate the data and that boomers’ cohorts havedriven the observed decline of the labor share in both countries.</p>
+<p align="justify"><b>Abstract</b>: I develop a model in which a generational conflict arises because young old individuals have different income sources and opposite objectives in terms of public policy. The youth face unemployment risk and use their political weight to raise the unemployment benefit, while the old favor health expenditures. This tension over the public budget allocation has consequences for wage bargaining and thus for the labor share. Numerical simulations for France and the United States indicate that the model can replicate the data and that boomers’ cohorts have driven the observed decline of the labor share in both countries.</p>
 
 # Data Availability Statements
 
