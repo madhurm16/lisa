@@ -1,21 +1,35 @@
-demo_changer = function(data = data, break_year = 1970,
+demo_changer = function(data, break_year = NULL,
                         PG = "TPG", SR = "TSR", DE = "TDE", IE = "TIE",
                         p1_equals_p_fix = FALSE,
                         init_spe = FALSE, AFinder = FALSE,
                         ret_spe = 0){
   
   if(init_spe == TRUE | AFinder == TRUE){
-    # Compute population
-    for(seq in 1:4){
-      for(t in 2:4){
-        # Young population dynamics
-        data$Ny[data$Period == t & data$Sequence == seq] = 
-          data$Ny[data$Period == t-1 & data$Sequence == seq] * data$n[data$Period == t & data$Sequence == seq]
-        # Old population dynamics
-        data$No[data$Period == t & data$Sequence == seq] = 
-          data$Ny[data$Period == t-1 & data$Sequence == seq] * data$p[data$Period == t & data$Sequence == seq]
-      }
+    
+    # Compute population [New version]
+    period = 0
+    
+    while(period < 4){
+      period = period+1
+      
+      data = data %>% 
+        group_by(Country, Sequence) %>% 
+        mutate(Ny = ifelse(Period > 1, lag(Ny)*n, Ny),
+               No = ifelse(Period > 1, lag(Ny)*p, No)) %>% 
+        ungroup
     }
+    
+    # # Compute population
+    # for(seq in 1:4){
+    #   for(t in 2:4){
+    #     # Young population dynamics
+    #     data$Ny[data$Period == t & data$Sequence == seq] = 
+    #       data$Ny[data$Period == t-1 & data$Sequence == seq] * data$n[data$Period == t & data$Sequence == seq]
+    #     # Old population dynamics
+    #     data$No[data$Period == t & data$Sequence == seq] = 
+    #       data$Ny[data$Period == t-1 & data$Sequence == seq] * data$p[data$Period == t & data$Sequence == seq]
+    #   }
+    # }
     
     if(AFinder == TRUE){
       # Compute eta
@@ -25,11 +39,15 @@ demo_changer = function(data = data, break_year = 1970,
   } else {
     
     
+    if(!is.null(break_year)){
+    
    ## Fix variables
    data = breakers %>%
      subset(Year == break_year) %>% 
      select(Country, n_fix = n, p_fix = p, p1_fix = p1, Ny_fix = Ny, No_fix = No, eta_fix = eta) %>% 
      merge(data, .)
+    
+   }
   
   ## Constant population growth : not necessary to change K_0 for FPG
   if(PG == "FPG"){
@@ -74,19 +92,33 @@ demo_changer = function(data = data, break_year = 1970,
       data = data %>% mutate(p1 = ifelse(Year >= break_year, p_fix, p1))
     }
   }
-   
-  ## Computation
-  # Compute population
-  for(seq in 1:4){
-   for(t in 2:4){
-     # Young population dynamics
-     data$Ny[data$Period == t & data$Sequence == seq] = 
-       data$Ny[data$Period == t-1 & data$Sequence == seq] * data$n[data$Period == t & data$Sequence == seq]
-     # Old population dynamics
-     data$No[data$Period == t & data$Sequence == seq] = 
-       data$Ny[data$Period == t-1 & data$Sequence == seq] * data$p[data$Period == t & data$Sequence == seq]
-   }
+  
+  
+  # Compute population [New version]
+  period = 0
+  
+  while(period < 4){
+    period = period+1
+    
+    data = data %>% 
+      group_by(Country, Sequence) %>% 
+      mutate(Ny = ifelse(Period > 1, lag(Ny)*n, Ny),
+             No = ifelse(Period > 1, lag(Ny)*p, No)) %>% 
+      ungroup
   }
+   
+  # ## Computation
+  # # Compute population
+  # for(seq in 1:4){
+  #  for(t in 2:4){
+  #    # Young population dynamics
+  #    data$Ny[data$Period == t & data$Sequence == seq] = 
+  #      data$Ny[data$Period == t-1 & data$Sequence == seq] * data$n[data$Period == t & data$Sequence == seq]
+  #    # Old population dynamics
+  #    data$No[data$Period == t & data$Sequence == seq] = 
+  #      data$Ny[data$Period == t-1 & data$Sequence == seq] * data$p[data$Period == t & data$Sequence == seq]
+  #  }
+  # }
   
   ## Constant political power (eta)
   if(IE == "FIE"){

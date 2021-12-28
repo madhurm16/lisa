@@ -2,12 +2,14 @@
   for(country in levels(data$Country)){
     
     target = df1 %>% 
-      subset(Year %in% c(1988:1992) & Country == country) %>% 
+      subset(Country == country) %>% 
+      mutate(MatchYear = FirstYear+40) %>%
+      .[which(.$Year %in% c({unique(.$MatchYear)-2}:{unique(.$MatchYear)+2})),] %>% 
       pull("theta") %>% 
-      mean() %>% 
+      mean(na.rm = T) %>% 
       round(3)
     
-    A_bound = c(1,100) # Grid search interval
+    A_bound = c(1,200) # Grid search interval
     precision = nchar(strsplit(as.character(target), "\\.")[[1]][2]) # Precision
     
     # Loop on precision level
@@ -22,8 +24,8 @@
           subset(Country == country) %>% 
           mutate(A = A_interval[Ai]) %>% 
           # model(time = 2, AFinder = TRUE) %>% 
-          model2(time = 2, AFinder = TRUE) %>%
-          subset(Year == 1990) %>% 
+          model3(., AFinder = TRUE) %>%
+          subset(Year == FirstYear+40) %>% 
           pull("theta")
         
         est = c(est, est_add)
